@@ -695,11 +695,11 @@ function initDateSeance() {
     majStats();
     sauvegarderDansStorage();
     resetForm(false);
+    }
     
-    function envoyerVersGoogleSheets(rec) {
+function envoyerVersGoogleSheets(rec) {
   if (!GOOGLE_SHEETS_URL) return;
 
-  // On envoie la ligne au format JSON
   fetch(GOOGLE_SHEETS_URL, {
     method: "POST",
     headers: {
@@ -708,15 +708,12 @@ function initDateSeance() {
     body: JSON.stringify(rec)
   })
   .then(() => {
-    // on ne fait rien de spécial ici, mais on pourrait afficher "envoyé"
     console.log("Données envoyées à Google Sheets");
   })
   .catch(err => {
     console.warn("Erreur envoi Google Sheets :", err);
   });
 }
-
-  }
 
   function majListeJoueurs() {
     const ul = document.getElementById("listeJoueursUl");
@@ -963,6 +960,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
