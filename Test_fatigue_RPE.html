@@ -573,18 +573,18 @@ function envoyerVersGoogleSheets(rec) {
     return;
   }
 
-  // Juste pour voir dans la console ce qu'on envoie
   console.log("Envoi vers Google Sheets :", rec);
 
   fetch(GOOGLE_SHEETS_URL, {
     method: "POST",
-    mode: "no-cors",           // ⚠️ IMPORTANT : évite le blocage CORS
-    body: JSON.stringify(rec)  // pas de header Content-Type -> simple
+    mode: "no-cors",            // très important pour éviter CORS
+    body: JSON.stringify(rec)   // pas de headers -> requête "simple"
   })
   .catch(err => {
     console.error("Erreur envoi Google Sheets :", err);
   });
 }
+
   function getSeance() {
     const inputDate = document.getElementById("seanceDate");
     const valDate = inputDate.value;
@@ -984,6 +984,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
