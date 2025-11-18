@@ -534,6 +534,7 @@
   const selectJoueur = document.getElementById("joueurSelect");
   const rowAutre = document.getElementById("rowAutre");
   const inputAutre = document.getElementById("joueurAutre");
+  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbw2ivaPVAFRwvccLXxPV0d4tmTinWYsruhg7hj_vPBNTWFT2pDVRJU-ze_-u1W95Hv-/exec"; 
 
   selectJoueur.addEventListener("change", () => {
     if (selectJoueur.value === "Autre") {
@@ -661,7 +662,7 @@ function initDateSeance() {
       zoneClass = "zone-rouge";
     }
 
-    enregistrements.push({
+       const record = {
       date,
       joueur,
       seance,
@@ -676,7 +677,12 @@ function initDateSeance() {
       zoneClass: zoneClass,
       douleurZone,
       commentaire
-    });
+    };
+
+    enregistrements.push(record);
+
+    // Envoi vers Google Sheets
+    envoyerVersGoogleSheets(record);
 
     const resultatDiv = document.getElementById("resultat");
     resultatDiv.textContent =
@@ -689,6 +695,27 @@ function initDateSeance() {
     majStats();
     sauvegarderDansStorage();
     resetForm(false);
+    
+    function envoyerVersGoogleSheets(rec) {
+  if (!GOOGLE_SHEETS_URL) return;
+
+  // On envoie la ligne au format JSON
+  fetch(GOOGLE_SHEETS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(rec)
+  })
+  .then(() => {
+    // on ne fait rien de spécial ici, mais on pourrait afficher "envoyé"
+    console.log("Données envoyées à Google Sheets");
+  })
+  .catch(err => {
+    console.warn("Erreur envoi Google Sheets :", err);
+  });
+}
+
   }
 
   function majListeJoueurs() {
@@ -936,6 +963,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
