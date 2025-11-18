@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test de Fatigue RCF</title>
+
+  <!-- Librairie pour export Excel (.xlsx) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+  background: #e3f1ff; /* fond bleu clair RCF */
+  font-size: 18px;      /* + lisible sur tablette */
+}
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+      color: #2f7ccc;
+      font-size: 26px;
+    }
+    h2 {
+      text-align: center;
+      font-size: 16px;
+      margin-top: 0;
+      color: #4a6580;
+    }
+    .logo-container {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .logo-rcf {
+      max-width: 60px;
+      height: auto;
+    }
+
+    .layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 2px solid #6bb4ff;
+      flex: 2 1 540px;
+      min-width: 0;
+    }
+    .stats-card {
+      background: #fff;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 2px solid #6bb4ff;
+      flex: 1 1 260px;
+      min-width: 0;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+   .row label {
+  font-weight: bold;
+  flex: 1 0 140px;
+  font-size: 16px;
+}
+
+.row input[type="text"],
+.row input[type="date"],
+.row select,
+.row textarea {
+  flex: 2 1 200px;
+  padding: 12px;
+  font-size: 18px;       /* texte plus gros */
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  min-height: 46px;      /* zone de clic confortable */
+}
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .question {
+      margin-bottom: 22px;
+    }
+    .question > label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .scale {
+      display: flex;
+      gap: 10px;
+      flex-wrap: nowrap;
+      margin-top: 8px;
+    }
+   .scale button {
+  flex: 1 0 18%;
+  padding: 16px 0;         /* plus haut */
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  font-size: 22px;         /* chiffre plus gros */
+  cursor: pointer;
+  background: #f5f5f5;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, border 0.1s ease;
+}
+
+    /* Couleurs par valeur (1-5) */
+    .scale button[data-value="1"] { background:#ffb3b3; }  /* rouge clair */
+    .scale button[data-value="2"] { background:#ffd5a6; }  /* orange */
+    .scale button[data-value="3"] { background:#fff6a3; }  /* jaune */
+    .scale button[data-value="4"] { background:#c9f7b5; }  /* vert clair */
+    .scale button[data-value="5"] { background:#9ae69c; }  /* vert plus soutenu */
+
+    /* Bouton sélectionné */
+    .scale button.active {
+      border: 2px solid #000;
+      transform: scale(1.07);
+      box-shadow: 0 0 6px rgba(0,0,0,0.25);
+    }
+
+    .legend {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .actions button {
+  padding: 16px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+.primary {
+  background: #2f7ccc;
+  color: #fff;
+}
+.secondary {
+  background: #ddd;
+}
+.actions .danger {
+  background: #b30000;
+  color: #fff;
+}
+.actions .danger:hover {
+  background: #d00000;
+}
+
+    .primary {
+      background: #2f7ccc;
+      color: #fff;
+    }
+    .secondary {
+      background: #ddd;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 12px;
+      border-radius: 10px;
+    }
+   .liste-joueurs ul {
+  padding-left: 20px;
+}
+.liste-joueurs li {
+  margin-bottom: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+    /* Couleurs zones résultat / liste - 5 zones */
+    .zone-vert-fonce {
+      background: #b7f0c4;
+      color: #145c2e;
+    }
+    .zone-vert-clair {
+      background: #d5f7dd;
+      color: #1f7f3f;
+    }
+    .zone-jaune {
+      background: #fff8c2;
+      color: #8a7400;
+    }
+    .zone-orange {
+      background: #ffe0b8;
+      color: #8a4b06;
+    }
+    .zone-rouge {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Bloc barème des zones */
+    .bareme-container {
+      margin-top: 25px;
+      padding: 12px;
+      background: #f5f9ff;
+      border-radius: 10px;
+      border: 1px solid #c7ddff;
+      font-size: 13px;
+    }
+    .bareme-container h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #2f4f6f;
+    }
+    .bareme-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .bareme-table th,
+    .bareme-table td {
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+    }
+    .bareme-table th {
+      background: #e3f1ff;
+      text-align: left;
+    }
+
+    /* Stats bloc */
+    .stats-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #2f4f6f;
+    }
+    .stats-line {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .stats-bar-container {
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    .stats-bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 6px;
+    }
+    .stats-bar-label {
+      width: 110px;
+      white-space: nowrap;
+    }
+    .stats-bar-bg {
+      flex: 1;
+      background: #eee;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 10px;
+    }
+    .stats-bar-fill {
+      height: 10px;
+    }
+  </style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f7ccc">
+
+</head>
+<body>
+   <div class="logo-container">
+         <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
+  </div>
+
+  <h1>Test de Fatigue N3</h1>
+  <h2>Questionnaire bien-être avant l'entraînement</h2>
+
+  <div class="layout">
+    <!-- Colonne principale : formulaire -->
+    <div class="card">
+      <form id="fatigueForm">
+        <!-- Joueur -->
+        <div class="row">
+          <label for="joueurSelect">Joueur :</label>
+          <select id="joueurSelect" name="joueurSelect" required>
+            <option value="">Choisir un joueur...</option>
+            <option value="Ahmed">Ahmed</option>
+            <option value="Axel">Axel</option>
+            <option value="Amara">Amara</option>
+            <option value="Bafodé">Bafodé</option>
+            <option value="Christopher">Christopher</option>
+            <option value="Damien">Damien</option>
+            <option value="Emmanuel">Emmanuel</option>
+            <option value="Elyon">Elyon</option>
+            <option value="Ephrahim">Ephrahim</option>
+            <option value="Fodié">Fodié</option>
+            <option value="Gregory">Gregory</option>
+            <option value="Hiendy">Hiendy</option>
+            <option value="Henri Phillipe">Henri Phillipe</option>
+            <option value="Ibrahim">Ibrahim</option>
+            <option value="Kenny">Kenny</option>
+            <option value="Kylian">Kylian</option>
+            <option value="Lucas">Lucas</option>
+            <option value="Malcom">Malcom</option>
+            <option value="Marvin">Marvin</option>
+            <option value="Mickaël">Mickaël</option>
+            <option value="Noé">Noé</option>
+            <option value="Saïd">Saïd</option>
+            <option value="Salif">Salif</option>
+            <option value="Simon">Simon</option>
+            <option value="Vivien">Vivien</option>
+            <option value="Wesley">Wesley</option>
+            <option value="Yohan">Yohan</option>
+            <option value="Youri">Youri</option>
+            <option value="Autre">Autre (saisir le nom)</option>
+          </select>
+        </div>
+
+        <div class="row" id="rowAutre" style="display:none;">
+          <label for="joueurAutre">Nom joueur :</label>
+          <input type="text" id="joueurAutre" name="joueurAutre" placeholder="Nom et prénom" />
+        </div>
+
+        <!-- Date séance -->
+        <div class="row">
+          <label for="seanceDate">Date de la séance :</label>
+          <input type="date" id="seanceDate" name="seanceDate" />
+        </div>
+
+        <!-- Questions -->
+        <div class="question">
+          <label>Qualité du sommeil 😴</label>
+          <div class="scale" data-name="sommeil">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très mauvais sommeil &nbsp;&nbsp; 5 = Très bon sommeil</div>
+          <input type="hidden" name="sommeil" />
+        </div>
+
+        <div class="question">
+          <label>Douleurs musculaires 💢</label>
+          <div class="scale" data-name="douleurs">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très fortes douleurs &nbsp;&nbsp; 5 = Aucune douleur</div>
+          <input type="hidden" name="douleurs" />
+        </div>
+
+        <div class="question">
+          <label>Stress général 😬</label>
+          <div class="scale" data-name="stress">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très stressé &nbsp;&nbsp; 5 = Très détendu</div>
+          <input type="hidden" name="stress" />
+        </div>
+
+        <div class="question">
+          <label>Fatigue générale 💤</label>
+          <div class="scale" data-name="fatigue">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très fatigué &nbsp;&nbsp; 5 = Très en forme</div>
+          <input type="hidden" name="fatigue" />
+        </div>
+
+        <div class="question">
+          <label>Motivation ⚽</label>
+          <div class="scale" data-name="motivation">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Pas motivé &nbsp;&nbsp; 5 = Très motivé</div>
+          <input type="hidden" name="motivation" />
+        </div>
+
+        <!-- Douleurs spécifiques -->
+        <div class="row">
+          <label for="douleurZone">Douleurs spécifiques :</label>
+          <input type="text" id="douleurZone" name="douleurZone"
+                 placeholder="Ex : ischios droit, adducteurs, cheville gauche..." />
+        </div>
+
+  <!-- Commentaire -->
+<div class="row">
+  <label for="commentaire">Commentaire :</label>
+  <textarea id="commentaire" name="commentaire"
+            placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
+</div>
+
+<div class="actions">
+  <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
+  <button type="button" class="primary" onclick="exporterCSV()">Exporter tous les joueurs (CSV)</button>
+  <button type="button" class="primary" onclick="exporterExcel()">Exporter tous les joueurs (Excel)</button>
+  <button type="reset" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
+  <button type="button" class="danger" onclick="resetDonnees()">
+  Effacer tous les enregistrements (staff)
+</button>
+</div>
+
+<div class="result" id="resultat"></div>
+
+      </form>
+
+      <div class="liste-joueurs" id="listeJoueurs">
+        <strong>Joueurs enregistrés :</strong>
+        <ul id="listeJoueursUl"></ul>
+      </div>
+
+      <!-- Barème -->
+      <div class="bareme-container">
+        <h3>Barème des zones de fatigue (par joueur)</h3>
+        <table class="bareme-table">
+          <tr>
+            <th>Zone</th>
+            <th>Score total</th>
+            <th>% sur 25</th>
+            <th>Interprétation</th>
+            <th>Action staff</th>
+          </tr>
+          <tr class="zone-vert-fonce">
+            <td>VERT FONCÉ</td>
+            <td>22 – 25</td>
+            <td>≥ 88%</td>
+            <td>Très bon état général</td>
+            <td>Charge normale / haute</td>
+          </tr>
+          <tr class="zone-vert-clair">
+            <td>VERT CLAIR</td>
+            <td>19 – 21</td>
+            <td>76 – 84%</td>
+            <td>Bon état, légère fatigue normale</td>
+            <td>Charge normale</td>
+          </tr>
+          <tr class="zone-jaune">
+            <td>JAUNE</td>
+            <td>16 – 18</td>
+            <td>64 – 72%</td>
+            <td>Fatigue légère à surveiller</td>
+            <td>Charge modérée</td>
+          </tr>
+          <tr class="zone-orange">
+            <td>ORANGE</td>
+            <td>13 – 15</td>
+            <td>52 – 60%</td>
+            <td>Fatigue notable, récupération insuffisante</td>
+            <td>Charge allégée / adaptation</td>
+          </tr>
+          <tr class="zone-rouge">
+            <td>ROUGE</td>
+            <td>5 – 12</td>
+            <td>&lt; 52%</td>
+            <td>Fatigue importante / alerte</td>
+            <td>Charge très réduite, individualisation</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Colonne latérale : stats séance -->
+    <div class="stats-card">
+      <div class="stats-title">Synthèse rapide de la séance</div>
+      <div class="stats-line" id="statsNbJoueurs">Joueurs enregistrés : 0</div>
+      <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
+      <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
+
+      <div class="stats-bar-container">
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Trés bon état</div>
+          <div class="stats-bar-bg"><div id="barVFonce" class="stats-bar-fill zone-vert-fonce" style="width:0%"></div></div>
+          <div id="textVFonce">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Bon état</div>
+          <div class="stats-bar-bg"><div id="barVClair" class="stats-bar-fill zone-vert-clair" style="width:0%"></div></div>
+          <div id="textVClair">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Fatigue légère</div>
+          <div class="stats-bar-bg"><div id="barJaune" class="stats-bar-fill zone-jaune" style="width:0%"></div></div>
+          <div id="textJaune">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Fatigue notable</div>
+          <div class="stats-bar-bg"><div id="barOrange" class="stats-bar-fill zone-orange" style="width:0%"></div></div>
+          <div id="textOrange">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Fatigue importante</div>
+          <div class="stats-bar-bg"><div id="barRouge" class="stats-bar-fill zone-rouge" style="width:0%"></div></div>
+          <div id="textRouge">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  let enregistrements = [];
+
+  const STORAGE_KEY = "test_fatigue_rcf_enregistrements_v1";
+  const selectJoueur = document.getElementById("joueurSelect");
+  const rowAutre = document.getElementById("rowAutre");
+  const inputAutre = document.getElementById("joueurAutre");
+
+  selectJoueur.addEventListener("change", () => {
+    if (selectJoueur.value === "Autre") {
+      rowAutre.style.display = "flex";
+    } else {
+      rowAutre.style.display = "none";
+      inputAutre.value = "";
+    }
+  });
+
+  // Boutons 1–5
+  document.querySelectorAll(".scale").forEach(scale => {
+    const name = scale.getAttribute("data-name");
+    const hiddenInput = document.querySelector('input[name="' + name + '"]');
+    scale.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        hiddenInput.value = btn.getAttribute("data-value");
+      });
+    });
+  });
+
+  function getNomJoueur() {
+    const valSelect = selectJoueur.value;
+    if (!valSelect) return "";
+    if (valSelect === "Autre") {
+      return inputAutre.value.trim();
+    }
+    return valSelect;
+  }
+
+  function getSeance() {
+    const inputDate = document.getElementById("seanceDate");
+    const valDate = inputDate.value;
+    if (!valDate) return "";
+    const jours = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+    const d = new Date(valDate + "T00:00:00");
+    const jour = jours[d.getDay()];
+    return valDate + " (" + jour + ")";
+  }
+
+  function enregistrerJoueur() {
+    const form = document.getElementById("fatigueForm");
+
+    const joueur = getNomJoueur();
+    if (!joueur) {
+      alert("Merci de sélectionner un joueur ou de saisir son nom.");
+      return;
+    }
+
+    // Séance (peut être vide si pas de date)
+    const seance = getSeance();
+
+    // 🔒 Empêcher doublon : même joueur + même séance (ou même joueur sans date)
+    const dejaFait = enregistrements.some(rec =>
+      rec.joueur === joueur &&
+      (rec.seance || "") === (seance || "")
+    );
+    if (dejaFait) {
+      alert("⚠️ Ce joueur a déjà rempli le test pour cette séance.");
+      return;
+    }
+
+    const champs = [
+      { name: "sommeil",    label: "Qualité du sommeil" },
+      { name: "douleurs",   label: "Douleurs musculaires" },
+      { name: "stress",     label: "Stress général" },
+      { name: "fatigue",    label: "Fatigue générale" },
+      { name: "motivation", label: "Motivation" }
+    ];
+
+    const valeurs = {};
+    for (const champ of champs) {
+      const val = form[champ.name].value;
+      if (!val) {
+        alert('Merci de répondre à la question : "' + champ.label + '" (1 à 5).');
+        return;
+      }
+      valeurs[champ.name] = Number(val);
+    }
+
+    const date = new Date().toLocaleString();
+    const sommeil = valeurs["sommeil"];
+    const douleurs = valeurs["douleurs"];
+    const stress = valeurs["stress"];
+    const fatigue = valeurs["fatigue"];
+    const motivation = valeurs["motivation"];
+    const douleurZone = document.getElementById("douleurZone").value.trim();
+    const commentaire = document.getElementById("commentaire").value.trim();
+
+    const total = sommeil + douleurs + stress + fatigue + motivation;
+    const pourcentage = Math.round((total / 25) * 100);
+
+    let zoneTexte = "";
+    let zoneClass = "";
+
+    // 5 zones
+    if (pourcentage >= 88) {
+      zoneTexte = "VERT FONCE tres bon etat (22-25)";
+      zoneClass = "zone-vert-fonce";
+    } else if (pourcentage >= 76) {
+      zoneTexte = "VERT CLAIR bon etat general (19-21)";
+      zoneClass = "zone-vert-clair";
+    } else if (pourcentage >= 64) {
+      zoneTexte = "JAUNE fatigue legere (16-18)";
+      zoneClass = "zone-jaune";
+    } else if (pourcentage >= 52) {
+      zoneTexte = "ORANGE fatigue notable (13-15)";
+      zoneClass = "zone-orange";
+    } else {
+      zoneTexte = "ROUGE fatigue importante (5-12)";
+      zoneClass = "zone-rouge";
+    }
+
+    enregistrements.push({
+      date,
+      joueur,
+      seance,
+      sommeil,
+      douleurs,
+      stress,
+      fatigue,
+      motivation,
+      total,
+      pourcentage,
+      zone: zoneTexte,
+      zoneClass: zoneClass,
+      douleurZone,
+      commentaire
+    });
+
+    const resultatDiv = document.getElementById("resultat");
+    resultatDiv.textContent =
+      "Enregistré : " + joueur + " | Séance : " + (seance || "non précisé") +
+      " | Score : " + total + "/25 (" + pourcentage + "%) - Zone : " + zoneTexte +
+      " | Total joueurs enregistrés : " + enregistrements.length;
+    resultatDiv.className = "result " + zoneClass;
+
+    majListeJoueurs();
+    majStats();
+    sauvegarderDansStorage();
+    resetForm(false);
+  }
+
+  function majListeJoueurs() {
+    const ul = document.getElementById("listeJoueursUl");
+    ul.innerHTML = "";
+    enregistrements.forEach((rec, index) => {
+      const li = document.createElement("li");
+      li.textContent =
+        (index + 1) + ". " +
+        rec.joueur + " - " +
+        rec.pourcentage + "% (" + rec.zone + ")" +
+        (rec.seance ? " | " + rec.seance : "");
+      li.className = rec.zoneClass;
+      ul.appendChild(li);
+    });
+  }
+
+  function majStats() {
+    const nb = enregistrements.length;
+    const elNb = document.getElementById("statsNbJoueurs");
+    const elMoy = document.getElementById("statsMoyenneScore");
+    const elDom = document.getElementById("statsZoneDom");
+
+    elNb.textContent = "Joueurs enregistrés : " + nb;
+
+    if (nb === 0) {
+      elMoy.textContent = "Score moyen : -";
+      elDom.textContent = "Zone dominante : -";
+      ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
+        document.getElementById("bar"+z).style.width = "0%";
+        document.getElementById("text"+z).textContent = "0";
+      });
+      return;
+    }
+
+    let sommeScores = 0;
+    const compteZones = { vf:0, vc:0, j:0, o:0, r:0 };
+
+    enregistrements.forEach(rec => {
+      sommeScores += rec.total;
+      if (rec.zoneClass === "zone-vert-fonce") compteZones.vf++;
+      else if (rec.zoneClass === "zone-vert-clair") compteZones.vc++;
+      else if (rec.zoneClass === "zone-jaune") compteZones.j++;
+      else if (rec.zoneClass === "zone-orange") compteZones.o++;
+      else if (rec.zoneClass === "zone-rouge") compteZones.r++;
+    });
+
+    const moyScore = (sommeScores / nb).toFixed(1);
+    elMoy.textContent = "Score moyen : " + moyScore + " / 25";
+
+    const zonesOrdre = [
+      { code:"vf", nom:"VERT FONCÉ" },
+      { code:"vc", nom:"VERT CLAIR" },
+      { code:"j",  nom:"JAUNE" },
+      { code:"o",  nom:"ORANGE" },
+      { code:"r",  nom:"ROUGE" }
+    ];
+    let maxZone = null;
+    let maxVal = -1;
+    zonesOrdre.forEach(z => {
+      if (compteZones[z.code] > maxVal) {
+        maxVal = compteZones[z.code];
+        maxZone = z.nom;
+      }
+    });
+    elDom.textContent = "Zone dominante : " + maxZone + " (" + maxVal + " joueurs)";
+
+    const pct = code => Math.round((compteZones[code] / nb) * 100);
+
+    document.getElementById("barVFonce").style.width = pct("vf") + "%";
+    document.getElementById("textVFonce").textContent = compteZones.vf;
+
+    document.getElementById("barVClair").style.width = pct("vc") + "%";
+    document.getElementById("textVClair").textContent = compteZones.vc;
+
+    document.getElementById("barJaune").style.width = pct("j") + "%";
+    document.getElementById("textJaune").textContent = compteZones.j;
+
+    document.getElementById("barOrange").style.width = pct("o") + "%";
+    document.getElementById("textOrange").textContent = compteZones.o;
+
+    document.getElementById("barRouge").style.width = pct("r") + "%";
+    document.getElementById("textRouge").textContent = compteZones.r;
+  }
+
+  function exporterCSV() {
+    if (enregistrements.length === 0) {
+      alert("Aucun joueur enregistré à exporter.");
+      return;
+    }
+
+    const header =
+      "date;joueur;seance;sommeil;douleurs;stress;fatigue;motivation;score_total;pourcentage;zone;douleur_zone;commentaire\n";
+
+    const lignes = enregistrements.map(rec =>
+      rec.date + ";" +
+      rec.joueur + ";" +
+      rec.seance + ";" +
+      rec.sommeil + ";" +
+      rec.douleurs + ";" +
+      rec.stress + ";" +
+      rec.fatigue + ";" +
+      rec.motivation + ";" +
+      rec.total + ";" +
+      rec.pourcentage + ";" +
+      rec.zone + ";" +
+      (rec.douleurZone || "") + ";" +
+      (rec.commentaire || "")
+    );
+
+    const csvContent = header + lignes.join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const timestamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = "test_fatigue_equipe_" + timestamp + ".csv";
+    a.click();
+  }
+
+  function exporterExcel() {
+    if (enregistrements.length === 0) {
+      alert("Aucun joueur enregistré à exporter.");
+      return;
+    }
+
+    const data = [];
+    data.push([
+      "date","joueur","seance",
+      "sommeil","douleurs","stress","fatigue","motivation",
+      "score_total","pourcentage","zone",
+      "douleur_zone","commentaire"
+    ]);
+
+    enregistrements.forEach(rec => {
+      data.push([
+        rec.date,
+        rec.joueur,
+        rec.seance,
+        rec.sommeil,
+        rec.douleurs,
+        rec.stress,
+        rec.fatigue,
+        rec.motivation,
+        rec.total,
+        rec.pourcentage / 100,
+        rec.zone,
+        rec.douleurZone || "",
+        rec.commentaire || ""
+      ]);
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Base");
+    const timestamp = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, "base_fatigue_" + timestamp + ".xlsx");
+  }
+
+  function resetForm(clearResult) {
+    const form = document.getElementById("fatigueForm");
+    form.reset();
+    rowAutre.style.display = "none";
+    inputAutre.value = "";
+
+    // Enlever la sélection visuelle des boutons
+    document.querySelectorAll(".scale button").forEach(b => b.classList.remove("active"));
+
+    // Vider les champs cachés
+    document.querySelectorAll('input[type="hidden"]').forEach(input => {
+      input.value = "";
+    });
+
+    if (clearResult) {
+      const resultatDiv = document.getElementById("resultat");
+      resultatDiv.textContent = "";
+      resultatDiv.className = "result";
+    }
+  }
+
+  function sauvegarderDansStorage() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(enregistrements));
+    } catch (e) {
+      console.warn("Impossible de sauvegarder dans le stockage local :", e);
+    }
+  }
+
+  function chargerDepuisStorage() {
+    const data = localStorage.getItem(STORAGE_KEY);
+
+    if (!data) {
+      enregistrements = [];
+      majListeJoueurs();
+      majStats();
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        enregistrements = parsed;
+      } else {
+        enregistrements = [];
+      }
+    } catch (e) {
+      console.warn("Données locales corrompues, on repart à zéro :", e);
+      enregistrements = [];
+    }
+
+    majListeJoueurs();
+    majStats();
+  }
+
+  function resetDonnees() {
+    if (!confirm("Supprimer TOUTES les réponses enregistrées sur cette tablette ?")) return;
+    enregistrements = [];
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      console.warn("Impossible d'effacer le stockage local :", e);
+    }
+    majListeJoueurs();
+    majStats();
+    resetForm(true);
+    alert("Tous les enregistrements ont été effacés.");
+  }
+
+  // init depuis le stockage local
+  chargerDepuisStorage();
+</script>
+
+</body>
+</html>
