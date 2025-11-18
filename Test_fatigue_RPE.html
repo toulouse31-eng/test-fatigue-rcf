@@ -698,7 +698,12 @@ function initDateSeance() {
     }
     
 function envoyerVersGoogleSheets(rec) {
-  if (!GOOGLE_SHEETS_URL) return;
+  if (!GOOGLE_SHEETS_URL) {
+    console.warn("Pas d'URL Google Sheets définie");
+    return;
+  }
+
+  console.log("Envoi vers Google Sheets :", rec);
 
   fetch(GOOGLE_SHEETS_URL, {
     method: "POST",
@@ -707,11 +712,12 @@ function envoyerVersGoogleSheets(rec) {
     },
     body: JSON.stringify(rec)
   })
-  .then(() => {
-    console.log("Données envoyées à Google Sheets");
+  .then(response => response.text())
+  .then(text => {
+    console.log("Réponse Google Sheets :", text);
   })
   .catch(err => {
-    console.warn("Erreur envoi Google Sheets :", err);
+    console.error("Erreur envoi Google Sheets :", err);
   });
 }
 
@@ -960,6 +966,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
