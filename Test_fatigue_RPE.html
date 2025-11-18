@@ -10,7 +10,7 @@
 
   <style>
     body {
-  font-family: Arial, sans-serif;
+  font-family: Arial, sans-serif;https://script.google.com/macros/s/AKfycbw2ivaPVAFRwvccLXxPV0d4tmTinWYsruhg7hj_vPBNTWFT2pDVRJU-ze_-u1W95Hv-/exec
   padding: 20px;
   max-width: 900px;
   margin: auto;
@@ -715,27 +715,6 @@ function initDateSeance() {
     resetForm(false);
     }
     
-function envoyerVersGoogleSheets(rec) {
-  if (!GOOGLE_SHEETS_URL) {
-    console.warn("Pas d'URL Google Sheets définie");
-    return;
-  }
-
-  console.log("Envoi vers Google Sheets :", rec);
-
-  fetch(GOOGLE_SHEETS_URL, {
-    method: "POST",
-    body: JSON.stringify(rec)
-  })
-  .then(response => response.text())
-  .then(text => {
-    console.log("Réponse Google Sheets :", text);
-  })
-  .catch(err => {
-    console.error("Erreur envoi Google Sheets :", err);
-  });
-}
-
   function majListeJoueurs() {
     const ul = document.getElementById("listeJoueursUl");
     ul.innerHTML = "";
@@ -981,6 +960,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
