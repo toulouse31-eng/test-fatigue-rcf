@@ -534,7 +534,7 @@
   const selectJoueur = document.getElementById("joueurSelect");
   const rowAutre = document.getElementById("rowAutre");
   const inputAutre = document.getElementById("joueurAutre");
-  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzuhEMtAkhNEj-Lv6pQACDs9CDoaUWZPKQwCo-hhnc/dev"; 
+  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbw2ivaPVAFRwvccLXxPV0d4tmTinWYsruhg7hj_vPBNTWFT2pDVRJU-ze_-u1W95Hv-/exec"; 
 
   selectJoueur.addEventListener("change", () => {
     if (selectJoueur.value === "Autre") {
@@ -577,8 +577,8 @@ function envoyerVersGoogleSheets(rec) {
 
   fetch(GOOGLE_SHEETS_URL, {
     method: "POST",
-    mode: "no-cors",            // très important pour éviter CORS
-    body: JSON.stringify(rec)   // pas de headers -> requête "simple"
+    mode: "no-cors",           // IMPORTANT
+    body: JSON.stringify(rec)  // pas de headers -> requête simple
   })
   .catch(err => {
     console.error("Erreur envoi Google Sheets :", err);
@@ -725,9 +725,6 @@ function envoyerVersGoogleSheets(rec) {
 
   fetch(GOOGLE_SHEETS_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify(rec)
   })
   .then(response => response.text())
@@ -984,6 +981,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
