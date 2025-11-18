@@ -575,7 +575,19 @@
     const jour = jours[d.getDay()];
     return valDate + " (" + jour + ")";
   }
+    
+function initDateSeance() {
+  const inputDate = document.getElementById("seanceDate");
+  if (!inputDate) return;
 
+  const aujourdHui = new Date();
+  const annee = aujourdHui.getFullYear();
+  const mois = String(aujourdHui.getMonth() + 1).padStart(2, "0");
+  const jour = String(aujourdHui.getDate()).padStart(2, "0");
+
+  // Format YYYY-MM-DD pour le champ type="date"
+  inputDate.value = annee + "-" + mois + "-" + jour;
+}
   function enregistrerJoueur() {
     const form = document.getElementById("fatigueForm");
 
@@ -921,4 +933,5 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
