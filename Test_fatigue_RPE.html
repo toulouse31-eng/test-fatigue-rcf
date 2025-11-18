@@ -920,8 +920,11 @@ function initDateSeance() {
     alert("Tous les enregistrements ont été effacés.");
   }
 
-  // init depuis le stockage local
-  chargerDepuisStorage();
+ // init depuis le stockage local
+chargerDepuisStorage();
+// init de la date de séance au jour J
+initDateSeance();
+
 </script>
 <script>
 if ("serviceWorker" in navigator) {
@@ -933,5 +936,6 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
