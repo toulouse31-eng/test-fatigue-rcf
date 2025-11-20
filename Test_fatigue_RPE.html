@@ -272,7 +272,58 @@
       padding: 4px 8px;
       font-size: 12px;
     }
+/* Barre du haut : bouton + logo */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
 
+/* On ajuste un peu le logo dans cette barre */
+.logo-container {
+  text-align: center;
+  flex: 1;
+}
+.logo-rcf {
+  max-width: 60px;
+  height: auto;
+}
+
+/* Bouton Mode Coach : rond, discret, léger effet 3D */
+.mode-toggle-btn {
+  padding: 8px 14px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(145deg, #3f82cf, #1f5ba8); /* bleu = Mode joueur */
+  color: #fff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+  opacity: 0.9;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+/* Effet hover */
+.mode-toggle-btn:hover {
+  opacity: 1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.mode-toggle-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Quand on est en MODE COACH -> bouton orange */
+body.coach-mode .mode-toggle-btn {
+  background: linear-gradient(145deg, #ff9800, #f57c00); /* orange = Mode coach */
+}
     /* Mode coach : caché par défaut */
     .coach-only {
       display: none;
@@ -367,14 +418,14 @@
 </head>
 
 <body>
+  <div class="top-bar">
+  <button type="button" class="mode-toggle-btn" onclick="toggleModeCoach()">
+    Mode joueur
+  </button>
+
   <div class="logo-container">
     <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
   </div>
-
- <div style="text-align:right; margin-bottom:10px;">
-  <button type="button" class="mode-toggle-btn" onclick="toggleModeCoach()">
-    Mode coach
-  </button>
 </div>
 
   <h1>Test de Fatigue N3</h1>
@@ -644,16 +695,17 @@
       </div>
 
       <!-- 🟢 TOP 5 EN FORME -->
-      <div class="stats-chart-card">
-        <h3>Top 5 joueurs les plus en forme</h3>
-        <div class="iframe-container">
-          <iframe
-            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
-            loading="lazy"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
+<div class="stats-chart-card">
+  <h3>Top 5 joueurs les plus en forme</h3>
+  <div class="iframe-container">
+    <iframe
+      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
+      loading="lazy"
+      allowfullscreen
+    ></iframe>
+  </div>
+</div>
+
     </div>
   </section>
 
@@ -689,10 +741,18 @@
       });
     });
 
-    function toggleModeCoach() {
-      document.body.classList.toggle("coach-mode");
-    }
+   function toggleModeCoach() {
+    document.body.classList.toggle("coach-mode");
 
+    const btn = document.querySelector(".mode-toggle-btn");
+    if (!btn) return;
+
+    if (document.body.classList.contains("coach-mode")) {
+      btn.textContent = "Mode coach";
+    } else {
+      btn.textContent = "Mode joueur";
+    }
+  }
     function getNomJoueur() {
       const valSelect = selectJoueur.value;
       if (!valSelect) return "";
@@ -1131,4 +1191,5 @@
   </script>
 </body>
 </html>
+
 
