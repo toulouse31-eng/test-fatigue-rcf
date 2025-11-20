@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Test de Fatigue RCF</title>
 
-  <!-- Librairie pour export Excel (.xlsx) -->
+  <!-- Librairie pour export Excel (.xlsx) si besoin plus tard -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2f7ccc">
 
   <style>
     body {
-  font-family: Arial, sans-serif;
-  padding: 20px;
-  max-width: 900px;
-  margin: auto;
-  background: #e3f1ff; /* fond bleu clair RCF */
-  font-size: 18px;      /* + lisible sur tablette */
-}
-
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+      background: #e3f1ff; /* fond bleu clair RCF */
+      font-size: 18px;      /* lisible sur tablette */
+    }
     h1 {
       text-align: center;
       margin-bottom: 5px;
@@ -70,23 +72,22 @@
       margin-bottom: 15px;
       align-items: center;
     }
-   .row label {
-  font-weight: bold;
-  flex: 1 0 140px;
-  font-size: 16px;
-}
-
-.row input[type="text"],
-.row input[type="date"],
-.row select,
-.row textarea {
-  flex: 2 1 200px;
-  padding: 12px;
-  font-size: 18px;       /* texte plus gros */
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  min-height: 46px;      /* zone de clic confortable */
-}
+    .row label {
+      font-weight: bold;
+      flex: 1 0 140px;
+      font-size: 16px;
+    }
+    .row input[type="text"],
+    .row input[type="date"],
+    .row select,
+    .row textarea {
+      flex: 2 1 200px;
+      padding: 12px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      min-height: 46px;
+    }
     textarea {
       min-height: 60px;
       resize: vertical;
@@ -107,25 +108,23 @@
       flex-wrap: nowrap;
       margin-top: 8px;
     }
-   .scale button {
-  flex: 1 0 18%;
-  padding: 16px 0;         /* plus haut */
-  border-radius: 999px;
-  border: 1px solid #ccc;
-  font-size: 22px;         /* chiffre plus gros */
-  cursor: pointer;
-  background: #f5f5f5;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, border 0.1s ease;
-}
-
+    .scale button {
+      flex: 1 0 18%;
+      padding: 16px 0;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      font-size: 22px;
+      cursor: pointer;
+      background: #f5f5f5;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, border 0.1s ease;
+    }
     /* Couleurs par valeur (1-5) */
-    .scale button[data-value="1"] { background:#ffb3b3; }  /* rouge clair */
-    .scale button[data-value="2"] { background:#ffd5a6; }  /* orange */
-    .scale button[data-value="3"] { background:#fff6a3; }  /* jaune */
-    .scale button[data-value="4"] { background:#c9f7b5; }  /* vert clair */
-    .scale button[data-value="5"] { background:#9ae69c; }  /* vert plus soutenu */
+    .scale button[data-value="1"] { background:#ffb3b3; }
+    .scale button[data-value="2"] { background:#ffd5a6; }
+    .scale button[data-value="3"] { background:#fff6a3; }
+    .scale button[data-value="4"] { background:#c9f7b5; }
+    .scale button[data-value="5"] { background:#9ae69c; }
 
-    /* Bouton sélectionné */
     .scale button.active {
       border: 2px solid #000;
       transform: scale(1.07);
@@ -145,33 +144,25 @@
       gap: 10px;
     }
     .actions button {
-  padding: 16px;
-  font-size: 18px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-}
-.primary {
-  background: #2f7ccc;
-  color: #fff;
-}
-.secondary {
-  background: #ddd;
-}
-.actions .danger {
-  background: #b30000;
-  color: #fff;
-}
-.actions .danger:hover {
-  background: #d00000;
-}
-
+      padding: 16px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
     .primary {
       background: #2f7ccc;
       color: #fff;
     }
     .secondary {
       background: #ddd;
+    }
+    .actions .danger {
+      background: #b30000;
+      color: #fff;
+    }
+    .actions .danger:hover {
+      background: #d00000;
     }
 
     .result {
@@ -181,16 +172,16 @@
       padding: 12px;
       border-radius: 10px;
     }
-   .liste-joueurs ul {
-  padding-left: 20px;
-}
-.liste-joueurs li {
-  margin-bottom: 4px;
-  padding: 4px 6px;
-  border-radius: 6px;
-}
+    .liste-joueurs ul {
+      padding-left: 20px;
+    }
+    .liste-joueurs li {
+      margin-bottom: 4px;
+      padding: 4px 6px;
+      border-radius: 6px;
+    }
 
-    /* Couleurs zones résultat / liste - 5 zones */
+    /* Couleurs zones joueur */
     .zone-vert-fonce {
       background: #b7f0c4;
       color: #145c2e;
@@ -212,7 +203,7 @@
       color: #721c24;
     }
 
-    /* Bloc barème des zones */
+    /* Barème */
     .bareme-container {
       margin-top: 25px;
       padding: 12px;
@@ -276,25 +267,88 @@
     .stats-bar-fill {
       height: 10px;
     }
-    .small-btn {
-  padding: 4px 8px;
-  font-size: 12px;
-}
-  </style>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2f7ccc">
 
+    .small-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    /* Mode coach : caché par défaut */
+    .coach-only {
+      display: none;
+    }
+    body.coach-mode .coach-only {
+      display: block;
+    }
+
+    /* Bandeau état global équipe */
+    .global-etat {
+      padding: 10px 12px;
+      border-left: 6px solid #999;
+      border-radius: 6px;
+      background: #f5f7fb;
+      font-size: 15px;
+    }
+    .global-etat.zone-vert-fonce { border-color: #008000; }
+    .global-etat.zone-vert-clair { border-color: #5cb85c; }
+    .global-etat.zone-jaune      { border-color: #f0ad4e; }
+    .global-etat.zone-orange     { border-color: #ff7f00; }
+    .global-etat.zone-rouge      { border-color: #d9534f; }
+
+    /* Statistiques équipe - graphiques */
+    .stats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .stats-chart-card {
+      flex: 1 1 280px;
+      min-width: 260px;
+    }
+    .stats-chart-card h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: #2f4f6f;
+      text-align: center;
+    }
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    @media (max-width: 700px) {
+      .stats-grid {
+        flex-direction: column;
+      }
+      .iframe-container {
+        aspect-ratio: 3 / 4;
+      }
+    }
+  </style>
 </head>
+
 <body>
-   <div class="logo-container">
-         <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
+  <div class="logo-container">
+    <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
   </div>
-  
+
   <div style="text-align:right; margin-bottom:10px;">
-  <button type="button" class="secondary" onclick="toggleModeCoach()">
-    Basculer Mode Coach / Joueur
-  </button>
-</div>
+    <button type="button" class="secondary" onclick="toggleModeCoach()">
+      Basculer Mode Coach / Joueur
+    </button>
+  </div>
 
   <h1>Test de Fatigue N3</h1>
   <h2>Questionnaire bien-être avant l'entraînement</h2>
@@ -345,16 +399,17 @@
           <input type="text" id="joueurAutre" name="joueurAutre" placeholder="Nom et prénom" />
         </div>
 
-        <!-- Date séance -->
+        <!-- Date séance + boutons -->
         <div class="row">
-  <label for="seanceDate">Date de la séance :</label>
-  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-    <input type="date" id="seanceDate" name="seanceDate">
-    <button type="button" class="secondary small-btn" onclick="changeSeanceDate(-1)">-1 jour</button>
-    <button type="button" class="secondary small-btn" onclick="setSeanceToday()">Aujourd'hui</button>
-    <button type="button" class="secondary small-btn" onclick="changeSeanceDate(1)">+1 jour</button>
-  </div>
-</div>
+          <label for="seanceDate">Date de la séance :</label>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input type="date" id="seanceDate" name="seanceDate">
+            <button type="button" class="secondary small-btn" onclick="changeSeanceDate(-1)">-1 jour</button>
+            <button type="button" class="secondary small-btn" onclick="setSeanceToday()">Aujourd'hui</button>
+            <button type="button" class="secondary small-btn" onclick="changeSeanceDate(1)">+1 jour</button>
+          </div>
+        </div>
+
         <!-- Questions -->
         <div class="question">
           <label>Qualité du sommeil 😴</label>
@@ -428,22 +483,21 @@
                  placeholder="Ex : ischios droit, adducteurs, cheville gauche..." />
         </div>
 
-  <!-- Commentaire -->
-<div class="row">
-  <label for="commentaire">Commentaire :</label>
-  <textarea id="commentaire" name="commentaire"
-            placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
-</div>
+        <!-- Commentaire -->
+        <div class="row">
+          <label for="commentaire">Commentaire :</label>
+          <textarea id="commentaire" name="commentaire"
+                    placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
+        </div>
 
-<div class="actions">
-  <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
-  <button type="button" class="primary" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
-  <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
-  <button type="button" class="secondary" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
-</div>
+        <div class="actions">
+          <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
+          <button type="button" class="primary" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
+          <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
+          <button type="button" class="secondary danger" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
+        </div>
 
-<div class="result" id="resultat"></div>
-
+        <div class="result" id="resultat"></div>
       </form>
 
       <div class="liste-joueurs" id="listeJoueurs">
@@ -452,7 +506,7 @@
       </div>
 
       <!-- Barème -->
-      <div class="bareme-container">
+      <div class="bareme-container coach-only">
         <h3>Barème des zones de fatigue (par joueur)</h3>
         <table class="bareme-table">
           <tr>
@@ -501,8 +555,8 @@
       </div>
     </div>
 
-    <!-- Colonne latérale : stats séance -->
-    <div class="stats-card">
+    <!-- Colonne latérale : stats séance (coach seulement) -->
+    <div class="stats-card coach-only">
       <div class="stats-title">Synthèse rapide de la séance</div>
       <div class="stats-line" id="statsNbJoueurs">Joueurs enregistrés : 0</div>
       <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
@@ -510,7 +564,7 @@
 
       <div class="stats-bar-container">
         <div class="stats-bar-row">
-          <div class="stats-bar-label">Trés bon état</div>
+          <div class="stats-bar-label">Très bon état</div>
           <div class="stats-bar-bg"><div id="barVFonce" class="stats-bar-fill zone-vert-fonce" style="width:0%"></div></div>
           <div id="textVFonce">0</div>
         </div>
@@ -538,101 +592,152 @@
     </div>
   </div>
 
-<script>
-  let enregistrements = [];
+  <!-- État global équipe (coach seulement) -->
+  <section id="etat-global-equipe" class="card coach-only" style="margin-top:16px;">
+    <h2>État global de l'équipe</h2>
+    <div id="globalEtat" class="global-etat">
+      <strong>Fatigue globale :</strong>
+      <span id="globalEtatTexte">En attente de données…</span>
+    </div>
+  </section>
 
-  const STORAGE_KEY = "test_fatigue_rcf_enregistrements_v1";
-  const selectJoueur = document.getElementById("joueurSelect");
-  const rowAutre = document.getElementById("rowAutre");
-  const inputAutre = document.getElementById("joueurAutre");
-  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyrlLJn8rtbpoDnzvMSKL26osTeoEM3vM3UX51JUn3FFS9jHPN-3iF5uYztcjJTo_g/exec";
+  <!-- Graphiques équipe (coach seulement) -->
+  <section id="stats-equipe" class="card coach-only" style="margin-top:16px;">
+    <h2>Statistiques équipe</h2>
 
-  // Affichage champ "Autre joueur"
-  selectJoueur.addEventListener("change", () => {
-    if (selectJoueur.value === "Autre") {
-      rowAutre.style.display = "flex";
-    } else {
-      rowAutre.style.display = "none";
-      inputAutre.value = "";
-    }
-  });
+    <div class="stats-grid">
+      <!-- 🔴 TOP 5 FATIGUÉS -->
+      <div class="stats-chart-card">
+        <h3>Top 5 joueurs les plus fatigués</h3>
+        <div class="iframe-container">
+          <iframe
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
+            loading="lazy"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
 
-  // Boutons 1–5 -> hidden inputs
-  document.querySelectorAll(".scale").forEach(scale => {
-    const name = scale.getAttribute("data-name");
-    const hiddenInput = document.querySelector('input[name="' + name + '"]');
-    scale.querySelectorAll("button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        hiddenInput.value = btn.getAttribute("data-value");
+      <!-- 🟢 TOP 5 EN FORME -->
+      <div class="stats-chart-card">
+        <h3>Top 5 joueurs les plus en forme</h3>
+        <div class="iframe-container">
+          <iframe
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
+            loading="lazy"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    let enregistrements = [];
+
+    const STORAGE_KEY = "test_fatigue_rcf_enregistrements_v1";
+    const selectJoueur = document.getElementById("joueurSelect");
+    const rowAutre = document.getElementById("rowAutre");
+    const inputAutre = document.getElementById("joueurAutre");
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyrlLJn8rtbpoDnzvMSKL26osTeoEM3vM3UX51JUn3FFS9jHPN-3iF5uYztcjJTo_g/exec";
+
+    // Affichage champ "Autre joueur"
+    selectJoueur.addEventListener("change", () => {
+      if (selectJoueur.value === "Autre") {
+        rowAutre.style.display = "flex";
+      } else {
+        rowAutre.style.display = "none";
+        inputAutre.value = "";
+      }
+    });
+
+    // Boutons 1–5 -> hidden inputs
+    document.querySelectorAll(".scale").forEach(scale => {
+      const name = scale.getAttribute("data-name");
+      const hiddenInput = document.querySelector('input[name="' + name + '"]');
+      scale.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          hiddenInput.value = btn.getAttribute("data-value");
+        });
       });
     });
-  });
 
-  function getNomJoueur() {
-    const valSelect = selectJoueur.value;
-    if (!valSelect) return "";
-    if (valSelect === "Autre") {
-      return inputAutre.value.trim();
-    }
-    return valSelect;
-  }
-
-  // Envoi d'un enregistrement vers Google Sheets
-  function envoyerVersGoogleSheets(rec) {
-    if (!GOOGLE_SHEETS_URL) {
-      console.warn("Pas d'URL Google Sheets définie");
-      return;
+    function toggleModeCoach() {
+      document.body.classList.toggle("coach-mode");
     }
 
-    if (!navigator.onLine) {
-      console.log("Hors connexion, envoi reporté.");
-      return;
+    function getNomJoueur() {
+      const valSelect = selectJoueur.value;
+      if (!valSelect) return "";
+      if (valSelect === "Autre") {
+        return inputAutre.value.trim();
+      }
+      return valSelect;
     }
 
-    const payload = Object.assign({}, rec);
-    delete payload.envoye;
-
-    console.log("Envoi vers Google Sheets (no-cors) :", payload);
-
-    fetch(GOOGLE_SHEETS_URL, {
-      method: "POST",
-      mode: "no-cors",
-      body: JSON.stringify(payload)
-    })
-    .then(() => {
-      // On suppose que ça passe
-      rec.envoye = true;
-      sauvegarderDansStorage();
-      console.log("Envoi lancé pour", rec.joueur, rec.seance);
-    })
-    .catch(err => {
-      console.warn("Erreur réseau envoi Google Sheets :", err);
-    });
-  }
-
-  // Envoi de tous les enregistrements non envoyés
-  function syncGoogleSheets() {
-    if (!navigator.onLine) {
-      alert("La tablette n'est pas connectée à Internet.\nConnecte-toi au Wi-Fi puis réessaie.");
-      return;
+    function getSeance() {
+      const inputDate = document.getElementById("seanceDate");
+      const valDate = inputDate.value;
+      if (!valDate) return "";
+      const jours = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+      const d = new Date(valDate + "T00:00:00");
+      const jour = jours[d.getDay()];
+      return valDate + " (" + jour + ")";
     }
 
-    const aEnvoyer = enregistrements.filter(r => !r.envoye);
-
-    if (aEnvoyer.length === 0) {
-      alert("Toutes les données locales ont déjà été envoyées vers Google Sheets.");
-      return;
+    function initDateSeance() {
+      const inputDate = document.getElementById("seanceDate");
+      if (!inputDate) return;
+      const aujourdHui = new Date();
+      const annee = aujourdHui.getFullYear();
+      const mois = String(aujourdHui.getMonth() + 1).padStart(2, "0");
+      const jour = String(aujourdHui.getDate()).padStart(2, "0");
+      inputDate.value = annee + "-" + mois + "-" + jour;
     }
 
-    if (!confirm("Envoyer " + aEnvoyer.length + " réponses vers Google Sheets ?")) {
-      return;
+    function setSeanceToday() {
+      initDateSeance();
     }
 
-    aEnvoyer.forEach(rec => {
+    function changeSeanceDate(deltaDays) {
+      const inputDate = document.getElementById("seanceDate");
+      if (!inputDate) return;
+
+      if (!inputDate.value) {
+        initDateSeance();
+      }
+
+      const current = new Date(inputDate.value);
+      if (isNaN(current.getTime())) {
+        initDateSeance();
+        return;
+      }
+
+      current.setDate(current.getDate() + deltaDays);
+      const y = current.getFullYear();
+      const m = String(current.getMonth() + 1).padStart(2, "0");
+      const d = String(current.getDate()).padStart(2, "0");
+      inputDate.value = y + "-" + m + "-" + d;
+    }
+
+    // Envoi d'un enregistrement vers Google Sheets
+    function envoyerVersGoogleSheets(rec) {
+      if (!GOOGLE_SHEETS_URL) {
+        console.warn("Pas d'URL Google Sheets définie");
+        return;
+      }
+
+      if (!navigator.onLine) {
+        console.log("Hors connexion, envoi reporté.");
+        return;
+      }
+
       const payload = Object.assign({}, rec);
       delete payload.envoye;
+
+      console.log("Envoi vers Google Sheets (no-cors) :", payload);
 
       fetch(GOOGLE_SHEETS_URL, {
         method: "POST",
@@ -642,472 +747,362 @@
       .then(() => {
         rec.envoye = true;
         sauvegarderDansStorage();
+        console.log("Envoi lancé pour", rec.joueur, rec.seance);
       })
       .catch(err => {
-        console.warn("Erreur réseau (sync) pour", rec.joueur, rec.seance, err);
+        console.warn("Erreur réseau envoi Google Sheets :", err);
       });
-    });
-
-    alert(
-      "Synchronisation lancée.\n" +
-      aEnvoyer.length + " réponses envoyées vers Google Sheets (no-cors).\n" +
-      "Vérifie dans le Google Sheet après quelques secondes."
-    );
-  }
-  
-.coach-only {
-  display: none;
-}
-
-/* Quand le body est en mode coach : on montre tout ce qui est coach-only */
-body.coach-mode .coach-only {
-  display: block;
-}
-
-  function getSeance() {
-    const inputDate = document.getElementById("seanceDate");
-    const valDate = inputDate.value;
-    if (!valDate) return "";
-    const jours = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
-    const d = new Date(valDate + "T00:00:00");
-    const jour = jours[d.getDay()];
-    return valDate + " (" + jour + ")";
-  }
-
-  function initDateSeance() {
-    const inputDate = document.getElementById("seanceDate");
-    if (!inputDate) return;
-
-    const aujourdHui = new Date();
-    const annee = aujourdHui.getFullYear();
-    const mois = String(aujourdHui.getMonth() + 1).padStart(2, "0");
-    const jour = String(aujourdHui.getDate()).padStart(2, "0");
-
-    inputDate.value = annee + "-" + mois + "-" + jour;
-  }
-
-  function enregistrerJoueur() {
-    const form = document.getElementById("fatigueForm");
-
-    const joueur = getNomJoueur();
-    if (!joueur) {
-      alert("Merci de sélectionner un joueur ou de saisir son nom.");
-      return;
     }
 
-    const seance = getSeance();
-
-    const dejaFait = enregistrements.some(rec =>
-      rec.joueur === joueur &&
-      (rec.seance || "") === (seance || "")
-    );
-    if (dejaFait) {
-      alert("⚠️ Ce joueur a déjà rempli le test pour cette séance.");
-      return;
-    }
-    function setSeanceToday() {
-  initDateSeance();
-}
-
-function changeSeanceDate(deltaDays) {
-  const inputDate = document.getElementById("seanceDate");
-  if (!inputDate) return;
-
-  // Si vide : on met aujourd'hui avant de bouger
-  if (!inputDate.value) {
-    initDateSeance();
-  }
-
-  function toggleModeCoach() {
-  document.body.classList.toggle("coach-mode");
-}
-
-  const current = new Date(inputDate.value);
-  if (isNaN(current.getTime())) {
-    initDateSeance();
-    return;
-  }
-
-  current.setDate(current.getDate() + deltaDays);
-  const y = current.getFullYear();
-  const m = String(current.getMonth() + 1).padStart(2, "0");
-  const d = String(current.getDate()).padStart(2, "0");
-  inputDate.value = y + "-" + m + "-" + d;
-}
-
-    const champs = [
-      { name: "sommeil",    label: "Qualité du sommeil" },
-      { name: "douleurs",   label: "Douleurs musculaires" },
-      { name: "stress",     label: "Stress général" },
-      { name: "fatigue",    label: "Fatigue générale" },
-      { name: "motivation", label: "Motivation" }
-    ];
-
-    const valeurs = {};
-    for (const champ of champs) {
-      const val = form[champ.name].value;
-      if (!val) {
-        alert('Merci de répondre à la question : "' + champ.label + '" (1 à 5).');
+    // Envoi de tous les enregistrements non envoyés
+    function syncGoogleSheets() {
+      if (!navigator.onLine) {
+        alert("La tablette n'est pas connectée à Internet.\nConnecte-toi au Wi-Fi puis réessaie.");
         return;
       }
-      valeurs[champ.name] = Number(val);
-    }
 
-    const date = new Date().toLocaleString();
-    const sommeil = valeurs["sommeil"];
-    const douleurs = valeurs["douleurs"];
-    const stress = valeurs["stress"];
-    const fatigue = valeurs["fatigue"];
-    const motivation = valeurs["motivation"];
-    const douleurZone = document.getElementById("douleurZone").value.trim();
-    const commentaire = document.getElementById("commentaire").value.trim();
+      const aEnvoyer = enregistrements.filter(r => !r.envoye);
 
-    const total = sommeil + douleurs + stress + fatigue + motivation;
-    const pourcentage = Math.round((total / 25) * 100);
-
-    let zoneTexte = "";
-    let zoneClass = "";
-
-    if (pourcentage >= 88) {
-      zoneTexte = "VERT FONCE tres bon etat (22-25)";
-      zoneClass = "zone-vert-fonce";
-    } else if (pourcentage >= 76) {
-      zoneTexte = "VERT CLAIR bon etat general (19-21)";
-      zoneClass = "zone-vert-clair";
-    } else if (pourcentage >= 64) {
-      zoneTexte = "JAUNE fatigue legere (16-18)";
-      zoneClass = "zone-jaune";
-    } else if (pourcentage >= 52) {
-      zoneTexte = "ORANGE fatigue notable (13-15)";
-      zoneClass = "zone-orange";
-    } else {
-      zoneTexte = "ROUGE fatigue importante (5-12)";
-      zoneClass = "zone-rouge";
-    }
-
-    const record = {
-      date,
-      joueur,
-      seance,
-      sommeil,
-      douleurs,
-      stress,
-      fatigue,
-      motivation,
-      total,
-      pourcentage,
-      zone: zoneTexte,
-      zoneClass: zoneClass,
-      douleurZone,
-      commentaire,
-      envoye: false
-    };
-
-    enregistrements.push(record);
-    sauvegarderDansStorage();
-
-    if (navigator.onLine) {
-      envoyerVersGoogleSheets(record);
-    } else {
-      console.log("Pas de connexion : réponse sauvegardée uniquement en local.");
-    }
-
-    const resultatDiv = document.getElementById("resultat");
-    resultatDiv.textContent =
-      "Enregistré : " + joueur + " | Séance : " + (seance || "non précisé") +
-      " | Score : " + total + "/25 (" + pourcentage + "%) - Zone : " + zoneTexte +
-      " | Total joueurs enregistrés : " + enregistrements.length;
-    resultatDiv.className = "result " + zoneClass;
-
-    majListeJoueurs();
-    majStats();
-    resetForm(false);
-  }
-
-  function majListeJoueurs() {
-  const ul = document.getElementById("listeJoueursUl");
-  ul.innerHTML = "";
-
-  enregistrements.forEach((rec, index) => {
-    const li = document.createElement("li");
-
-    // Badge statut
-    let badge = "";
-    if (rec.envoye) {
-      badge = " 🟢 (envoyé)";
-    } else {
-      badge = " 🔴 (en attente)";
-    }
-
-    li.textContent =
-      (index + 1) + ". " +
-      rec.joueur + " - " +
-      rec.pourcentage + "% (" + rec.zone + ")" +
-      (rec.seance ? " | " + rec.seance : "") +
-      badge;
-
-    li.className = rec.zoneClass;
-    ul.appendChild(li);
-  });
-}
-
-  function majStats() {
-    const nb = enregistrements.length;
-    const elNb = document.getElementById("statsNbJoueurs");
-    const elMoy = document.getElementById("statsMoyenneScore");
-    const elDom = document.getElementById("statsZoneDom");
-
-    elNb.textContent = "Joueurs enregistrés : " + nb;
-
-    if (nb === 0) {
-      elMoy.textContent = "Score moyen : -";
-      elDom.textContent = "Zone dominante : -";
-      ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
-        document.getElementById("bar"+z).style.width = "0%";
-        document.getElementById("text"+z).textContent = "0";
-      });
-      return;
-    }
-
-    let sommeScores = 0;
-    const compteZones = { vf:0, vc:0, j:0, o:0, r:0 };
-
-    enregistrements.forEach(rec => {
-      sommeScores += rec.total;
-      if (rec.zoneClass === "zone-vert-fonce") compteZones.vf++;
-      else if (rec.zoneClass === "zone-vert-clair") compteZones.vc++;
-      else if (rec.zoneClass === "zone-jaune") compteZones.j++;
-      else if (rec.zoneClass === "zone-orange") compteZones.o++;
-      else if (rec.zoneClass === "zone-rouge") compteZones.r++;
-    });
-
-    const moyScore = (sommeScores / nb).toFixed(1);
-    elMoy.textContent = "Score moyen : " + moyScore + " / 25";
-
-    const zonesOrdre = [
-      { code:"vf", nom:"VERT FONCÉ" },
-      { code:"vc", nom:"VERT CLAIR" },
-      { code:"j",  nom:"JAUNE" },
-      { code:"o",  nom:"ORANGE" },
-      { code:"r",  nom:"ROUGE" }
-    ];
-    let maxZone = null;
-    let maxVal = -1;
-    zonesOrdre.forEach(z => {
-      if (compteZones[z.code] > maxVal) {
-        maxVal = compteZones[z.code];
-        maxZone = z.nom;
+      if (aEnvoyer.length === 0) {
+        alert("Toutes les données locales ont déjà été envoyées vers Google Sheets.");
+        return;
       }
-    });
-    elDom.textContent = "Zone dominante : " + maxZone + " (" + maxVal + " joueurs)";
 
-    const pct = code => Math.round((compteZones[code] / nb) * 100);
+      if (!confirm("Envoyer " + aEnvoyer.length + " réponses vers Google Sheets ?")) {
+        return;
+      }
 
-    document.getElementById("barVFonce").style.width = pct("vf") + "%";
-    document.getElementById("textVFonce").textContent = compteZones.vf;
+      aEnvoyer.forEach(rec => {
+        const payload = Object.assign({}, rec);
+        delete payload.envoye;
 
-    document.getElementById("barVClair").style.width = pct("vc") + "%";
-    document.getElementById("textVClair").textContent = compteZones.vc;
+        fetch(GOOGLE_SHEETS_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify(payload)
+        })
+        .then(() => {
+          rec.envoye = true;
+          sauvegarderDansStorage();
+        })
+        .catch(err => {
+          console.warn("Erreur réseau (sync) pour", rec.joueur, rec.seance, err);
+        });
+      });
 
-    document.getElementById("barJaune").style.width = pct("j") + "%";
-    document.getElementById("textJaune").textContent = compteZones.j;
+      alert(
+        "Synchronisation lancée.\n" +
+        aEnvoyer.length + " réponses envoyées vers Google Sheets (no-cors).\n" +
+        "Vérifie dans le Google Sheet après quelques secondes."
+      );
+    }
 
-    document.getElementById("barOrange").style.width = pct("o") + "%";
-    document.getElementById("textOrange").textContent = compteZones.o;
+    function enregistrerJoueur() {
+      const form = document.getElementById("fatigueForm");
 
-    document.getElementById("barRouge").style.width = pct("r") + "%";
-    document.getElementById("textRouge").textContent = compteZones.r;
-  }
+      const joueur = getNomJoueur();
+      if (!joueur) {
+        alert("Merci de sélectionner un joueur ou de saisir son nom.");
+        return;
+      }
 
-  function resetForm(clearResult) {
-    const form = document.getElementById("fatigueForm");
-    form.reset();
-    rowAutre.style.display = "none";
-    inputAutre.value = "";
+      const seance = getSeance();
 
-    document.querySelectorAll(".scale button").forEach(b => b.classList.remove("active"));
+      const dejaFait = enregistrements.some(rec =>
+        rec.joueur === joueur &&
+        (rec.seance || "") === (seance || "")
+      );
+      if (dejaFait) {
+        alert("⚠️ Ce joueur a déjà rempli le test pour cette séance.");
+        return;
+      }
 
-    document.querySelectorAll('input[type="hidden"]').forEach(input => {
-      input.value = "";
-    });
+      const champs = [
+        { name: "sommeil",    label: "Qualité du sommeil" },
+        { name: "douleurs",   label: "Douleurs musculaires" },
+        { name: "stress",     label: "Stress général" },
+        { name: "fatigue",    label: "Fatigue générale" },
+        { name: "motivation", label: "Motivation" }
+      ];
 
-    if (clearResult) {
+      const valeurs = {};
+      for (const champ of champs) {
+        const val = form[champ.name].value;
+        if (!val) {
+          alert('Merci de répondre à la question : "' + champ.label + '" (1 à 5).');
+          return;
+        }
+        valeurs[champ.name] = Number(val);
+      }
+
+      const date = new Date().toLocaleString();
+      const sommeil = valeurs["sommeil"];
+      const douleurs = valeurs["douleurs"];
+      const stress = valeurs["stress"];
+      const fatigue = valeurs["fatigue"];
+      const motivation = valeurs["motivation"];
+      const douleurZone = document.getElementById("douleurZone").value.trim();
+      const commentaire = document.getElementById("commentaire").value.trim();
+
+      const total = sommeil + douleurs + stress + fatigue + motivation;
+      const pourcentage = Math.round((total / 25) * 100);
+
+      let zoneTexte = "";
+      let zoneClass = "";
+
+      if (pourcentage >= 88) {
+        zoneTexte = "VERT FONCE tres bon etat (22-25)";
+        zoneClass = "zone-vert-fonce";
+      } else if (pourcentage >= 76) {
+        zoneTexte = "VERT CLAIR bon etat general (19-21)";
+        zoneClass = "zone-vert-clair";
+      } else if (pourcentage >= 64) {
+        zoneTexte = "JAUNE fatigue legere (16-18)";
+        zoneClass = "zone-jaune";
+      } else if (pourcentage >= 52) {
+        zoneTexte = "ORANGE fatigue notable (13-15)";
+        zoneClass = "zone-orange";
+      } else {
+        zoneTexte = "ROUGE fatigue importante (5-12)";
+        zoneClass = "zone-rouge";
+      }
+
+      const record = {
+        date,
+        joueur,
+        seance,
+        sommeil,
+        douleurs,
+        stress,
+        fatigue,
+        motivation,
+        total,
+        pourcentage,
+        zone: zoneTexte,
+        zoneClass: zoneClass,
+        douleurZone,
+        commentaire,
+        envoye: false
+      };
+
+      enregistrements.push(record);
+      sauvegarderDansStorage();
+
+      if (navigator.onLine) {
+        envoyerVersGoogleSheets(record);
+      } else {
+        console.log("Pas de connexion : réponse sauvegardée uniquement en local.");
+      }
+
       const resultatDiv = document.getElementById("resultat");
-      resultatDiv.textContent = "";
-      resultatDiv.className = "result";
-    }
-  }
+      resultatDiv.textContent =
+        "Enregistré : " + joueur + " | Séance : " + (seance || "non précisé") +
+        " | Score : " + total + "/25 (" + pourcentage + "%) - Zone : " + zoneTexte +
+        " | Total joueurs enregistrés : " + enregistrements.length;
+      resultatDiv.className = "result " + zoneClass;
 
-  function sauvegarderDansStorage() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(enregistrements));
-    } catch (e) {
-      console.warn("Impossible de sauvegarder dans le stockage local :", e);
-    }
-  }
-
-  function chargerDepuisStorage() {
-    const data = localStorage.getItem(STORAGE_KEY);
-
-    if (!data) {
-      enregistrements = [];
       majListeJoueurs();
       majStats();
-      return;
+      resetForm(false);
     }
 
-    try {
-      const parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) {
-        enregistrements = parsed;
-      } else {
+    function majListeJoueurs() {
+      const ul = document.getElementById("listeJoueursUl");
+      ul.innerHTML = "";
+
+      enregistrements.forEach((rec, index) => {
+        const li = document.createElement("li");
+        let badge = rec.envoye ? " 🟢 (envoyé)" : " 🔴 (en attente)";
+
+        li.textContent =
+          (index + 1) + ". " +
+          rec.joueur + " - " +
+          rec.pourcentage + "% (" + rec.zone + ")" +
+          (rec.seance ? " | " + rec.seance : "") +
+          badge;
+
+        li.className = rec.zoneClass;
+        ul.appendChild(li);
+      });
+    }
+
+    function majStats() {
+      const nb = enregistrements.length;
+      const elNb = document.getElementById("statsNbJoueurs");
+      const elMoy = document.getElementById("statsMoyenneScore");
+      const elDom = document.getElementById("statsZoneDom");
+
+      elNb.textContent = "Joueurs enregistrés : " + nb;
+
+      const globalBox = document.getElementById("globalEtat");
+      const globalSpan = document.getElementById("globalEtatTexte");
+
+      if (nb === 0) {
+        elMoy.textContent = "Score moyen : -";
+        elDom.textContent = "Zone dominante : -";
+        ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
+          document.getElementById("bar"+z).style.width = "0%";
+          document.getElementById("text"+z).textContent = "0";
+        });
+
+        if (globalBox && globalSpan) {
+          globalBox.className = "global-etat";
+          globalSpan.textContent = "En attente de données…";
+        }
+        return;
+      }
+
+      let sommeScores = 0;
+      const compteZones = { vf:0, vc:0, j:0, o:0, r:0 };
+
+      enregistrements.forEach(rec => {
+        sommeScores += rec.total;
+        if (rec.zoneClass === "zone-vert-fonce") compteZones.vf++;
+        else if (rec.zoneClass === "zone-vert-clair") compteZones.vc++;
+        else if (rec.zoneClass === "zone-jaune") compteZones.j++;
+        else if (rec.zoneClass === "zone-orange") compteZones.o++;
+        else if (rec.zoneClass === "zone-rouge") compteZones.r++;
+      });
+
+      const moyScore = (sommeScores / nb).toFixed(1);
+      elMoy.textContent = "Score moyen : " + moyScore + " / 25";
+
+      const zonesOrdre = [
+        { code:"vf", nom:"VERT FONCÉ" },
+        { code:"vc", nom:"VERT CLAIR" },
+        { code:"j",  nom:"JAUNE" },
+        { code:"o",  nom:"ORANGE" },
+        { code:"r",  nom:"ROUGE" }
+      ];
+      let maxZone = null;
+      let maxVal = -1;
+      zonesOrdre.forEach(z => {
+        if (compteZones[z.code] > maxVal) {
+          maxVal = compteZones[z.code];
+          maxZone = z.nom;
+        }
+      });
+      elDom.textContent = "Zone dominante : " + maxZone + " (" + maxVal + " joueurs)";
+
+      const pct = code => Math.round((compteZones[code] / nb) * 100);
+
+      document.getElementById("barVFonce").style.width = pct("vf") + "%";
+      document.getElementById("textVFonce").textContent = compteZones.vf;
+
+      document.getElementById("barVClair").style.width = pct("vc") + "%";
+      document.getElementById("textVClair").textContent = compteZones.vc;
+
+      document.getElementById("barJaune").style.width = pct("j") + "%";
+      document.getElementById("textJaune").textContent = compteZones.j;
+
+      document.getElementById("barOrange").style.width = pct("o") + "%";
+      document.getElementById("textOrange").textContent = compteZones.o;
+
+      document.getElementById("barRouge").style.width = pct("r") + "%";
+      document.getElementById("textRouge").textContent = compteZones.r;
+
+      // Indicateur global équipe
+      if (globalBox && globalSpan) {
+        const avgPourcentage = Math.round((sommeScores / (nb * 25)) * 100);
+        let txt, cls;
+        if (avgPourcentage >= 88) {
+          txt = avgPourcentage + "% - VERT FONCÉ (très bon état)";
+          cls = "zone-vert-fonce";
+        } else if (avgPourcentage >= 76) {
+          txt = avgPourcentage + "% - VERT CLAIR (bon état général)";
+          cls = "zone-vert-clair";
+        } else if (avgPourcentage >= 64) {
+          txt = avgPourcentage + "% - JAUNE (fatigue légère)";
+          cls = "zone-jaune";
+        } else if (avgPourcentage >= 52) {
+          txt = avgPourcentage + "% - ORANGE (fatigue notable)";
+          cls = "zone-orange";
+        } else {
+          txt = avgPourcentage + "% - ROUGE (fatigue importante)";
+          cls = "zone-rouge";
+        }
+        globalBox.className = "global-etat " + cls;
+        globalSpan.textContent = txt;
+      }
+    }
+
+    function resetForm(clearResult) {
+      const form = document.getElementById("fatigueForm");
+      form.reset();
+      rowAutre.style.display = "none";
+      inputAutre.value = "";
+
+      document.querySelectorAll(".scale button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll('input[type="hidden"]').forEach(input => {
+        input.value = "";
+      });
+
+      if (clearResult) {
+        const resultatDiv = document.getElementById("resultat");
+        resultatDiv.textContent = "";
+        resultatDiv.className = "result";
+      }
+    }
+
+    function sauvegarderDansStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(enregistrements));
+      } catch (e) {
+        console.warn("Impossible de sauvegarder dans le stockage local :", e);
+      }
+    }
+
+    function chargerDepuisStorage() {
+      const data = localStorage.getItem(STORAGE_KEY);
+
+      if (!data) {
+        enregistrements = [];
+        majListeJoueurs();
+        majStats();
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          enregistrements = parsed;
+        } else {
+          enregistrements = [];
+        }
+      } catch (e) {
+        console.warn("Données locales corrompues, on repart à zéro :", e);
         enregistrements = [];
       }
-    } catch (e) {
-      console.warn("Données locales corrompues, on repart à zéro :", e);
+
+      majListeJoueurs();
+      majStats();
+    }
+
+    function resetDonnees() {
+      if (!confirm("Supprimer TOUTES les réponses enregistrées sur cette tablette ?")) return;
       enregistrements = [];
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.warn("Impossible d'effacer le stockage local :", e);
+      }
+      majListeJoueurs();
+      majStats();
+      resetForm(true);
+      alert("Tous les enregistrements ont été effacés.");
     }
 
-    majListeJoueurs();
-    majStats();
-  }
+    // Init
+    chargerDepuisStorage();
+    initDateSeance();
+  </script>
 
-  function resetDonnees() {
-    if (!confirm("Supprimer TOUTES les réponses enregistrées sur cette tablette ?")) return;
-    enregistrements = [];
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {
-      console.warn("Impossible d'effacer le stockage local :", e);
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker enregistré"))
+        .catch(err => console.log("Erreur SW:", err));
     }
-    majListeJoueurs();
-    majStats();
-    resetForm(true);
-    alert("Tous les enregistrements ont été effacés.");
-  }
-
-  // init
-  chargerDepuisStorage();
-  initDateSeance();
-</script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js")
-    .then(() => console.log("Service Worker enregistré"))
-    .catch(err => console.log("Erreur SW:", err));
-}
-</script>
-<section id="stats-equipe" class="card coach-only">
-  <h2>Statistiques équipe</h2>
-
-  <div class="stats-grid">
-
-    <!-- 🔴 TOP 5 FATIGUÉS -->
-    <div class="stats-chart-card">
-      <h3>Top 5 joueurs les plus fatigués</h3>
-      <div class="iframe-container">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
-          loading="lazy"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </div>
-
-    <!-- 🟢 TOP 5 EN FORME -->
-    <div class="stats-chart-card">
-      <h3>Top 5 joueurs les plus en forme</h3>
-      <div class="iframe-container">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
-          loading="lazy"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </div>
-  </div>
-</section>
-
-<style>
-/* Statistiques équipe - mise en page responsive */
-.stats-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.stats-chart-card {
-  flex: 1 1 280px;
-  min-width: 260px;
-}
-
-.stats-chart-card h3 {
-  font-size: 15px;
-  margin-bottom: 8px;
-  color: #2f4f6f;
-  text-align: center;
-}
-
-/* Conteneur responsive */
-.iframe-container {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-.iframe-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* Mobile */
-@media (max-width: 700px) {
-  .stats-grid {
-    flex-direction: column;
-  }
-
-  .iframe-container {
-    aspect-ratio: 3 / 4; /* plus haut en portrait */
-  }
-}
-</style>
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
