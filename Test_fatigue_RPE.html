@@ -423,13 +423,8 @@
 
 <div class="actions">
   <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
-
-  <!-- ✅ Nouveau bouton de synchro -->
-  <button type="button" class="primary" onclick="syncGoogleSheets()">
-    Envoyer les données vers Google Sheets
-  </button>
-
-  <button type="reset" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
+  <button type="button" class="primary" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
+  <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
   <button type="button" class="secondary" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
 </div>
 
@@ -1070,6 +1065,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
