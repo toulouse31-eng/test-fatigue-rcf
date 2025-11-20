@@ -773,19 +773,31 @@
   }
 
   function majListeJoueurs() {
-    const ul = document.getElementById("listeJoueursUl");
-    ul.innerHTML = "";
-    enregistrements.forEach((rec, index) => {
-      const li = document.createElement("li");
-      li.textContent =
-        (index + 1) + ". " +
-        rec.joueur + " - " +
-        rec.pourcentage + "% (" + rec.zone + ")" +
-        (rec.seance ? " | " + rec.seance : "");
-      li.className = rec.zoneClass;
-      ul.appendChild(li);
-    });
-  }
+  const ul = document.getElementById("listeJoueursUl");
+  ul.innerHTML = "";
+
+  enregistrements.forEach((rec, index) => {
+    const li = document.createElement("li");
+
+    // Badge statut
+    let badge = "";
+    if (rec.envoye) {
+      badge = " 🟢 (envoyé)";
+    } else {
+      badge = " 🔴 (en attente)";
+    }
+
+    li.textContent =
+      (index + 1) + ". " +
+      rec.joueur + " - " +
+      rec.pourcentage + "% (" + rec.zone + ")" +
+      (rec.seance ? " | " + rec.seance : "") +
+      badge;
+
+    li.className = rec.zoneClass;
+    ul.appendChild(li);
+  });
+}
 
   function majStats() {
     const nb = enregistrements.length;
@@ -949,6 +961,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
