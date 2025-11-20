@@ -575,7 +575,6 @@ function envoyerVersGoogleSheets(rec) {
     return;
   }
 
-  // On envoie une copie sans le champ "envoye"
   const payload = Object.assign({}, rec);
   delete payload.envoye;
 
@@ -592,14 +591,12 @@ function envoyerVersGoogleSheets(rec) {
     if (!response.ok) {
       throw new Error("Réponse HTTP " + response.status);
     }
-    // ✅ marquer comme envoyé
     rec.envoye = true;
     sauvegarderDansStorage();
     console.log("Envoi OK pour", rec.joueur, rec.seance);
   })
   .catch(err => {
     console.warn("Erreur envoi Google Sheets :", err);
-    // On laisse envoye=false pour pouvoir réessayer plus tard
   });
 }
 
@@ -659,19 +656,7 @@ function envoyerVersGoogleSheets(rec) {
   });
 } 
     
-  console.log("Envoi vers Google Sheets :", rec);
-
-  fetch(GOOGLE_SHEETS_URL, {
-    method: "POST",
-    mode: "no-cors",           // IMPORTANT
-    body: JSON.stringify(rec)  // pas de headers -> requête simple
-  })
-  .catch(err => {
-    console.error("Erreur envoi Google Sheets :", err);
-  });
-}
-
-  function getSeance() {
+function getSeance() {
     const inputDate = document.getElementById("seanceDate");
     const valDate = inputDate.value;
     if (!valDate) return "";
@@ -1065,6 +1050,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
