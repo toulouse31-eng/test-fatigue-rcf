@@ -276,6 +276,10 @@
     .stats-bar-fill {
       height: 10px;
     }
+    .small-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
   </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2f7ccc">
@@ -285,6 +289,12 @@
    <div class="logo-container">
          <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
   </div>
+  
+  <div style="text-align:right; margin-bottom:10px;">
+  <button type="button" class="secondary" onclick="toggleModeCoach()">
+    Basculer Mode Coach / Joueur
+  </button>
+</div>
 
   <h1>Test de Fatigue N3</h1>
   <h2>Questionnaire bien-être avant l'entraînement</h2>
@@ -337,10 +347,14 @@
 
         <!-- Date séance -->
         <div class="row">
-          <label for="seanceDate">Date de la séance :</label>
-          <input type="date" id="seanceDate" name="seanceDate" />
-        </div>
-
+  <label for="seanceDate">Date de la séance :</label>
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <input type="date" id="seanceDate" name="seanceDate">
+    <button type="button" class="secondary small-btn" onclick="changeSeanceDate(-1)">-1 jour</button>
+    <button type="button" class="secondary small-btn" onclick="setSeanceToday()">Aujourd'hui</button>
+    <button type="button" class="secondary small-btn" onclick="changeSeanceDate(1)">+1 jour</button>
+  </div>
+</div>
         <!-- Questions -->
         <div class="question">
           <label>Qualité du sommeil 😴</label>
@@ -640,6 +654,15 @@
       "Vérifie dans le Google Sheet après quelques secondes."
     );
   }
+  
+.coach-only {
+  display: none;
+}
+
+/* Quand le body est en mode coach : on montre tout ce qui est coach-only */
+body.coach-mode .coach-only {
+  display: block;
+}
 
   function getSeance() {
     const inputDate = document.getElementById("seanceDate");
@@ -682,6 +705,35 @@
       alert("⚠️ Ce joueur a déjà rempli le test pour cette séance.");
       return;
     }
+    function setSeanceToday() {
+  initDateSeance();
+}
+
+function changeSeanceDate(deltaDays) {
+  const inputDate = document.getElementById("seanceDate");
+  if (!inputDate) return;
+
+  // Si vide : on met aujourd'hui avant de bouger
+  if (!inputDate.value) {
+    initDateSeance();
+  }
+
+  function toggleModeCoach() {
+  document.body.classList.toggle("coach-mode");
+}
+
+  const current = new Date(inputDate.value);
+  if (isNaN(current.getTime())) {
+    initDateSeance();
+    return;
+  }
+
+  current.setDate(current.getDate() + deltaDays);
+  const y = current.getFullYear();
+  const m = String(current.getMonth() + 1).padStart(2, "0");
+  const d = String(current.getDate()).padStart(2, "0");
+  inputDate.value = y + "-" + m + "-" + d;
+}
 
     const champs = [
       { name: "sommeil",    label: "Qualité du sommeil" },
@@ -946,7 +998,7 @@ if ("serviceWorker" in navigator) {
     .catch(err => console.log("Erreur SW:", err));
 }
 </script>
-<section id="stats-equipe" class="card">
+<section id="stats-equipe" class="card coach-only">
   <h2>Statistiques équipe</h2>
 
   <div class="stats-grid">
@@ -1030,6 +1082,7 @@ if ("serviceWorker" in navigator) {
 </style>
 </body>
 </html>
+
 
 
 
