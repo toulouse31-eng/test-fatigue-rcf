@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Test de Fatigue RCF</title>
 
-  <!-- Librairie pour export Excel (.xlsx) si besoin -->
+  <!-- Librairie pour export Excel (.xlsx) - garde au cas où -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <link rel="manifest" href="manifest.webmanifest">
@@ -21,78 +21,76 @@
       font-size: 18px;      /* + lisible sur tablette */
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 5px;
-      color: #2f7ccc;
-      font-size: 26px;
-    }
-    h2 {
-      text-align: center;
-      font-size: 16px;
-      margin-top: 0;
-      color: #4a6580;
-    }
-
-    /* 🔝 Barre du haut : logo centré + bouton mode coach à droite */
+    /* ---------- TOP BAR ---------- */
     .top-bar {
-      position: relative;
-      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       margin-bottom: 10px;
     }
 
     .logo-container {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      margin: 0;
-      padding: 0;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex: 0 0 auto;
     }
 
     .logo-rcf {
       max-width: 60px;
       height: auto;
-      display: block;
     }
 
-    /* Bouton Mode Coach : rond, discret, effet 3D, en haut à droite */
+    .top-title {
+      flex: 1 1 auto;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: #2f7ccc;
+      font-size: 26px;
+    }
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      color: #4a6580;
+    }
+
+    /* Bouton Mode Coach : rond, discret, léger effet 3D */
     .mode-toggle-btn {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
       padding: 8px 14px;
       font-size: 12px;
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      background: linear-gradient(145deg, #3f82cf, #1f5ba8); /* bleu = mode joueur */
+      background: linear-gradient(145deg, #3f82cf, #1f5ba8);
       color: #fff;
       box-shadow: 0 3px 6px rgba(0,0,0,0.25);
-      opacity: 0.9;
+      opacity: 0.85;
       transition:
         transform 0.1s ease,
         box-shadow 0.1s ease,
         opacity 0.2s ease,
         background 0.2s ease;
+      white-space: nowrap;
     }
 
     .mode-toggle-btn:hover {
       opacity: 1;
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      transform: translateY(-52%);
+      transform: translateY(-1px);
     }
 
     .mode-toggle-btn:active {
-      transform: translateY(-48%);
+      transform: translateY(0);
       box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    /* Quand on est en MODE COACH -> bouton orange */
-    body.coach-mode .mode-toggle-btn {
-      background: linear-gradient(145deg, #ff9800, #f57c00); /* orange = Mode coach */
+    /* Couleur différente quand le mode coach est actif */
+    .mode-toggle-btn.coach-on {
+      background: linear-gradient(145deg, #12b886, #0f8f66);
     }
 
     .layout {
@@ -100,6 +98,7 @@
       flex-wrap: wrap;
       gap: 16px;
     }
+
     .card {
       background: #fff;
       padding: 20px;
@@ -180,9 +179,8 @@
     .scale button[data-value="2"] { background:#ffd5a6; }  /* orange */
     .scale button[data-value="3"] { background:#fff6a3; }  /* jaune */
     .scale button[data-value="4"] { background:#c9f7b5; }  /* vert clair */
-    .scale button[data-value="5"] { background:#9ae69c; }  /* vert plus soutenu */
+    .scale button[data-value="5"] { background:#9ae69c; }  /* vert soutenu */
 
-    /* Bouton sélectionné */
     .scale button.active {
       border: 2px solid #000;
       transform: scale(1.07);
@@ -326,12 +324,48 @@
     .stats-bar-fill {
       height: 10px;
     }
-    .small-btn {
-      padding: 4px 8px;
-      font-size: 12px;
+
+    /* Indice bien-être équipe */
+    .stats-indice-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+      background: #f0f4ff;
+      color: #2f4f6f;
+    }
+    .stats-indice-box.indice-vert {
+      background: #b7f0c4;
+      color: #145c2e;
+    }
+    .stats-indice-box.indice-jaune {
+      background: #fff8c2;
+      color: #8a7400;
+    }
+    .stats-indice-box.indice-orange {
+      background: #ffe0b8;
+      color: #8a4b06;
+    }
+    .stats-indice-box.indice-rouge {
+      background: #f8d7da;
+      color: #721c24;
     }
 
-    /* Éléments visibles uniquement en mode coach */
+    .stats-reco {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #2f4f6f;
+    }
+
+    .stats-alertes {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    /* Mode coach : sections cachées par défaut */
     .coach-only {
       display: none;
     }
@@ -339,7 +373,7 @@
       display: block;
     }
 
-    /* Statistiques équipe - mise en page responsive */
+    /* Stats équipe (2 graphiques Google Sheets) */
     .stats-grid {
       display: flex;
       flex-wrap: wrap;
@@ -359,7 +393,6 @@
       text-align: center;
     }
 
-    /* Conteneur responsive pour les iframes */
     .iframe-container {
       position: relative;
       width: 100%;
@@ -378,32 +411,38 @@
       border: 0;
     }
 
-    /* Mobile */
     @media (max-width: 700px) {
       .stats-grid {
         flex-direction: column;
       }
       .iframe-container {
-        aspect-ratio: 3 / 4; /* plus haut en portrait */
+        aspect-ratio: 3 / 4;
       }
     }
   </style>
 </head>
-
 <body>
-  <!-- Barre du haut : bouton mode + logo centré -->
-  <div class="top-bar">
-    <button type="button" class="mode-toggle-btn" onclick="toggleModeCoach()">
-      Mode joueur
-    </button>
 
+  <!-- BARRE DU HAUT : logo + titre + bouton mode coach -->
+  <div class="top-bar">
     <div class="logo-container">
       <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
     </div>
+    <div class="top-title">
+      <h1>Test de Fatigue N3</h1>
+      <h2>Questionnaire bien-être avant l'entraînement</h2>
+    </div>
+    <button
+      type="button"
+      id="modeCoachBtn"
+      class="mode-toggle-btn"
+      onclick="toggleModeCoach()"
+      aria-pressed="false"
+      aria-label="Basculer le mode coach"
+    >
+      Mode coach OFF
+    </button>
   </div>
-
-  <h1>Test de Fatigue N3</h1>
-  <h2>Questionnaire bien-être avant l'entraînement</h2>
 
   <div class="layout">
     <!-- Colonne principale : formulaire -->
@@ -451,13 +490,10 @@
           <input type="text" id="joueurAutre" name="joueurAutre" placeholder="Nom et prénom" />
         </div>
 
-        <!-- Date séance -->
+        <!-- Date séance (sans boutons -1/+1) -->
         <div class="row">
           <label for="seanceDate">Date de la séance :</label>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <input type="date" id="seanceDate" name="seanceDate">
-            <button type="button" class="secondary small-btn" onclick="setSeanceToday()">Aujourd'hui</button>
-          </div>
+          <input type="date" id="seanceDate" name="seanceDate">
         </div>
 
         <!-- Questions -->
@@ -540,23 +576,24 @@
                     placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
         </div>
 
+        <!-- Boutons -->
         <div class="actions">
           <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
-          <button type="button" class="primary" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
+          <button type="button" class="primary coach-only" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
           <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
-          <button type="button" class="secondary danger" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
+          <button type="button" class="secondary danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
         </div>
 
         <div class="result" id="resultat"></div>
       </form>
 
-      <div class="liste-joueurs" id="listeJoueurs">
-        <strong>Joueurs enregistrés :</strong>
+      <div class="liste-joueurs coach-only" id="listeJoueurs">
+        <strong>Joueurs enregistrés (historique) :</strong>
         <ul id="listeJoueursUl"></ul>
       </div>
 
       <!-- Barème -->
-      <div class="bareme-container">
+      <div class="bareme-container coach-only">
         <h3>Barème des zones de fatigue (par joueur)</h3>
         <table class="bareme-table">
           <tr>
@@ -606,12 +643,29 @@
     </div>
 
     <!-- Colonne latérale : stats séance -->
-    <div class="stats-card">
-      <div class="stats-title">Synthèse rapide de la séance</div>
-      <div class="stats-line" id="statsNbJoueurs">Joueurs enregistrés : 0</div>
+    <div class="stats-card coach-only">
+      <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
+      <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
       <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
       <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
 
+      <!-- Indice bien-être équipe -->
+      <div class="stats-indice-box" id="statsIndiceBox">
+        <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
+      </div>
+
+      <!-- Recommandation séance -->
+      <div class="stats-line stats-reco" id="statsRecoSeance">
+        Recommandation séance : -
+      </div>
+
+      <!-- Joueurs en alerte -->
+      <div class="stats-alertes">
+        <div class="stats-line"><strong>Joueurs en alerte (orange/rouge) :</strong></div>
+        <div class="stats-line" id="statsAlertesListe">-</div>
+      </div>
+
+      <!-- Répartition zones -->
       <div class="stats-bar-container">
         <div class="stats-bar-row">
           <div class="stats-bar-label">Très bon état</div>
@@ -642,37 +696,7 @@
     </div>
   </div>
 
-  <!-- Bloc stats coach : graphiques Google Sheets -->
-  <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
-    <h2>Statistiques équipe</h2>
-
-    <div class="stats-grid">
-      <!-- 🔴 TOP 5 FATIGUÉS -->
-      <div class="stats-chart-card">
-        <h3>Top 5 joueurs les plus fatigués</h3>
-        <div class="iframe-container">
-          <iframe
-            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
-            loading="lazy"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
-
-      <!-- 🟢 TOP 5 EN FORME -->
-      <div class="stats-chart-card">
-        <h3>Top 5 joueurs les plus en forme</h3>
-        <div class="iframe-container">
-          <iframe
-            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
-            loading="lazy"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
-    </div>
-  </section>
-
+  <!-- SCRIPT PRINCIPAL -->
   <script>
     let enregistrements = [];
 
@@ -714,14 +738,42 @@
       return valSelect;
     }
 
+    function getSeance() {
+      const inputDate = document.getElementById("seanceDate");
+      const valDate = inputDate.value;
+      if (!valDate) return "";
+      const jours = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+      const d = new Date(valDate + "T00:00:00");
+      const jour = jours[d.getDay()];
+      return valDate + " (" + jour + ")";
+    }
+
+    function initDateSeance() {
+      const inputDate = document.getElementById("seanceDate");
+      if (!inputDate) return;
+
+      const aujourdHui = new Date();
+      const annee = aujourdHui.getFullYear();
+      const mois = String(aujourdHui.getMonth() + 1).padStart(2, "0");
+      const jour = String(aujourdHui.getDate()).padStart(2, "0");
+
+      inputDate.value = annee + "-" + mois + "-" + jour;
+    }
+
+    // Basculer Mode Coach
     function toggleModeCoach() {
-      document.body.classList.toggle("coach-mode");
-      const btn = document.querySelector(".mode-toggle-btn");
-      if (!btn) return;
-      if (document.body.classList.contains("coach-mode")) {
-        btn.textContent = "Mode coach";
+      const body = document.body;
+      const btn = document.getElementById("modeCoachBtn");
+      body.classList.toggle("coach-mode");
+
+      if (body.classList.contains("coach-mode")) {
+        btn.classList.add("coach-on");
+        btn.setAttribute("aria-pressed", "true");
+        btn.textContent = "Mode coach ON";
       } else {
-        btn.textContent = "Mode joueur";
+        btn.classList.remove("coach-on");
+        btn.setAttribute("aria-pressed", "false");
+        btn.textContent = "Mode coach OFF";
       }
     }
 
@@ -798,32 +850,6 @@
         aEnvoyer.length + " réponses envoyées vers Google Sheets (no-cors).\n" +
         "Vérifie dans le Google Sheet après quelques secondes."
       );
-    }
-
-    function getSeance() {
-      const inputDate = document.getElementById("seanceDate");
-      const valDate = inputDate.value;
-      if (!valDate) return "";
-      const jours = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
-      const d = new Date(valDate + "T00:00:00");
-      const jour = jours[d.getDay()];
-      return valDate + " (" + jour + ")";
-    }
-
-    function initDateSeance() {
-      const inputDate = document.getElementById("seanceDate");
-      if (!inputDate) return;
-
-      const aujourdHui = new Date();
-      const annee = aujourdHui.getFullYear();
-      const mois = String(aujourdHui.getMonth() + 1).padStart(2, "0");
-      const jour = String(aujourdHui.getDate()).padStart(2, "0");
-
-      inputDate.value = annee + "-" + mois + "-" + jour;
-    }
-
-    function setSeanceToday() {
-      initDateSeance();
     }
 
     function enregistrerJoueur() {
@@ -927,7 +953,7 @@
       resultatDiv.textContent =
         "Enregistré : " + joueur + " | Séance : " + (seance || "non précisé") +
         " | Score : " + total + "/25 (" + pourcentage + "%) - Zone : " + zoneTexte +
-        " | Total joueurs enregistrés : " + enregistrements.length;
+        " | Total formulaires : " + enregistrements.length;
       resultatDiv.className = "result " + zoneClass;
 
       majListeJoueurs();
@@ -937,6 +963,7 @@
 
     function majListeJoueurs() {
       const ul = document.getElementById("listeJoueursUl");
+      if (!ul) return;
       ul.innerHTML = "";
 
       enregistrements.forEach((rec, index) => {
@@ -961,20 +988,41 @@
       });
     }
 
+    // Stats sur la DERNIÈRE saisie de chaque joueur
     function majStats() {
-      const nb = enregistrements.length;
       const elNb = document.getElementById("statsNbJoueurs");
       const elMoy = document.getElementById("statsMoyenneScore");
       const elDom = document.getElementById("statsZoneDom");
+      const indiceBox = document.getElementById("statsIndiceBox");
+      const indiceLabel = document.getElementById("statsIndiceLabel");
+      const recoEl = document.getElementById("statsRecoSeance");
+      const alertesEl = document.getElementById("statsAlertesListe");
 
-      elNb.textContent = "Joueurs enregistrés : " + nb;
+      // Construire un tableau "dernière saisie par joueur"
+      const dernierParJoueur = {};
+      enregistrements.forEach(rec => {
+        dernierParJoueur[rec.joueur] = rec; // le dernier dans le tableau gagne
+      });
+      const liste = Object.values(dernierParJoueur);
+      const nb = liste.length;
+
+      if (elNb) elNb.textContent = "Joueurs (dernière mesure) : " + nb;
 
       if (nb === 0) {
-        elMoy.textContent = "Score moyen : -";
-        elDom.textContent = "Zone dominante : -";
+        if (elMoy) elMoy.textContent = "Score moyen : -";
+        if (elDom) elDom.textContent = "Zone dominante : -";
+        if (indiceBox && indiceLabel) {
+          indiceBox.className = "stats-indice-box";
+          indiceLabel.textContent = "Indice bien-être équipe : -";
+        }
+        if (recoEl) recoEl.textContent = "Recommandation séance : -";
+        if (alertesEl) alertesEl.textContent = "-";
+
         ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
-          document.getElementById("bar"+z).style.width = "0%";
-          document.getElementById("text"+z).textContent = "0";
+          const bar = document.getElementById("bar"+z);
+          const txt = document.getElementById("text"+z);
+          if (bar) bar.style.width = "0%";
+          if (txt) txt.textContent = "0";
         });
         return;
       }
@@ -982,7 +1030,7 @@
       let sommeScores = 0;
       const compteZones = { vf:0, vc:0, j:0, o:0, r:0 };
 
-      enregistrements.forEach(rec => {
+      liste.forEach(rec => {
         sommeScores += rec.total;
         if (rec.zoneClass === "zone-vert-fonce") compteZones.vf++;
         else if (rec.zoneClass === "zone-vert-clair") compteZones.vc++;
@@ -992,8 +1040,9 @@
       });
 
       const moyScore = (sommeScores / nb).toFixed(1);
-      elMoy.textContent = "Score moyen : " + moyScore + " / 25";
+      if (elMoy) elMoy.textContent = "Score moyen : " + moyScore + " / 25";
 
+      // Zone dominante
       const zonesOrdre = [
         { code:"vf", nom:"VERT FONCÉ" },
         { code:"vc", nom:"VERT CLAIR" },
@@ -1009,24 +1058,97 @@
           maxZone = z.nom;
         }
       });
-      elDom.textContent = "Zone dominante : " + maxZone + " (" + maxVal + " joueurs)";
+      if (elDom) elDom.textContent = "Zone dominante : " + maxZone + " (" + maxVal + " joueurs)";
 
       const pct = code => Math.round((compteZones[code] / nb) * 100);
 
-      document.getElementById("barVFonce").style.width = pct("vf") + "%";
-      document.getElementById("textVFonce").textContent = compteZones.vf;
+      const barVF = document.getElementById("barVFonce");
+      const txtVF = document.getElementById("textVFonce");
+      if (barVF) barVF.style.width = pct("vf") + "%";
+      if (txtVF) txtVF.textContent = compteZones.vf;
 
-      document.getElementById("barVClair").style.width = pct("vc") + "%";
-      document.getElementById("textVClair").textContent = compteZones.vc;
+      const barVC = document.getElementById("barVClair");
+      const txtVC = document.getElementById("textVClair");
+      if (barVC) barVC.style.width = pct("vc") + "%";
+      if (txtVC) txtVC.textContent = compteZones.vc;
 
-      document.getElementById("barJaune").style.width = pct("j") + "%";
-      document.getElementById("textJaune").textContent = compteZones.j;
+      const barJ = document.getElementById("barJaune");
+      const txtJ = document.getElementById("textJaune");
+      if (barJ) barJ.style.width = pct("j") + "%";
+      if (txtJ) txtJ.textContent = compteZones.j;
 
-      document.getElementById("barOrange").style.width = pct("o") + "%";
-      document.getElementById("textOrange").textContent = compteZones.o;
+      const barO = document.getElementById("barOrange");
+      const txtO = document.getElementById("textOrange");
+      if (barO) barO.style.width = pct("o") + "%";
+      if (txtO) txtO.textContent = compteZones.o;
 
-      document.getElementById("barRouge").style.width = pct("r") + "%";
-      document.getElementById("textRouge").textContent = compteZones.r;
+      const barR = document.getElementById("barRouge");
+      const txtR = document.getElementById("textRouge");
+      if (barR) barR.style.width = pct("r") + "%";
+      if (txtR) txtR.textContent = compteZones.r;
+
+      // Indice bien-être équipe (en %)
+      const moyScoreNum = parseFloat(moyScore);
+      const pctEquipe = Math.round((moyScoreNum / 25) * 100);
+
+      let classeIndice = "";
+      let texteZoneEquipe = "";
+
+      if (pctEquipe >= 88) {
+        classeIndice = "indice-vert";
+        texteZoneEquipe = "Très bon état général";
+      } else if (pctEquipe >= 76) {
+        classeIndice = "indice-vert";
+        texteZoneEquipe = "Bon état général";
+      } else if (pctEquipe >= 64) {
+        classeIndice = "indice-jaune";
+        texteZoneEquipe = "Fatigue légère";
+      } else if (pctEquipe >= 52) {
+        classeIndice = "indice-orange";
+        texteZoneEquipe = "Fatigue notable";
+      } else {
+        classeIndice = "indice-rouge";
+        texteZoneEquipe = "Fatigue importante";
+      }
+
+      if (indiceBox && indiceLabel) {
+        indiceBox.className = "stats-indice-box " + classeIndice;
+        indiceLabel.textContent =
+          "Indice bien-être équipe : " + pctEquipe + "% – " + texteZoneEquipe;
+      }
+
+      // Joueurs en alerte (orange/rouge)
+      const alertes = liste
+        .filter(rec => rec.zoneClass === "zone-orange" || rec.zoneClass === "zone-rouge")
+        .map(rec => rec.joueur);
+
+      if (alertesEl) {
+        if (alertes.length === 0) {
+          alertesEl.textContent = "Aucun joueur en alerte (orange/rouge) sur la dernière mesure.";
+        } else {
+          alertesEl.textContent = alertes.join(", ");
+        }
+      }
+
+      // Recommandation séance
+      const nbRougeOrange = compteZones.o + compteZones.r;
+      const pctRougeOrange = Math.round((nbRougeOrange / nb) * 100);
+
+      let reco = "";
+
+      if (pctEquipe >= 80 && pctRougeOrange <= 10) {
+        reco = "Équipe globalement en forme : tu peux maintenir la charge prévue, voire l'augmenter légèrement.";
+      } else if (pctEquipe >= 70 && pctRougeOrange <= 25) {
+        reco = "Fatigue modérée : maintiens la séance prévue mais surveille les joueurs en orange/rouge.";
+      } else if (pctEquipe >= 60 || pctRougeOrange > 30) {
+        reco = "Plusieurs joueurs fatigués : réduis le volume ou l'intensité, individualise pour les joueurs en alerte.";
+      } else {
+        reco = "Fatigue élevée : séance allégée / récupération active, attention particulière aux joueurs les plus en difficulté.";
+      }
+
+      if (recoEl) {
+        recoEl.textContent = "Recommandation séance : " + reco;
+      }
     }
 
     function resetForm(clearResult) {
@@ -1101,6 +1223,7 @@
     initDateSeance();
   </script>
 
+  <!-- Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
@@ -1108,5 +1231,37 @@
         .catch(err => console.log("Erreur SW:", err));
     }
   </script>
+
+  <!-- SECTION GRAPHIQUES GOOGLE SHEETS (MODE COACH UNIQUEMENT) -->
+  <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
+    <h2>Statistiques équipe (Google Sheets)</h2>
+
+    <div class="stats-grid">
+      <!-- 🔴 TOP 5 FATIGUÉS -->
+      <div class="stats-chart-card">
+        <h3>Top 5 joueurs les plus fatigués</h3>
+        <div class="iframe-container">
+          <iframe
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
+            loading="lazy"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+
+      <!-- 🟢 TOP 5 EN FORME -->
+      <div class="stats-chart-card">
+        <h3>Top 5 joueurs les plus en forme</h3>
+        <div class="iframe-container">
+          <iframe
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
+            loading="lazy"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </body>
 </html>
