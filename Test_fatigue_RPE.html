@@ -575,32 +575,30 @@ function envoyerVersGoogleSheets(rec) {
     return;
   }
 
+  // On envoie une copie sans le champ "envoye"
   const payload = Object.assign({}, rec);
   delete payload.envoye;
 
-  console.log("Envoi vers Google Sheets :", payload);
+  console.log("Envoi vers Google Sheets (no-cors) :", payload);
 
   fetch(GOOGLE_SHEETS_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
+    mode: "no-cors",               // ✅ important pour éviter CORS
+    body: JSON.stringify(payload)  // pas de headers -> requête simple
   })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error("Réponse HTTP " + response.status);
-    }
+  .then(() => {
+    // On suppose que l'envoi s'est bien passé
     rec.envoye = true;
     sauvegarderDansStorage();
-    console.log("Envoi OK pour", rec.joueur, rec.seance);
+    console.log("Envoi lancé pour", rec.joueur, rec.seance);
   })
   .catch(err => {
-    console.warn("Erreur envoi Google Sheets :", err);
+    console.warn("Erreur réseau envoi Google Sheets :", err);
+    // On laisse envoye=false pour pouvoir réessayer plus tard
   });
 }
 
-  function syncGoogleSheets() {
+function syncGoogleSheets() {
   if (!navigator.onLine) {
     alert("La tablette n'est pas connectée à Internet.\nConnecte-toi au Wi-Fi puis réessaie.");
     return;
@@ -617,41 +615,33 @@ function envoyerVersGoogleSheets(rec) {
     return;
   }
 
-  let succes = 0;
-  let echec = 0;
-
   aEnvoyer.forEach(rec => {
-    // même logique que dans envoyerVersGoogleSheets
     const payload = Object.assign({}, rec);
     delete payload.envoye;
 
     fetch(GOOGLE_SHEETS_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      mode: "no-cors",
       body: JSON.stringify(payload)
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("HTTP " + response.status);
-      }
+    .then(() => {
+      // On suppose que l'envoi s'est bien passé
       rec.envoye = true;
-      succes++;
       sauvegarderDansStorage();
     })
     .catch(err => {
-      console.warn("Erreur envoi (sync) pour", rec.joueur, rec.seance, err);
-      echec++;
-    })
-    .finally(() => {
-      if (succes + echec === aEnvoyer.length) {
-        alert(
-          "Synchronisation terminée.\n" +
-          succes + " réponses envoyées avec succès.\n" +
-          (echec ? (echec + " échec(s), tu pourras réessayer plus tard.") : "")
-        );
-      }
+      console.warn("Erreur réseau (sync) pour", rec.joueur, rec.seance, err);
+      // On laisse envoye=false pour retenter lors d'une prochaine synchro
+    });
+  });
+
+  alert(
+    "Synchronisation lancée.\n" +
+    aEnvoyer.length + " réponses envoyées vers Google Sheets (no-cors).\n" +
+    "Vérifie dans le Google Sheet après quelques secondes."
+  );
+}
+
     });
   });
 } 
@@ -1050,6 +1040,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
