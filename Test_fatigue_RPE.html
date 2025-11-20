@@ -949,27 +949,65 @@ if ("serviceWorker" in navigator) {
 <section id="stats-equipe" class="card">
   <h2>Statistiques équipe</h2>
 
-  <div class="iframe-container">
-    <iframe
-      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
-      allowfullscreen
-      loading="lazy"
-    ></iframe>
+  <div class="stats-grid">
+
+    <!-- 🔴 TOP 5 FATIGUÉS -->
+    <div class="stats-chart-card">
+      <h3>Top 5 joueurs les plus fatigués</h3>
+      <div class="iframe-container">
+        <iframe
+          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- 🟢 TOP 5 EN FORME -->
+    <div class="stats-chart-card">
+      <h3>Top 5 joueurs les plus en forme</h3>
+      <div class="iframe-container">
+        <iframe
+          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
-/* 🟩 Conteneur responsive (PC/Tablette) */
+/* Statistiques équipe - mise en page responsive */
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.stats-chart-card {
+  flex: 1 1 280px;
+  min-width: 260px;
+}
+
+.stats-chart-card h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #2f4f6f;
+  text-align: center;
+}
+
+/* Conteneur responsive */
 .iframe-container {
   position: relative;
   width: 100%;
-  padding-top: 60%;  /* hauteur du cadre */
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* 🟦 L’iframe occupe tout le conteneur */
 .iframe-container iframe {
   position: absolute;
   top: 0;
@@ -979,15 +1017,20 @@ if ("serviceWorker" in navigator) {
   border: 0;
 }
 
-/* 📱 Version mobile */
-@media (max-width: 600px) {
+/* Mobile */
+@media (max-width: 700px) {
+  .stats-grid {
+    flex-direction: column;
+  }
+
   .iframe-container {
-    padding-top: 90%; /* plus haut pour mobile */
+    aspect-ratio: 3 / 4; /* plus haut en portrait */
   }
 }
 </style>
 </body>
 </html>
+
 
 
 
