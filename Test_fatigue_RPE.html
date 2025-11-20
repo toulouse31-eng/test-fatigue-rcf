@@ -423,12 +423,14 @@
 
 <div class="actions">
   <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
-  <button type="button" class="primary" onclick="exporterCSV()">Exporter tous les joueurs (CSV)</button>
-  <button type="button" class="primary" onclick="exporterExcel()">Exporter tous les joueurs (Excel)</button>
+
+  <!-- ✅ Nouveau bouton de synchro -->
+  <button type="button" class="primary" onclick="syncGoogleSheets()">
+    Envoyer les données vers Google Sheets
+  </button>
+
   <button type="reset" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
-  <button type="button" class="danger" onclick="resetDonnees()">
-  Effacer tous les enregistrements (staff)
-</button>
+  <button type="button" class="secondary" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
 </div>
 
 <div class="result" id="resultat"></div>
@@ -573,6 +575,95 @@ function envoyerVersGoogleSheets(rec) {
     return;
   }
 
+  if (!navigator.onLine) {
+    console.log("Hors connexion, envoi reporté.");
+    return;
+  }
+
+  // On envoie une copie sans le champ "envoye"
+  const payload = Object.assign({}, rec);
+  delete payload.envoye;
+
+  console.log("Envoi vers Google Sheets :", payload);
+
+  fetch(GOOGLE_SHEETS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Réponse HTTP " + response.status);
+    }
+    // ✅ marquer comme envoyé
+    rec.envoye = true;
+    sauvegarderDansStorage();
+    console.log("Envoi OK pour", rec.joueur, rec.seance);
+  })
+  .catch(err => {
+    console.warn("Erreur envoi Google Sheets :", err);
+    // On laisse envoye=false pour pouvoir réessayer plus tard
+  });
+}
+
+  function syncGoogleSheets() {
+  if (!navigator.onLine) {
+    alert("La tablette n'est pas connectée à Internet.\nConnecte-toi au Wi-Fi puis réessaie.");
+    return;
+  }
+
+  const aEnvoyer = enregistrements.filter(r => !r.envoye);
+
+  if (aEnvoyer.length === 0) {
+    alert("Toutes les données locales ont déjà été envoyées vers Google Sheets.");
+    return;
+  }
+
+  if (!confirm("Envoyer " + aEnvoyer.length + " réponses vers Google Sheets ?")) {
+    return;
+  }
+
+  let succes = 0;
+  let echec = 0;
+
+  aEnvoyer.forEach(rec => {
+    // même logique que dans envoyerVersGoogleSheets
+    const payload = Object.assign({}, rec);
+    delete payload.envoye;
+
+    fetch(GOOGLE_SHEETS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+      }
+      rec.envoye = true;
+      succes++;
+      sauvegarderDansStorage();
+    })
+    .catch(err => {
+      console.warn("Erreur envoi (sync) pour", rec.joueur, rec.seance, err);
+      echec++;
+    })
+    .finally(() => {
+      if (succes + echec === aEnvoyer.length) {
+        alert(
+          "Synchronisation terminée.\n" +
+          succes + " réponses envoyées avec succès.\n" +
+          (echec ? (echec + " échec(s), tu pourras réessayer plus tard.") : "")
+        );
+      }
+    });
+  });
+} 
+    
   console.log("Envoi vers Google Sheets :", rec);
 
   fetch(GOOGLE_SHEETS_URL, {
@@ -680,27 +771,34 @@ function initDateSeance() {
       zoneClass = "zone-rouge";
     }
 
-       const record = {
-      date,
-      joueur,
-      seance,
-      sommeil,
-      douleurs,
-      stress,
-      fatigue,
-      motivation,
-      total,
-      pourcentage,
-      zone: zoneTexte,
-      zoneClass: zoneClass,
-      douleurZone,
-      commentaire
-    };
+    const record = {
+  date,
+  joueur,
+  seance,
+  sommeil,
+  douleurs,
+  stress,
+  fatigue,
+  motivation,
+  total,
+  pourcentage,
+  zone: zoneTexte,
+  zoneClass: zoneClass,
+  douleurZone,
+  commentaire,
+  envoye: false          // ✅ pas encore envoyé vers Google Sheets
+};
 
-    enregistrements.push(record);
+enregistrements.push(record);
+sauvegarderDansStorage();
 
-    // Envoi vers Google Sheets
-    envoyerVersGoogleSheets(record);
+// On essaye d’envoyer tout de suite SI on est en ligne
+if (navigator.onLine) {
+  envoyerVersGoogleSheets(record);
+} else {
+  console.log("Pas de connexion : réponse sauvegardée uniquement en local.");
+}
+
 
     const resultatDiv = document.getElementById("resultat");
     resultatDiv.textContent =
@@ -972,6 +1070,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
