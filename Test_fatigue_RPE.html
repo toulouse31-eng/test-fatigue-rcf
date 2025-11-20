@@ -10,7 +10,7 @@
 
   <style>
     body {
-  font-family: Arial, sans-serif;https://script.google.com/macros/s/AKfycbw2ivaPVAFRwvccLXxPV0d4tmTinWYsruhg7hj_vPBNTWFT2pDVRJU-ze_-u1W95Hv-/exec
+  font-family: Arial, sans-serif;
   padding: 20px;
   max-width: 900px;
   margin: auto;
@@ -524,15 +524,16 @@
     </div>
   </div>
 
-  <script>
+<script>
   let enregistrements = [];
 
   const STORAGE_KEY = "test_fatigue_rcf_enregistrements_v1";
   const selectJoueur = document.getElementById("joueurSelect");
   const rowAutre = document.getElementById("rowAutre");
   const inputAutre = document.getElementById("joueurAutre");
-  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDyOnW-bZy9vgEaByJlzTyQb8EkeavljwMXzYtHIGHIihBxDZPjW6GOQ6iim10Nb-w/exec"; 
+  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDyOnW-bZy9vgEaByJlzTyQb8EkeavljwMXzYtHIGHIihBxDZPjW6GOQ6iim10Nb-w/exec";
 
+  // Affichage champ "Autre joueur"
   selectJoueur.addEventListener("change", () => {
     if (selectJoueur.value === "Autre") {
       rowAutre.style.display = "flex";
@@ -542,7 +543,7 @@
     }
   });
 
-  // Boutons 1–5
+  // Boutons 1–5 -> hidden inputs
   document.querySelectorAll(".scale").forEach(scale => {
     const name = scale.getAttribute("data-name");
     const hiddenInput = document.querySelector('input[name="' + name + '"]');
@@ -563,61 +564,23 @@
     }
     return valSelect;
   }
-    
-function envoyerVersGoogleSheets(rec) {
-  if (!GOOGLE_SHEETS_URL) {
-    console.warn("Pas d'URL Google Sheets définie");
-    return;
-  }
 
-  if (!navigator.onLine) {
-    console.log("Hors connexion, envoi reporté.");
-    return;
-  }
+  // Envoi d'un enregistrement vers Google Sheets
+  function envoyerVersGoogleSheets(rec) {
+    if (!GOOGLE_SHEETS_URL) {
+      console.warn("Pas d'URL Google Sheets définie");
+      return;
+    }
 
-  // On envoie une copie sans le champ "envoye"
-  const payload = Object.assign({}, rec);
-  delete payload.envoye;
+    if (!navigator.onLine) {
+      console.log("Hors connexion, envoi reporté.");
+      return;
+    }
 
-  console.log("Envoi vers Google Sheets (no-cors) :", payload);
-
-  fetch(GOOGLE_SHEETS_URL, {
-    method: "POST",
-    mode: "no-cors",               // ✅ important pour éviter CORS
-    body: JSON.stringify(payload)  // pas de headers -> requête simple
-  })
-  .then(() => {
-    // On suppose que l'envoi s'est bien passé
-    rec.envoye = true;
-    sauvegarderDansStorage();
-    console.log("Envoi lancé pour", rec.joueur, rec.seance);
-  })
-  .catch(err => {
-    console.warn("Erreur réseau envoi Google Sheets :", err);
-    // On laisse envoye=false pour pouvoir réessayer plus tard
-  });
-}
-
-function syncGoogleSheets() {
-  if (!navigator.onLine) {
-    alert("La tablette n'est pas connectée à Internet.\nConnecte-toi au Wi-Fi puis réessaie.");
-    return;
-  }
-
-  const aEnvoyer = enregistrements.filter(r => !r.envoye);
-
-  if (aEnvoyer.length === 0) {
-    alert("Toutes les données locales ont déjà été envoyées vers Google Sheets.");
-    return;
-  }
-
-  if (!confirm("Envoyer " + aEnvoyer.length + " réponses vers Google Sheets ?")) {
-    return;
-  }
-
-  aEnvoyer.forEach(rec => {
     const payload = Object.assign({}, rec);
     delete payload.envoye;
+
+    console.log("Envoi vers Google Sheets (no-cors) :", payload);
 
     fetch(GOOGLE_SHEETS_URL, {
       method: "POST",
@@ -625,28 +588,60 @@ function syncGoogleSheets() {
       body: JSON.stringify(payload)
     })
     .then(() => {
-      // On suppose que l'envoi s'est bien passé
+      // On suppose que ça passe
       rec.envoye = true;
       sauvegarderDansStorage();
+      console.log("Envoi lancé pour", rec.joueur, rec.seance);
     })
     .catch(err => {
-      console.warn("Erreur réseau (sync) pour", rec.joueur, rec.seance, err);
-      // On laisse envoye=false pour retenter lors d'une prochaine synchro
+      console.warn("Erreur réseau envoi Google Sheets :", err);
     });
-  });
+  }
 
-  alert(
-    "Synchronisation lancée.\n" +
-    aEnvoyer.length + " réponses envoyées vers Google Sheets (no-cors).\n" +
-    "Vérifie dans le Google Sheet après quelques secondes."
-  );
-}
+  // Envoi de tous les enregistrements non envoyés
+  function syncGoogleSheets() {
+    if (!navigator.onLine) {
+      alert("La tablette n'est pas connectée à Internet.\nConnecte-toi au Wi-Fi puis réessaie.");
+      return;
+    }
 
+    const aEnvoyer = enregistrements.filter(r => !r.envoye);
+
+    if (aEnvoyer.length === 0) {
+      alert("Toutes les données locales ont déjà été envoyées vers Google Sheets.");
+      return;
+    }
+
+    if (!confirm("Envoyer " + aEnvoyer.length + " réponses vers Google Sheets ?")) {
+      return;
+    }
+
+    aEnvoyer.forEach(rec => {
+      const payload = Object.assign({}, rec);
+      delete payload.envoye;
+
+      fetch(GOOGLE_SHEETS_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        rec.envoye = true;
+        sauvegarderDansStorage();
+      })
+      .catch(err => {
+        console.warn("Erreur réseau (sync) pour", rec.joueur, rec.seance, err);
+      });
     });
-  });
-} 
-    
-function getSeance() {
+
+    alert(
+      "Synchronisation lancée.\n" +
+      aEnvoyer.length + " réponses envoyées vers Google Sheets (no-cors).\n" +
+      "Vérifie dans le Google Sheet après quelques secondes."
+    );
+  }
+
+  function getSeance() {
     const inputDate = document.getElementById("seanceDate");
     const valDate = inputDate.value;
     if (!valDate) return "";
@@ -655,19 +650,19 @@ function getSeance() {
     const jour = jours[d.getDay()];
     return valDate + " (" + jour + ")";
   }
-    
-function initDateSeance() {
-  const inputDate = document.getElementById("seanceDate");
-  if (!inputDate) return;
 
-  const aujourdHui = new Date();
-  const annee = aujourdHui.getFullYear();
-  const mois = String(aujourdHui.getMonth() + 1).padStart(2, "0");
-  const jour = String(aujourdHui.getDate()).padStart(2, "0");
+  function initDateSeance() {
+    const inputDate = document.getElementById("seanceDate");
+    if (!inputDate) return;
 
-  // Format YYYY-MM-DD pour le champ type="date"
-  inputDate.value = annee + "-" + mois + "-" + jour;
-}
+    const aujourdHui = new Date();
+    const annee = aujourdHui.getFullYear();
+    const mois = String(aujourdHui.getMonth() + 1).padStart(2, "0");
+    const jour = String(aujourdHui.getDate()).padStart(2, "0");
+
+    inputDate.value = annee + "-" + mois + "-" + jour;
+  }
+
   function enregistrerJoueur() {
     const form = document.getElementById("fatigueForm");
 
@@ -677,10 +672,8 @@ function initDateSeance() {
       return;
     }
 
-    // Séance (peut être vide si pas de date)
     const seance = getSeance();
 
-    // 🔒 Empêcher doublon : même joueur + même séance (ou même joueur sans date)
     const dejaFait = enregistrements.some(rec =>
       rec.joueur === joueur &&
       (rec.seance || "") === (seance || "")
@@ -723,7 +716,6 @@ function initDateSeance() {
     let zoneTexte = "";
     let zoneClass = "";
 
-    // 5 zones
     if (pourcentage >= 88) {
       zoneTexte = "VERT FONCE tres bon etat (22-25)";
       zoneClass = "zone-vert-fonce";
@@ -742,33 +734,31 @@ function initDateSeance() {
     }
 
     const record = {
-  date,
-  joueur,
-  seance,
-  sommeil,
-  douleurs,
-  stress,
-  fatigue,
-  motivation,
-  total,
-  pourcentage,
-  zone: zoneTexte,
-  zoneClass: zoneClass,
-  douleurZone,
-  commentaire,
-  envoye: false          // ✅ pas encore envoyé vers Google Sheets
-};
+      date,
+      joueur,
+      seance,
+      sommeil,
+      douleurs,
+      stress,
+      fatigue,
+      motivation,
+      total,
+      pourcentage,
+      zone: zoneTexte,
+      zoneClass: zoneClass,
+      douleurZone,
+      commentaire,
+      envoye: false
+    };
 
-enregistrements.push(record);
-sauvegarderDansStorage();
+    enregistrements.push(record);
+    sauvegarderDansStorage();
 
-// On essaye d’envoyer tout de suite SI on est en ligne
-if (navigator.onLine) {
-  envoyerVersGoogleSheets(record);
-} else {
-  console.log("Pas de connexion : réponse sauvegardée uniquement en local.");
-}
-
+    if (navigator.onLine) {
+      envoyerVersGoogleSheets(record);
+    } else {
+      console.log("Pas de connexion : réponse sauvegardée uniquement en local.");
+    }
 
     const resultatDiv = document.getElementById("resultat");
     resultatDiv.textContent =
@@ -779,10 +769,9 @@ if (navigator.onLine) {
 
     majListeJoueurs();
     majStats();
-    sauvegarderDansStorage();
     resetForm(false);
-    }
-    
+  }
+
   function majListeJoueurs() {
     const ul = document.getElementById("listeJoueursUl");
     ul.innerHTML = "";
@@ -866,93 +855,14 @@ if (navigator.onLine) {
     document.getElementById("textRouge").textContent = compteZones.r;
   }
 
-  function exporterCSV() {
-    if (enregistrements.length === 0) {
-      alert("Aucun joueur enregistré à exporter.");
-      return;
-    }
-
-    const header =
-      "date;joueur;seance;sommeil;douleurs;stress;fatigue;motivation;score_total;pourcentage;zone;douleur_zone;commentaire\n";
-
-    const lignes = enregistrements.map(rec =>
-      rec.date + ";" +
-      rec.joueur + ";" +
-      rec.seance + ";" +
-      rec.sommeil + ";" +
-      rec.douleurs + ";" +
-      rec.stress + ";" +
-      rec.fatigue + ";" +
-      rec.motivation + ";" +
-      rec.total + ";" +
-      rec.pourcentage + ";" +
-      rec.zone + ";" +
-      (rec.douleurZone || "") + ";" +
-      (rec.commentaire || "")
-    );
-
-    const csvContent = header + lignes.join("\n");
-
-    const blob = new Blob([csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const timestamp = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = "test_fatigue_equipe_" + timestamp + ".csv";
-    a.click();
-  }
-
-  function exporterExcel() {
-    if (enregistrements.length === 0) {
-      alert("Aucun joueur enregistré à exporter.");
-      return;
-    }
-
-    const data = [];
-    data.push([
-      "date","joueur","seance",
-      "sommeil","douleurs","stress","fatigue","motivation",
-      "score_total","pourcentage","zone",
-      "douleur_zone","commentaire"
-    ]);
-
-    enregistrements.forEach(rec => {
-      data.push([
-        rec.date,
-        rec.joueur,
-        rec.seance,
-        rec.sommeil,
-        rec.douleurs,
-        rec.stress,
-        rec.fatigue,
-        rec.motivation,
-        rec.total,
-        rec.pourcentage / 100,
-        rec.zone,
-        rec.douleurZone || "",
-        rec.commentaire || ""
-      ]);
-    });
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    XLSX.utils.book_append_sheet(wb, ws, "Base");
-    const timestamp = new Date().toISOString().slice(0,10);
-    XLSX.writeFile(wb, "base_fatigue_" + timestamp + ".xlsx");
-  }
-
   function resetForm(clearResult) {
     const form = document.getElementById("fatigueForm");
     form.reset();
     rowAutre.style.display = "none";
     inputAutre.value = "";
 
-    // Enlever la sélection visuelle des boutons
     document.querySelectorAll(".scale button").forEach(b => b.classList.remove("active"));
 
-    // Vider les champs cachés
     document.querySelectorAll('input[type="hidden"]').forEach(input => {
       input.value = "";
     });
@@ -1012,12 +922,11 @@ if (navigator.onLine) {
     alert("Tous les enregistrements ont été effacés.");
   }
 
- // init depuis le stockage local
-chargerDepuisStorage();
-// init de la date de séance au jour J
-initDateSeance();
-
+  // init
+  chargerDepuisStorage();
+  initDateSeance();
 </script>
+
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
@@ -1040,6 +949,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
