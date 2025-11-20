@@ -336,6 +336,33 @@
         aspect-ratio: 3 / 4;
       }
     }
+    /* Bouton Mode Coach : rond, discret, léger effet 3D */
+.mode-toggle-btn {
+  padding: 8px 14px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(145deg, #3f82cf, #1f5ba8);
+  color: #fff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+  opacity: 0.85;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    opacity 0.2s ease;
+}
+
+.mode-toggle-btn:hover {
+  opacity: 1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.mode-toggle-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
   </style>
 </head>
 
@@ -344,11 +371,11 @@
     <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
   </div>
 
-  <div style="text-align:right; margin-bottom:10px;">
-    <button type="button" class="secondary" onclick="toggleModeCoach()">
-      Basculer Mode Coach / Joueur
-    </button>
-  </div>
+ <div style="text-align:right; margin-bottom:10px;">
+  <button type="button" class="mode-toggle-btn" onclick="toggleModeCoach()">
+    Mode coach
+  </button>
+</div>
 
   <h1>Test de Fatigue N3</h1>
   <h2>Questionnaire bien-être avant l'entraînement</h2>
@@ -400,15 +427,13 @@
         </div>
 
         <!-- Date séance + boutons -->
-        <div class="row">
-          <label for="seanceDate">Date de la séance :</label>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <input type="date" id="seanceDate" name="seanceDate">
-            <button type="button" class="secondary small-btn" onclick="changeSeanceDate(-1)">-1 jour</button>
-            <button type="button" class="secondary small-btn" onclick="setSeanceToday()">Aujourd'hui</button>
-            <button type="button" class="secondary small-btn" onclick="changeSeanceDate(1)">+1 jour</button>
-          </div>
-        </div>
+<div class="row">
+  <label for="seanceDate">Date de la séance :</label>
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <input type="date" id="seanceDate" name="seanceDate">
+    <button type="button" class="secondary small-btn" onclick="setSeanceToday()">Aujourd'hui</button>
+  </div>
+</div>
 
         <!-- Questions -->
         <div class="question">
@@ -1106,3 +1131,4 @@
   </script>
 </body>
 </html>
+
