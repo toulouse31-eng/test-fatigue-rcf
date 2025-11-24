@@ -321,7 +321,6 @@
           <button type="button" class="primary coach-only" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
           <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
           <button type="button" class="secondary danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
-          <button type="button" class="secondary coach-only" onclick="testSheets()">Tester connexion Google Sheets </button>
 
         </div>
 
@@ -541,31 +540,6 @@
 // ======================
 // TEST ENVOI GOOGLE SHEETS
 // ======================
-async function testSheets() {
-  const fake = {
-    date: new Date().toLocaleString(),
-    joueur: "TEST",
-    seance: "2099-01-01 (Test)",
-    recuperation: 3,
-    sommeil: 3,
-    alimentation: 3,
-    fatigue_physique: 3,
-    fatigue_mentale: 3,
-    total: 15,
-    pourcentage: 60,
-    zone: "TEST",
-    zoneClass: "zone-jaune",
-    douleurZone: "",
-    commentaire: "test auto",
-    envoye: false
-  };
-
-  alert("Test en cours…");
-
-  await envoyerVersGoogleSheets(fake);
-
-  alert("Test terminé. Vérifie ton Google Sheets !");
-}
 
     function syncGoogleSheets() {
       if (!navigator.onLine) {
