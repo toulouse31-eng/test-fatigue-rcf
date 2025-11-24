@@ -268,7 +268,7 @@
           <input type="hidden" name="sommeil" />
         </div>
 
-        <!-- Q3 ✅ -->
+        <!-- Q3 -->
         <div class="question">
           <label><span class="qnum">3.</span>Qualité de l'alimentation/hydratation 🍽️💧</label>
           <div class="scale" data-name="alimentation">
@@ -309,8 +309,6 @@
           <div class="legend">1 = Très fatigué mentalement &nbsp;&nbsp; 5 = Très frais</div>
           <input type="hidden" name="fatigue_mentale" />
         </div>
-
-        <!-- ✅ Bonus staff supprimé -->
 
         <!-- Douleurs spécifiques -->
         <div class="row">
@@ -449,11 +447,12 @@
   <!-- SCRIPT PRINCIPAL -->
   <script>
     let enregistrements = [];
-
     const STORAGE_KEY = "test_fatigue_rcf_enregistrements_v1";
+
     const selectJoueur = document.getElementById("joueurSelect");
     const rowAutre = document.getElementById("rowAutre");
     const inputAutre = document.getElementById("joueurAutre");
+
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDx3q3ts0HUodvo2MJmXinAD428yvXzCK6N6AbzDExwlKV5mr4VLWxr1J3H9mbzlED/exec";
 
     selectJoueur.addEventListener("change", () => {
@@ -522,8 +521,7 @@
     }
 
     function envoyerVersGoogleSheets(rec) {
-      if (!GOOGLE_SHEETS_URL) return;
-      if (!navigator.onLine) return;
+      if (!GOOGLE_SHEETS_URL || !navigator.onLine) return;
 
       const payload = {...rec};
       delete payload.envoye;
@@ -658,9 +656,13 @@
       if (nb===0){
         if(elMoy) elMoy.textContent="Score moyen : -";
         if(elDom) elDom.textContent="Zone dominante : -";
-        if(indiceBox&&indiceLabel){ indiceBox.className="stats-indice-box"; indiceLabel.textContent="Indice bien-être équipe : -"; }
+        if(indiceBox&&indiceLabel){
+          indiceBox.className="stats-indice-box";
+          indiceLabel.textContent="Indice bien-être équipe : -";
+        }
         if(recoEl) recoEl.textContent="Recommandation séance : -";
         if(alertesEl) alertesEl.textContent="-";
+
         ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
           const bar=document.getElementById("bar"+z);
           const txt=document.getElementById("text"+z);
@@ -722,7 +724,10 @@
         indiceLabel.textContent=`Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
       }
 
-      const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>r.joueur);
+      const alertes=liste
+        .filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge")
+        .map(r=>r.joueur);
+
       if(alertesEl){
         alertesEl.textContent=alertes.length?alertes.join(", "):"Aucun joueur en alerte.";
       }
@@ -760,11 +765,18 @@
 
     function chargerDepuisStorage(){
       const data=localStorage.getItem(STORAGE_KEY);
-      if(!data){ enregistrements=[]; majListeJoueurs(); majStats(); return; }
+      if(!data){
+        enregistrements=[];
+        majListeJoueurs();
+        majStats();
+        return;
+      }
       try{
         const parsed=JSON.parse(data);
         enregistrements=Array.isArray(parsed)?parsed:[];
-      }catch(e){ enregistrements=[]; }
+      }catch(e){
+        enregistrements=[];
+      }
       majListeJoueurs();
       majStats();
       buildSparklineSelect();
@@ -774,7 +786,9 @@
       if(!confirm("Supprimer toutes les réponses locales ?")) return;
       enregistrements=[];
       localStorage.removeItem(STORAGE_KEY);
-      majListeJoueurs(); majStats(); resetForm(true);
+      majListeJoueurs();
+      majStats();
+      resetForm(true);
       alert("Historique local effacé.");
     }
 
@@ -789,6 +803,7 @@
       const d = new Date(m[1] + "T00:00:00");
       return isNaN(d.getTime()) ? null : d;
     }
+
     function getDateLabelFromRecord(r){
       const d = getDateFromSeance(r.seance) || new Date(r.date);
       if(isNaN(d.getTime())) return "";
@@ -830,13 +845,12 @@
     }
 
     function drawZones(ctx, padL, padT, plotW, plotH){
-      // zones de bas en haut
       const zones = [
-        {from:0,  to:52,  color:"#f8d7da"}, // rouge
-        {from:52, to:64,  color:"#ffe0b8"}, // orange
-        {from:64, to:76,  color:"#fff8c2"}, // jaune
-        {from:76, to:88,  color:"#d5f7dd"}, // vert clair
-        {from:88, to:100, color:"#b7f0c4"}  // vert foncé
+        {from:0,  to:52,  color:"#f8d7da"},
+        {from:52, to:64,  color:"#ffe0b8"},
+        {from:64, to:76,  color:"#fff8c2"},
+        {from:76, to:88,  color:"#d5f7dd"},
+        {from:88, to:100, color:"#b7f0c4"}
       ];
 
       zones.forEach(z=>{
@@ -864,58 +878,44 @@
       }
       if(empty) empty.style.display = "none";
 
-      // padding + zone dessin
       const padL = 52, padR = 14, padT = 28, padB = 46;
       const plotW = w - padL - padR;
       const plotH = h - padT - padB;
 
-      // ✅ zones couleur
+      // zones couleur
       drawZones(ctx, padL, padT, plotW, plotH);
 
       const values = points.map(p => p.value);
-      const minV = 0, maxV = 100;
       const stepX = plotW / Math.max(points.length - 1, 1);
 
       const toXY = (v,i) => {
         const x = padL + i * stepX;
-        const y = padT + plotH * (1 - (v-minV)/(maxV-minV));
+        const y = padT + plotH * (1 - v/100);
         return {x,y};
       };
       const pts = points.map((p,i)=>toXY(p.value,i));
-const values = points.map(p => p.value);
-const minV = 0, maxV = 100;
-const stepX = plotW / Math.max(points.length - 1, 1);
 
-const toXY = (v,i) => {
-    const x = padL + i * stepX;
-    const y = padT + plotH * (1 - (v-minV)/(maxV-minV));
-    return {x,y};
-};
-const pts = points.map((p,i)=>toXY(p.value,i));
+      // moyenne mobile (sur points affichés)
+      const avg = values.reduce((a,b)=>a+b,0) / values.length;
+      const yAvg = padT + plotH * (1 - avg/100);
 
-// ✅ moyenne mobile (sur les points affichés)
-const avg = values.reduce((a,b)=>a+b,0) / values.length;
-const yAvg = padT + plotH * (1 - avg/100);
+      ctx.save();
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([6,6]);
+      ctx.beginPath();
+      ctx.moveTo(padL, yAvg);
+      ctx.lineTo(w - padR, yAvg);
+      ctx.stroke();
+      ctx.restore();
 
-// ligne pointillée
-ctx.save();
-ctx.strokeStyle = "#0f172a";
-ctx.lineWidth = 1.8;
-ctx.setLineDash([6,6]);
-ctx.beginPath();
-ctx.moveTo(padL, yAvg);
-ctx.lineTo(w - padR, yAvg);
-ctx.stroke();
-ctx.restore();
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
 
-// label moyenne (à droite)
-ctx.fillStyle = "#0f172a";
-ctx.font = "12px Arial";
-ctx.textAlign = "right";
-ctx.textBaseline = "bottom";
-ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
-
-      // grille horizontale
+      // grille horizontale + labels y
       ctx.lineWidth = 1;
       ctx.strokeStyle = "#e2e8f0";
       ctx.fillStyle = "#64748b";
@@ -944,6 +944,7 @@ ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = "#334155";
+
       points.forEach((p,i)=>{
         const x = padL + i*stepX;
         const yAxis = padT + plotH;
@@ -964,31 +965,26 @@ ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
       pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
       ctx.stroke();
 
-      // points + labels (anti-débordement)
+      // points + labels anti-débordement
       pts.forEach((p,i)=>{
-        // point
         ctx.fillStyle = "#2f7ccc";
         ctx.beginPath();
         ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
         ctx.fill();
 
-        // label %
         let labelX = p.x;
         let labelY = p.y - 10;
         let align = "center";
         let baseline = "bottom";
 
-        // si trop haut => on met dessous (évite le débordement à 100%)
         if(labelY < padT + 4){
           labelY = p.y + 12;
           baseline = "top";
         }
 
-        // si proche gauche/droite => align adapté
         if(i === 0) align="left";
         if(i === pts.length-1) align="right";
 
-        // clamp X pour ne pas sortir
         labelX = Math.max(padL + 2, Math.min(labelX, w - padR - 2));
 
         ctx.fillStyle = "#0f172a";
@@ -1025,7 +1021,6 @@ ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
 
       sel.onchange = redraw;
       rangeSel.onchange = redraw;
-
       redraw();
     }
 
@@ -1038,7 +1033,6 @@ ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
       }
     });
 
-    /* INIT DOM */
     document.addEventListener("DOMContentLoaded", () => {
       chargerDepuisStorage();
       initDateSeance();
