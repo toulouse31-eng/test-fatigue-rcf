@@ -845,36 +845,39 @@
 function chargerDepuisGoogleSheetsJSONP(){
   return new Promise((resolve) => {
     const cbName = "gsCb_" + Date.now();
+    let done = false;
+
+    const script = document.createElement("script");
 
     window[cbName] = (resp) => {
+      done = true;
       try {
-        const rows = resp?.table?.rows || [];
+        const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
 
         const data = rows.map(r => {
           const c = r.c || [];
 
-          // K = pourcentage (colonne 11 -> index 10)
-          // Attention : parfois c[10].v est "76 %" (texte)
+          // K = pourcentage (index 10)
           const rawPct = c[10]?.v;
           const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
           const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
           return {
-            date: c[1]?.v || "",                // B dateApp
-            joueur: c[2]?.v || "",              // C joueur
-            seance: c[3]?.v || "",              // D seance
-            recuperation: Number(c[4]?.v) || "",// E
-            sommeil: Number(c[5]?.v) || "",     // F
-            alimentation: Number(c[6]?.v) || "",// G
+            date: c[1]?.v || "",                 // B dateApp
+            joueur: c[2]?.v || "",               // C joueur
+            seance: c[3]?.v || "",               // D seance
+            recuperation: Number(c[4]?.v) || "", // E
+            sommeil: Number(c[5]?.v) || "",      // F
+            alimentation: Number(c[6]?.v) || "", // G
             fatigue_physique: Number(c[7]?.v) || "", // H
             fatigue_mentale: Number(c[8]?.v) || "",  // I
-            total: Number(c[9]?.v) || "",       // J score_total
-            pourcentage,                         // K
-            zone: c[11]?.v || zoneTexte,        // L zone
+            total: Number(c[9]?.v) || "",        // J
+            pourcentage,                          // K
+            zone: c[11]?.v || zoneTexte,         // L
             zoneClass,
-            douleurZone: c[12]?.v || "",        // M douleurs
-            commentaire: c[13]?.v || "",        // N commentaire
+            douleurZone: c[12]?.v || "",         // M
+            commentaire: c[13]?.v || "",         // N
             envoye: true
           };
         }).filter(x => x.joueur);
@@ -884,26 +887,40 @@ function chargerDepuisGoogleSheetsJSONP(){
       } catch(e){
         console.error("Parse JSONP error", e);
         resolve([]);
+      } finally {
+        delete window[cbName];
+        script.remove();
       }
-
-      delete window[cbName];
-      script.remove();
     };
 
-    const script = document.createElement("script");
+    // ✅ URL GVIZ complète + tq=select *
+    const tq = encodeURIComponent("select *");
     script.src =
-      `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json;responseHandler:${cbName}`;
+      `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq` +
+      `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
+      `&tqx=out:json;responseHandler=${cbName}`;
 
     script.onerror = () => {
+      if(done) return;
       console.error("JSONP load error");
       delete window[cbName];
       script.remove();
       resolve([]);
     };
 
+    // ✅ sécurité si Google ne répond pas
+    setTimeout(() => {
+      if(done) return;
+      console.warn("JSONP timeout → resolve([])");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    }, 6000);
+
     document.body.appendChild(script);
   });
 }
+
 
 async function chargerDepuisGoogleSheetsAvecBackup(){
   // online → JSONP
