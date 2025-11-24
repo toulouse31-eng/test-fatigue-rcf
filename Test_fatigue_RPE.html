@@ -241,6 +241,7 @@
           <input type="date" id="seanceDate" name="seanceDate">
         </div>
 
+        <!-- Q1..Q5 -->
         <div class="question">
           <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
           <div class="scale" data-name="recuperation">
@@ -387,6 +388,8 @@
     <h2>Statistiques équipe (Google Sheets)</h2>
 
     <div class="stats-grid">
+
+      <!-- TOP 5 fatigués -->
       <div class="stats-chart-card">
         <h3>Top 5 joueurs les plus fatigués</h3>
 
@@ -407,6 +410,7 @@
         </div>
       </div>
 
+      <!-- TOP 5 en forme -->
       <div class="stats-chart-card">
         <h3>Top 5 joueurs les plus en forme</h3>
 
@@ -428,6 +432,7 @@
       </div>
     </div>
 
+    <!-- Sparkline -->
     <div class="sparkline-card coach-only">
       <h3>Évolution joueur</h3>
 
@@ -457,7 +462,7 @@
     // =======================
     // SOURCES DE DONNÉES
     // =======================
-    let enregistrementsLocal  = []; // tablette (queue + historique coach)
+    let enregistrementsLocal  = []; // tablette (queue + historique local)
     let enregistrementsSheets = []; // OFFICIEL Google Sheets (stats/graphiques)
 
     const STORAGE_LOCAL_KEY  = "test_fatigue_rcf_enregistrements_local_v1";
@@ -467,11 +472,15 @@
     const rowAutre    = document.getElementById("rowAutre");
     const inputAutre  = document.getElementById("joueurAutre");
 
+    // ✅ URL WebApp (ENVOI tablette → Sheets)
     const GOOGLE_SHEETS_URL =
-      "https://script.google.com/macros/s/AKfycbyqJnAbCwrgJmYC4SPGonk3vbAIyNOJ3YuInmO9crW9MxA3PVWn2ae5MkHf-7cjfHw/exec";
+      "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
 
+    // ✅ ID "Publié sur le web" (LECTURE pour stats/graphiques)
     const GOOGLE_SHEETS_PUB_ID =
       "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
+
+    // ✅ gid de l’onglet Base
     const GOOGLE_SHEETS_GID = 0;
 
     // Uniquement Sheets pour viz
