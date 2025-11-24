@@ -144,19 +144,27 @@
       .iframe-container{ aspect-ratio:3/4; }
     }
 
-    /* 📈 Sparkline joueur */
-    .sparkline-card{
-      margin-top: 14px;
-      padding: 12px;
-      border: 1px solid #c7ddff;
-      border-radius: 12px;
-      background: #f5f9ff;
-    }
-    #sparklineCanvas{
-      width: 100%;
-      height: 160px;
-      display: block;
-    }
+  /* 📈 Sparkline joueur responsive */
+.sparkline-card{
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #c7ddff;
+  border-radius: 12px;
+  background: #f5f9ff;
+}
+.sparkline-wrap{
+  width:100%;
+  height:220px;            /* hauteur fixe propre */
+  position:relative;
+}
+#sparklineCanvas{
+  width:100%;
+  height:100%;
+  display:block;
+  border-radius:10px;
+  background:#ffffff;
+  box-shadow: inset 0 0 0 1px #e6eefc;
+}
   </style>
 </head>
 
@@ -417,21 +425,23 @@
     </div>
 
     <!-- 📈 Sparkline sélection joueur -->
-    <div class="sparkline-card coach-only">
-      <h3>Évolution joueur (5 derniers résultats)</h3>
+    <!-- 📈 Sparkline sélection joueur -->
+<div class="sparkline-card coach-only">
+  <h3>Évolution joueur (5 derniers résultats)</h3>
 
-      <div class="row" style="margin-bottom:8px;">
-        <label for="sparklineSelect" style="flex:0 0 auto;">Joueur :</label>
-        <select id="sparklineSelect" style="flex:1 1 auto; min-width:160px;"></select>
-      </div>
+  <div class="row" style="margin-bottom:8px;">
+    <label for="sparklineSelect" style="flex:0 0 auto;">Joueur :</label>
+    <select id="sparklineSelect" style="flex:1 1 auto; min-width:160px;"></select>
+  </div>
 
-      <canvas id="sparklineCanvas" width="420" height="160"
-              aria-label="Courbe évolution joueur"></canvas>
+  <div class="sparkline-wrap">
+    <canvas id="sparklineCanvas" aria-label="Courbe évolution joueur"></canvas>
+  </div>
 
-      <div id="sparklineEmpty" class="legend" style="text-align:center; display:none;">
-        Pas encore de données pour ce joueur.
-      </div>
-    </div>
+  <div id="sparklineEmpty" class="legend" style="text-align:center; display:none;">
+    Pas encore de données pour ce joueur.
+  </div>
+</div>
   </section>
 
   <!-- SCRIPT PRINCIPAL -->
@@ -769,108 +779,192 @@
     }
 
     // --------- SPARKLINE JOUEUR (5 DERNIERS) ---------
-    function getDateFromSeance(seanceStr){
-      if(!seanceStr) return null;
-      const m = seanceStr.match(/^(\d{4}-\d{2}-\d{2})/);
-      if(!m) return null;
-      const d = new Date(m[1] + "T00:00:00");
-      return isNaN(d.getTime()) ? null : d;
-    }
+// --------- SPARKLINE JOUEUR (5 DERNIERS) RESPONSIVE + DATES ---------
 
-    function getLastResults(player, n=5){
-      const rows = enregistrements.filter(r => r.joueur === player);
+function getDateFromSeance(seanceStr){
+  if(!seanceStr) return null;
+  const m = seanceStr.match(/^(\d{4}-\d{2}-\d{2})/);
+  if(!m) return null;
+  const d = new Date(m[1] + "T00:00:00");
+  return isNaN(d.getTime()) ? null : d;
+}
+function getDateLabelFromRecord(r){
+  const d = getDateFromSeance(r.seance) || new Date(r.date);
+  if(isNaN(d.getTime())) return "";
+  // format court : 24/11
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  return `${dd}/${mm}`;
+}
 
-      rows.sort((a,b) => {
-        const da = getDateFromSeance(a.seance) || new Date(a.date);
-        const db = getDateFromSeance(b.seance) || new Date(b.date);
-        return da - db;
-      });
+function getLastResults(player, n=5){
+  const rows = enregistrements.filter(r => r.joueur === player);
 
-      const last = rows.slice(-n);
-      return last.map(r => Number(r.pourcentage));
-    }
+  rows.sort((a,b) => {
+    const da = getDateFromSeance(a.seance) || new Date(a.date);
+    const db = getDateFromSeance(b.seance) || new Date(b.date);
+    return da - db;
+  });
 
-    function drawSparkline(values){
-      const canvas = document.getElementById("sparklineCanvas");
-      const empty  = document.getElementById("sparklineEmpty");
-      if(!canvas) return;
+  const last = rows.slice(-n);
+  return last.map(r => ({
+    value: Number(r.pourcentage),
+    dateObj: getDateFromSeance(r.seance) || new Date(r.date),
+    label: getDateLabelFromRecord(r)
+  }));
+}
 
-      const ctx = canvas.getContext("2d");
-      const w = canvas.width;
-      const h = canvas.height;
+function resizeSparklineCanvas(){
+  const canvas = document.getElementById("sparklineCanvas");
+  const wrap = document.querySelector(".sparkline-wrap");
+  if(!canvas || !wrap) return;
 
-      ctx.clearRect(0,0,w,h);
+  const ratio = window.devicePixelRatio || 1;
+  const rect = wrap.getBoundingClientRect();
 
-      if(!values || values.length === 0){
-        if(empty) empty.style.display = "block";
-        return;
-      }
-      if(empty) empty.style.display = "none";
+  canvas.width  = rect.width * ratio;
+  canvas.height = rect.height * ratio;
 
-      const padding = 22;
-      const min = 0, max = 100;
-      const stepX = (w - 2*padding) / Math.max(values.length - 1, 1);
-      const scaleY = (h - 2*padding) / (max - min);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(ratio,0,0,ratio,0,0); // coord en px CSS
+}
 
-      const pts = values.map((v,i)=>({
-        x: padding + i*stepX,
-        y: h - padding - (v-min)*scaleY
-      }));
+function drawSparkline(points){
+  const canvas = document.getElementById("sparklineCanvas");
+  const empty  = document.getElementById("sparklineEmpty");
+  if(!canvas) return;
 
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = "#cbd5e1";
-      for(let g=0; g<=4; g++){
-        const y = padding + g*(h-2*padding)/4;
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(w-padding, y);
-        ctx.stroke();
-      }
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width / (window.devicePixelRatio || 1);
+  const h = canvas.height / (window.devicePixelRatio || 1);
 
-      ctx.strokeStyle = "#2f7ccc";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
-      ctx.stroke();
+  ctx.clearRect(0,0,w,h);
 
-      pts.forEach((p,i)=>{
-        ctx.fillStyle = "#2f7ccc";
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
-        ctx.fill();
+  if(!points || points.length === 0){
+    if(empty) empty.style.display = "block";
+    return;
+  }
+  if(empty) empty.style.display = "none";
 
-        ctx.fillStyle = "#0f172a";
-        ctx.font = "12px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(values[i] + "%", p.x, p.y - 10);
-      });
-    }
+  // zone de dessin
+  const padL = 44, padR = 16, padT = 18, padB = 40;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
 
-    function buildSparklineSelect(){
-      const sel = document.getElementById("sparklineSelect");
-      if(!sel) return;
+  const values = points.map(p => p.value);
+  const minV = 0;
+  const maxV = 100;
 
-      const joueurs = [...new Set(enregistrements.map(r=>r.joueur))].sort();
+  const stepX = plotW / Math.max(points.length - 1, 1);
 
-      sel.innerHTML =
-        `<option value="">Choisir un joueur...</option>` +
-        joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
+  const toXY = (v,i) => {
+    const x = padL + i * stepX;
+    const y = padT + plotH * (1 - (v - minV) / (maxV - minV));
+    return {x,y};
+  };
+  const pts = points.map((p,i)=> toXY(p.value,i));
 
-      if(joueurs.length && !sel.value){
-        sel.value = joueurs[0];
-      }
+  // grille horizontale
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#e2e8f0";
+  ctx.fillStyle = "#64748b";
+  ctx.font = "12px Arial";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
 
-      if(sel.value){
-        drawSparkline(getLastResults(sel.value, 5));
-      }else{
-        drawSparkline([]);
-      }
+  [0,25,50,75,100].forEach(g=>{
+    const y = padT + plotH * (1 - g/100);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+    ctx.fillText(g + "%", padL - 6, y);
+  });
 
-      sel.onchange = () => {
-        drawSparkline(getLastResults(sel.value, 5));
-      };
-    }
+  // axe X + dates
+  ctx.strokeStyle = "#cbd5e1";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(padL, padT + plotH);
+  ctx.lineTo(w - padR, padT + plotH);
+  ctx.stroke();
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "#334155";
+
+  points.forEach((p,i)=>{
+    const x = padL + i*stepX;
+    const yAxis = padT + plotH;
+
+    // petit tick
+    ctx.beginPath();
+    ctx.moveTo(x, yAxis);
+    ctx.lineTo(x, yAxis + 5);
+    ctx.stroke();
+
+    // label date
+    ctx.fillText(p.label || "", x, yAxis + 8);
+  });
+
+  // courbe
+  ctx.strokeStyle = "#2f7ccc";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  // points + valeurs
+  pts.forEach((p,i)=>{
+    ctx.fillStyle = "#2f7ccc";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(values[i] + "%", p.x, p.y - 8);
+  });
+}
+
+function buildSparklineSelect(){
+  const sel = document.getElementById("sparklineSelect");
+  if(!sel) return;
+
+  const joueurs = [...new Set(enregistrements.map(r=>r.joueur))].sort();
+
+  sel.innerHTML =
+    `<option value="">Choisir un joueur...</option>` +
+    joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
+
+  if(joueurs.length && !sel.value){
+    sel.value = joueurs[0];
+  }
+
+  resizeSparklineCanvas();
+  if(sel.value){
+    drawSparkline(getLastResults(sel.value, 5));
+  }else{
+    drawSparkline([]);
+  }
+
+  sel.onchange = () => {
+    resizeSparklineCanvas();
+    drawSparkline(getLastResults(sel.value, 5));
+  };
+}
+
+// Redessine quand la fenêtre change
+window.addEventListener("resize", () => {
+  const sel = document.getElementById("sparklineSelect");
+  if(sel && sel.value){
+    resizeSparklineCanvas();
+    drawSparkline(getLastResults(sel.value, 5));
+  }
+});
 
     /* ✅ INIT APRÈS CHARGEMENT DOM */
     document.addEventListener("DOMContentLoaded", () => {
