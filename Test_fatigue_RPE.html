@@ -192,7 +192,7 @@
   <div class="layout">
     <div class="card">
       <form id="fatigueForm">
-        <!-- Joueur -->
+
         <div class="row">
           <label for="joueurSelect">Joueur :</label>
           <select id="joueurSelect" name="joueurSelect" required>
@@ -234,13 +234,11 @@
           <input type="text" id="joueurAutre" name="joueurAutre" placeholder="Nom et prénom" />
         </div>
 
-        <!-- Date séance -->
         <div class="row">
           <label for="seanceDate">Date de la séance :</label>
           <input type="date" id="seanceDate" name="seanceDate">
         </div>
 
-        <!-- Q1 -->
         <div class="question">
           <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
           <div class="scale" data-name="recuperation">
@@ -254,7 +252,6 @@
           <input type="hidden" name="recuperation" />
         </div>
 
-        <!-- Q2 -->
         <div class="question">
           <label><span class="qnum">2.</span>Qualité du sommeil 😴</label>
           <div class="scale" data-name="sommeil">
@@ -268,7 +265,6 @@
           <input type="hidden" name="sommeil" />
         </div>
 
-        <!-- Q3 -->
         <div class="question">
           <label><span class="qnum">3.</span>Qualité de l'alimentation/hydratation 🍽️💧</label>
           <div class="scale" data-name="alimentation">
@@ -282,7 +278,6 @@
           <input type="hidden" name="alimentation" />
         </div>
 
-        <!-- Q4 -->
         <div class="question">
           <label><span class="qnum">4.</span>Fatigue physique / douleurs musculaires 💢</label>
           <div class="scale" data-name="fatigue_physique">
@@ -296,7 +291,6 @@
           <input type="hidden" name="fatigue_physique" />
         </div>
 
-        <!-- Q5 -->
         <div class="question">
           <label><span class="qnum">5.</span>Fatigue mentale 🧠</label>
           <div class="scale" data-name="fatigue_mentale">
@@ -310,21 +304,18 @@
           <input type="hidden" name="fatigue_mentale" />
         </div>
 
-        <!-- Douleurs spécifiques -->
         <div class="row">
           <label for="douleurZone">Douleurs spécifiques :</label>
           <input type="text" id="douleurZone" name="douleurZone"
-                 placeholder="Ex : ischios droit, adducteurs, cheville gauche..." />
+                placeholder="Ex : ischios droit, adducteurs, cheville gauche..." />
         </div>
 
-        <!-- Commentaire -->
         <div class="row">
           <label for="commentaire">Commentaire :</label>
           <textarea id="commentaire" name="commentaire"
                     placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
         </div>
 
-        <!-- Actions -->
         <div class="actions">
           <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
           <button type="button" class="primary coach-only" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
@@ -335,14 +326,12 @@
         <div class="result" id="resultat"></div>
       </form>
 
-      <!-- Historique LOCAL complet -->
       <div class="liste-joueurs coach-only" id="listeJoueurs">
         <strong>Historique local (toutes les réponses) :</strong>
         <ul id="listeJoueursUl"></ul>
       </div>
     </div>
 
-    <!-- SYNTHÈSE RAPIDE COACH -->
     <div class="stats-card coach-only">
       <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
       <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
@@ -390,7 +379,6 @@
     </div>
   </div>
 
-  <!-- STATS ÉQUIPE (Google Sheets) -->
   <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
     <h2>Statistiques équipe (Google Sheets)</h2>
 
@@ -418,7 +406,6 @@
       </div>
     </div>
 
-    <!-- 📈 Sparkline sélection joueur + choix 5/10/15 -->
     <div class="sparkline-card coach-only">
       <h3>Évolution joueur</h3>
 
@@ -444,7 +431,6 @@
     </div>
   </section>
 
-  <!-- SCRIPT PRINCIPAL -->
   <script>
     let enregistrements = [];
 
@@ -453,101 +439,23 @@
     const rowAutre    = document.getElementById("rowAutre");
     const inputAutre  = document.getElementById("joueurAutre");
 
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDx3q3ts0HUodvo2MJmXinAD428yvXzCK6N6AbzDExwlKV5mr4VLWxr1J3H9mbzlED/exec";
+    const GOOGLE_SHEETS_URL =
+      "https://script.google.com/macros/s/AKfycbxDx3q3ts0HUodvo2MJmXinAD428yvXzCK6N6AbzDExwlKV5mr4VLWxr1J3H9mbzlED/exec";
 
-// ✅ Google Sheets publié (JSONP) — compatible PWA / pas de CORS
-const GOOGLE_SHEETS_PUB_ID =
-  "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
-const GOOGLE_SHEETS_GID = 0; // onglet Base
+    // ✅ Google Sheets publié (JSONP)
+    const GOOGLE_SHEETS_PUB_ID =
+      "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
+    const GOOGLE_SHEETS_GID = 0; // Base
 
-selectJoueur.addEventListener("change", () => {
-  if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
-  else { rowAutre.style.display = "none"; inputAutre.value = ""; }
-});
-
-// =======================
-// IMPORT GOOGLE SHEETS (JSONP)
-// =======================
-function chargerDepuisGoogleSheets(){
-  return new Promise((resolve) => {
-    const cbName = "gsCallback_" + Date.now();
-
-    window[cbName] = (resp) => {
-      try {
-        const rows = resp.table.rows || [];
-
-        const data = rows.map(r => {
-          const c = r.c || [];
-
-          // ordre colonnes Base :
-          // 0 A timestamp serveur
-          // 1 B date locale
-          // 2 C joueur
-          // 3 D seance
-          // 4 E recuperation
-          // 5 F sommeil
-          // 6 G alimentation
-          // 7 H fatigue_physique
-          // 8 I fatigue_mentale
-          // 9 J total
-          // 10 K pourcentage
-          // 11 L zone
-          // 12 M douleurZone
-          // 13 N commentaire
-
-          const pourcentage = Number(c[10]?.v) || 0;
-          const { zoneTexte, zoneClass } = computeZone(pourcentage);
-
-          return {
-            date: c[1]?.v || "",
-            joueur: c[2]?.v || "",
-            seance: c[3]?.v || "",
-            recuperation: Number(c[4]?.v) || "",
-            sommeil: Number(c[5]?.v) || "",
-            alimentation: Number(c[6]?.v) || "",
-            fatigue_physique: Number(c[7]?.v) || "",
-            fatigue_mentale: Number(c[8]?.v) || "",
-            total: Number(c[9]?.v) || "",
-            pourcentage,
-            zone: c[11]?.v || zoneTexte,
-            zoneClass,
-            douleurZone: c[12]?.v || "",
-            commentaire: c[13]?.v || "",
-            envoye: true
-          };
-        }).filter(x => x.joueur); // garde lignes valides
-
-        resolve(data);
-
-      } catch(e){
-        console.error("Parse JSONP error", e);
-        resolve([]);
-      }
-
-      // cleanup
-      delete window[cbName];
-      script.remove();
-    };
-
-    const script = document.createElement("script");
-    script.src =
-      `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json;responseHandler:${cbName}`;
-    script.onerror = () => {
-      console.error("JSONP load error");
-      delete window[cbName];
-      script.remove();
-      resolve([]);
-    };
-
-    document.body.appendChild(script);
-  });
-}
-
+    selectJoueur.addEventListener("change", () => {
+      if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
+      else { rowAutre.style.display = "none"; inputAutre.value = ""; }
+    });
 
     // Bind des boutons 1-5
     document.querySelectorAll(".scale").forEach(scale => {
       const name = scale.getAttribute("data-name");
-      const hiddenInput = document.querySelector('input[name="' + name + '"]');
+      const hiddenInput = document.querySelector(`input[name="${name}"]`);
       scale.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("click", () => {
           scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
@@ -855,7 +763,6 @@ function chargerDepuisGoogleSheets(){
 
     function resetDonnees(){
       if(!confirm("Supprimer toutes les réponses locales ?")) return;
-      // ⚠️ on ne touche pas Google Sheets : seulement le local
       enregistrements=[];
       localStorage.removeItem(STORAGE_KEY);
       majListeJoueurs(); majStats(); buildSparklineSelect(); resetForm(true);
@@ -863,48 +770,65 @@ function chargerDepuisGoogleSheets(){
     }
 
     // =======================
-    // IMPORT GOOGLE SHEETS
+    // IMPORT GOOGLE SHEETS (JSONP)
     // =======================
+    function chargerDepuisGoogleSheets(){
+      return new Promise((resolve) => {
+        const cbName = "gsCallback_" + Date.now();
 
-    async function chargerDepuisGoogleSheets(){
-      try{
-        const resp = await fetch(GOOGLE_SHEETS_CSV, { cache:"no-store" });
-        const csv = await resp.text();
+        window[cbName] = (resp) => {
+          try {
+            const rows = resp.table.rows || [];
 
-        const lines = csv.split(/\r?\n/).filter(l=>l.trim().length);
-        if(lines.length <= 1) return [];
+            const data = rows.map(r => {
+              const c = r.c || [];
 
-        const rows = lines.slice(1).map(parseCSVLine);
+              const pourcentage = Number(c[10]?.v) || 0;
+              const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-        const data = rows
-          .filter(cols => cols.length >= 14 && cols[2])
-          .map(cols => {
-            const pourcentage = Number(cols[10]) || 0;
-            const {zoneTexte, zoneClass} = computeZone(pourcentage);
-            return {
-              date: cols[1] || "",
-              joueur: cols[2] || "",
-              seance: cols[3] || "",
-              recuperation: Number(cols[4]) || "",
-              sommeil: Number(cols[5]) || "",
-              alimentation: Number(cols[6]) || "",
-              fatigue_physique: Number(cols[7]) || "",
-              fatigue_mentale: Number(cols[8]) || "",
-              total: Number(cols[9]) || "",
-              pourcentage,
-              zone: cols[11] || zoneTexte,
-              zoneClass,
-              douleurZone: cols[12] || "",
-              commentaire: cols[13] || "",
-              envoye: true
-            };
-          });
+              return {
+                date: c[1]?.v || "",
+                joueur: c[2]?.v || "",
+                seance: c[3]?.v || "",
+                recuperation: Number(c[4]?.v) || "",
+                sommeil: Number(c[5]?.v) || "",
+                alimentation: Number(c[6]?.v) || "",
+                fatigue_physique: Number(c[7]?.v) || "",
+                fatigue_mentale: Number(c[8]?.v) || "",
+                total: Number(c[9]?.v) || "",
+                pourcentage,
+                zone: c[11]?.v || zoneTexte,
+                zoneClass,
+                douleurZone: c[12]?.v || "",
+                commentaire: c[13]?.v || "",
+                envoye: true
+              };
+            }).filter(x => x.joueur);
 
-        return data;
-      }catch(err){
-        console.error("Erreur import Google Sheets :", err);
-        return [];
-      }
+            resolve(data);
+
+          } catch(e){
+            console.error("Parse JSONP error", e);
+            resolve([]);
+          }
+
+          delete window[cbName];
+          script.remove();
+        };
+
+        const script = document.createElement("script");
+        script.src =
+          `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json;responseHandler:${cbName}`;
+
+        script.onerror = () => {
+          console.error("JSONP load error");
+          delete window[cbName];
+          script.remove();
+          resolve([]);
+        };
+
+        document.body.appendChild(script);
+      });
     }
 
     function keyRec(r){
@@ -922,7 +846,7 @@ function chargerDepuisGoogleSheets(){
       sheetsData.forEach(r=>map.set(keyRec(r), r));
       localData.forEach(r=>{
         const k = keyRec(r);
-        if(!map.has(k)) map.set(k, r); // garde offline non encore envoyé
+        if(!map.has(k)) map.set(k, r);
       });
       return Array.from(map.values());
     }
@@ -930,7 +854,6 @@ function chargerDepuisGoogleSheets(){
     // =======================
     // SPARKLINE PRO
     // =======================
-
     function getDateFromSeance(seanceStr){
       if(!seanceStr) return null;
       const m = seanceStr.match(/^(\d{4}-\d{2}-\d{2})/);
@@ -938,6 +861,7 @@ function chargerDepuisGoogleSheets(){
       const d = new Date(m[1] + "T00:00:00");
       return isNaN(d.getTime()) ? null : d;
     }
+
     function getDateLabelFromRecord(r){
       const d = getDateFromSeance(r.seance) || new Date(r.date);
       if(isNaN(d.getTime())) return "";
@@ -965,16 +889,13 @@ function chargerDepuisGoogleSheets(){
 
     function getTeamAverageLastN(n){
       const rows = [...enregistrements];
-
       rows.sort((a,b)=>{
         const da = getDateFromSeance(a.seance) || new Date(a.date);
         const db = getDateFromSeance(b.seance) || new Date(b.date);
         return da - db;
       });
-
       const last = rows.slice(-n);
       if(!last.length) return null;
-
       const avg = last.reduce((s,r)=>s + (Number(r.pourcentage)||0), 0) / last.length;
       return avg;
     }
@@ -1002,7 +923,6 @@ function chargerDepuisGoogleSheets(){
         {from:76, to:88,  color:"#d5f7dd"},
         {from:88, to:100, color:"#b7f0c4"}
       ];
-
       zones.forEach(z=>{
         const yTop = padT + plotH * (1 - z.to/100);
         const yBot = padT + plotH * (1 - z.from/100);
@@ -1035,14 +955,12 @@ function chargerDepuisGoogleSheets(){
       drawZones(ctx, padL, padT, plotW, plotH);
 
       const values = points.map(p => p.value);
-      const minV = 0, maxV = 100;
       const stepX = plotW / Math.max(points.length - 1, 1);
 
-      const toXY = (v,i) => {
-        const x = padL + i * stepX;
-        const y = padT + plotH * (1 - (v-minV)/(maxV-minV));
-        return {x,y};
-      };
+      const toXY = (v,i) => ({
+        x: padL + i * stepX,
+        y: padT + plotH * (1 - v/100)
+      });
       const pts = points.map((p,i)=>toXY(p.value,i));
 
       // ✅ moyenne équipe pointillée
@@ -1115,7 +1033,7 @@ function chargerDepuisGoogleSheets(){
       pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
       ctx.stroke();
 
-      // points + labels (anti-débordement)
+      // points + labels
       pts.forEach((p,i)=>{
         ctx.fillStyle = "#2f7ccc";
         ctx.beginPath();
@@ -1133,6 +1051,7 @@ function chargerDepuisGoogleSheets(){
         }
         if(i === 0) align="left";
         if(i === pts.length-1) align="right";
+
         labelX = Math.max(padL + 2, Math.min(labelX, w - padR - 2));
 
         ctx.fillStyle = "#0f172a";
@@ -1149,7 +1068,6 @@ function chargerDepuisGoogleSheets(){
       if(!sel || !rangeSel) return;
 
       const joueurs = [...new Set(enregistrements.map(r=>r.joueur))].sort();
-
       sel.innerHTML =
         `<option value="">Choisir un joueur...</option>` +
         joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
@@ -1172,7 +1090,6 @@ function chargerDepuisGoogleSheets(){
 
       sel.onchange = redraw;
       rangeSel.onchange = redraw;
-
       redraw();
     }
 
@@ -1199,7 +1116,6 @@ function chargerDepuisGoogleSheets(){
     });
   </script>
 
-  <!-- Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
