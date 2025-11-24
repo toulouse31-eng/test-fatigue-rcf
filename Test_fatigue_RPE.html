@@ -455,15 +455,14 @@
 
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDx3q3ts0HUodvo2MJmXinAD428yvXzCK6N6AbzDExwlKV5mr4VLWxr1J3H9mbzlED/exec";
 
-    // ✅ CSV export du fichier Suivi_Fatigue_RCF (Base)
-    const GOOGLE_SHEETS_CSV =
-      "const GOOGLE_SHEETS_CSV =
+ // ✅ CSV export du fichier Suivi_Fatigue_RCF (Base)
+const GOOGLE_SHEETS_CSV =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pub?gid=0&single=true&output=csv";
 
-    selectJoueur.addEventListener("change", () => {
-      if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
-      else { rowAutre.style.display = "none"; inputAutre.value = ""; }
-    });
+selectJoueur.addEventListener("change", () => {
+  if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
+  else { rowAutre.style.display = "none"; inputAutre.value = ""; }
+});
 
     // Bind des boutons 1-5
     document.querySelectorAll(".scale").forEach(scale => {
