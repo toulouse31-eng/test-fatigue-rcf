@@ -882,6 +882,38 @@
         return {x,y};
       };
       const pts = points.map((p,i)=>toXY(p.value,i));
+const values = points.map(p => p.value);
+const minV = 0, maxV = 100;
+const stepX = plotW / Math.max(points.length - 1, 1);
+
+const toXY = (v,i) => {
+    const x = padL + i * stepX;
+    const y = padT + plotH * (1 - (v-minV)/(maxV-minV));
+    return {x,y};
+};
+const pts = points.map((p,i)=>toXY(p.value,i));
+
+// ✅ moyenne mobile (sur les points affichés)
+const avg = values.reduce((a,b)=>a+b,0) / values.length;
+const yAvg = padT + plotH * (1 - avg/100);
+
+// ligne pointillée
+ctx.save();
+ctx.strokeStyle = "#0f172a";
+ctx.lineWidth = 1.8;
+ctx.setLineDash([6,6]);
+ctx.beginPath();
+ctx.moveTo(padL, yAvg);
+ctx.lineTo(w - padR, yAvg);
+ctx.stroke();
+ctx.restore();
+
+// label moyenne (à droite)
+ctx.fillStyle = "#0f172a";
+ctx.font = "12px Arial";
+ctx.textAlign = "right";
+ctx.textBaseline = "bottom";
+ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
 
       // grille horizontale
       ctx.lineWidth = 1;
