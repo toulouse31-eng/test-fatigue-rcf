@@ -321,6 +321,8 @@
           <button type="button" class="primary coach-only" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
           <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
           <button type="button" class="secondary danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
+          <button type="button" class="secondary coach-only" onclick="testSheets()">Tester connexion Google Sheets </button>
+
         </div>
 
         <div class="result" id="resultat"></div>
@@ -508,24 +510,82 @@
       }
     }
 
-    function envoyerVersGoogleSheets(rec) {
-      if (!GOOGLE_SHEETS_URL) return;
-      if (!navigator.onLine) return;
+   async function envoyerVersGoogleSheets(rec) {
+  if (!GOOGLE_SHEETS_URL) return;
+  if (!navigator.onLine) return;
 
-      const payload = {...rec};
-      delete payload.envoye;
+  const payload = { ...rec };
+  delete payload.envoye;
 
-      fetch(GOOGLE_SHEETS_URL, {
-        method:"POST",
-        mode:"no-cors",
-        body: JSON.stringify(payload)
-      })
-      .then(() => {
-        rec.envoye = true;
-        sauvegarderDansStorage();
-      })
-      .catch(() => {});
+  try {
+    const res = await fetch(GOOGLE_SHEETS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+
+    const txt = await res.text();
+
+    // Ton Apps Script renvoie du HTML avec du JSON dedans
+    // donc on essaye de récupérer le JSON
+    let json = null;
+    try {
+      json = JSON.parse(txt);
+    } catch {
+      // si c'est du HTML, on extrait la partie JSON
+      const m = txt.match(/\{[\s\S]*\}/);
+      if (m) {
+        try { json = JSON.parse(m[0]); } catch {}
+      }
     }
+
+    console.log("Réponse serveur Sheets :", txt, json);
+
+    if (json && json.status === "OK") {
+      rec.envoye = true;
+      sauvegarderDansStorage();
+    } else {
+      rec.envoye = false;
+      sauvegarderDansStorage();
+      alert("Erreur Google Sheets : " + (json?.message || txt));
+    }
+
+  } catch (err) {
+    console.error("Erreur fetch Sheets :", err);
+    rec.envoye = false;
+    sauvegarderDansStorage();
+    alert("Envoi impossible vers Google Sheets.");
+  }
+}
+// ======================
+// TEST ENVOI GOOGLE SHEETS
+// ======================
+async function testSheets() {
+  const fake = {
+    date: new Date().toLocaleString(),
+    joueur: "TEST",
+    seance: "2099-01-01 (Test)",
+    recuperation: 3,
+    sommeil: 3,
+    alimentation: 3,
+    fatigue_physique: 3,
+    fatigue_mentale: 3,
+    total: 15,
+    pourcentage: 60,
+    zone: "TEST",
+    zoneClass: "zone-jaune",
+    douleurZone: "",
+    commentaire: "test auto",
+    envoye: false
+  };
+
+  alert("Test en cours…");
+
+  await envoyerVersGoogleSheets(fake);
+
+  alert("Test terminé. Vérifie ton Google Sheets !");
+}
 
     function syncGoogleSheets() {
       if (!navigator.onLine) {
