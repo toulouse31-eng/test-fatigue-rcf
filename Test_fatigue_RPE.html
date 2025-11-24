@@ -20,7 +20,7 @@
       font-size: 18px;
     }
 
-    /* ✅ TOP BAR GRID */
+    /* TOP BAR GRID */
     .top-bar{
       display:grid;
       grid-template-columns: auto 1fr auto;
@@ -144,27 +144,27 @@
       .iframe-container{ aspect-ratio:3/4; }
     }
 
-  /* 📈 Sparkline joueur responsive */
-.sparkline-card{
-  margin-top: 14px;
-  padding: 12px;
-  border: 1px solid #c7ddff;
-  border-radius: 12px;
-  background: #f5f9ff;
-}
-.sparkline-wrap{
-  width:100%;
-  height:220px;            /* hauteur fixe propre */
-  position:relative;
-}
-#sparklineCanvas{
-  width:100%;
-  height:100%;
-  display:block;
-  border-radius:10px;
-  background:#ffffff;
-  box-shadow: inset 0 0 0 1px #e6eefc;
-}
+    /* 📈 Sparkline responsive + propre */
+    .sparkline-card{
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid #c7ddff;
+      border-radius: 12px;
+      background: #f5f9ff;
+    }
+    .sparkline-wrap{
+      width:100%;
+      height:240px;
+      position:relative;
+    }
+    #sparklineCanvas{
+      width:100%;
+      height:100%;
+      display:block;
+      border-radius:10px;
+      background:#ffffff;
+      box-shadow: inset 0 0 0 1px #e6eefc;
+    }
   </style>
 </head>
 
@@ -268,9 +268,9 @@
           <input type="hidden" name="sommeil" />
         </div>
 
-        <!-- Q3 -->
+        <!-- Q3 ✅ -->
         <div class="question">
-          <label><span class="qnum">3.</span>Alimentation / hydratation (24 dernières heures) 🍽️💧</label>
+          <label><span class="qnum">3.</span>Qualité de l'alimentation/hydratation 🍽️💧</label>
           <div class="scale" data-name="alimentation">
             <button type="button" data-value="1">1</button>
             <button type="button" data-value="2">2</button>
@@ -310,11 +310,7 @@
           <input type="hidden" name="fatigue_mentale" />
         </div>
 
-        <!-- Bonus staff -->
-        <div class="row coach-only">
-          <label for="bonusStaff">Bonus staff :</label>
-          <input type="text" id="bonusStaff" name="bonusStaff" placeholder="Ex : charge réduite, vigilance, etc." />
-        </div>
+        <!-- ✅ Bonus staff supprimé -->
 
         <!-- Douleurs spécifiques -->
         <div class="row">
@@ -348,7 +344,7 @@
       </div>
     </div>
 
-    <!-- ✅ SYNTHÈSE RAPIDE COACH (mini-courbe supprimée) -->
+    <!-- SYNTHÈSE RAPIDE COACH -->
     <div class="stats-card coach-only">
       <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
       <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
@@ -424,24 +420,30 @@
       </div>
     </div>
 
-    <!-- 📈 Sparkline sélection joueur -->
-    <!-- 📈 Sparkline sélection joueur -->
-<div class="sparkline-card coach-only">
-  <h3>Évolution joueur (5 derniers résultats)</h3>
+    <!-- 📈 Sparkline sélection joueur + choix 5/10/15 -->
+    <div class="sparkline-card coach-only">
+      <h3>Évolution joueur</h3>
 
-  <div class="row" style="margin-bottom:8px;">
-    <label for="sparklineSelect" style="flex:0 0 auto;">Joueur :</label>
-    <select id="sparklineSelect" style="flex:1 1 auto; min-width:160px;"></select>
-  </div>
+      <div class="row" style="margin-bottom:8px;">
+        <label for="sparklineSelect" style="flex:0 0 auto;">Joueur :</label>
+        <select id="sparklineSelect" style="flex:1 1 auto; min-width:160px;"></select>
 
-  <div class="sparkline-wrap">
-    <canvas id="sparklineCanvas" aria-label="Courbe évolution joueur"></canvas>
-  </div>
+        <label for="sparklineRange" style="flex:0 0 auto;">Derniers :</label>
+        <select id="sparklineRange" style="flex:0 0 auto; min-width:90px;">
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+        </select>
+      </div>
 
-  <div id="sparklineEmpty" class="legend" style="text-align:center; display:none;">
-    Pas encore de données pour ce joueur.
-  </div>
-</div>
+      <div class="sparkline-wrap">
+        <canvas id="sparklineCanvas" aria-label="Courbe évolution joueur"></canvas>
+      </div>
+
+      <div id="sparklineEmpty" class="legend" style="text-align:center; display:none;">
+        Pas encore de données pour ce joueur.
+      </div>
+    </div>
   </section>
 
   <!-- SCRIPT PRINCIPAL -->
@@ -553,7 +555,6 @@
       if (!confirm("Envoyer " + aEnvoyer.length + " réponses ?")) return;
 
       aEnvoyer.forEach(rec => envoyerVersGoogleSheets(rec));
-
       alert("Synchronisation lancée.");
     }
 
@@ -586,7 +587,6 @@
       const fatigue_physique = valeurs.fatigue_physique;
       const fatigue_mentale  = valeurs.fatigue_mentale;
 
-      const bonusStaff = (document.getElementById("bonusStaff")?.value || "").trim();
       const douleurZone = document.getElementById("douleurZone").value.trim();
       const commentaire = document.getElementById("commentaire").value.trim();
 
@@ -606,7 +606,7 @@
         fatigue_physique, fatigue_mentale,
         total, pourcentage,
         zone: zoneTexte, zoneClass,
-        bonusStaff, douleurZone, commentaire,
+        douleurZone, commentaire,
         envoye:false
       };
 
@@ -778,195 +778,235 @@
       alert("Historique local effacé.");
     }
 
-    // --------- SPARKLINE JOUEUR (5 DERNIERS) ---------
-// --------- SPARKLINE JOUEUR (5 DERNIERS) RESPONSIVE + DATES ---------
+    // =======================
+    // SPARKLINE PRO
+    // =======================
 
-function getDateFromSeance(seanceStr){
-  if(!seanceStr) return null;
-  const m = seanceStr.match(/^(\d{4}-\d{2}-\d{2})/);
-  if(!m) return null;
-  const d = new Date(m[1] + "T00:00:00");
-  return isNaN(d.getTime()) ? null : d;
-}
-function getDateLabelFromRecord(r){
-  const d = getDateFromSeance(r.seance) || new Date(r.date);
-  if(isNaN(d.getTime())) return "";
-  // format court : 24/11
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  return `${dd}/${mm}`;
-}
+    function getDateFromSeance(seanceStr){
+      if(!seanceStr) return null;
+      const m = seanceStr.match(/^(\d{4}-\d{2}-\d{2})/);
+      if(!m) return null;
+      const d = new Date(m[1] + "T00:00:00");
+      return isNaN(d.getTime()) ? null : d;
+    }
+    function getDateLabelFromRecord(r){
+      const d = getDateFromSeance(r.seance) || new Date(r.date);
+      if(isNaN(d.getTime())) return "";
+      const dd = String(d.getDate()).padStart(2,"0");
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      return `${dd}/${mm}`;
+    }
 
-function getLastResults(player, n=5){
-  const rows = enregistrements.filter(r => r.joueur === player);
+    function getLastResults(player, n=5){
+      const rows = enregistrements.filter(r => r.joueur === player);
 
-  rows.sort((a,b) => {
-    const da = getDateFromSeance(a.seance) || new Date(a.date);
-    const db = getDateFromSeance(b.seance) || new Date(b.date);
-    return da - db;
-  });
+      rows.sort((a,b) => {
+        const da = getDateFromSeance(a.seance) || new Date(a.date);
+        const db = getDateFromSeance(b.seance) || new Date(b.date);
+        return da - db;
+      });
 
-  const last = rows.slice(-n);
-  return last.map(r => ({
-    value: Number(r.pourcentage),
-    dateObj: getDateFromSeance(r.seance) || new Date(r.date),
-    label: getDateLabelFromRecord(r)
-  }));
-}
+      const last = rows.slice(-n);
 
-function resizeSparklineCanvas(){
-  const canvas = document.getElementById("sparklineCanvas");
-  const wrap = document.querySelector(".sparkline-wrap");
-  if(!canvas || !wrap) return;
+      return last.map(r => ({
+        value: Number(r.pourcentage),
+        label: getDateLabelFromRecord(r)
+      }));
+    }
 
-  const ratio = window.devicePixelRatio || 1;
-  const rect = wrap.getBoundingClientRect();
+    function resizeSparklineCanvas(){
+      const canvas = document.getElementById("sparklineCanvas");
+      const wrap = document.querySelector(".sparkline-wrap");
+      if(!canvas || !wrap) return;
 
-  canvas.width  = rect.width * ratio;
-  canvas.height = rect.height * ratio;
+      const ratio = window.devicePixelRatio || 1;
+      const rect = wrap.getBoundingClientRect();
 
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(ratio,0,0,ratio,0,0); // coord en px CSS
-}
+      canvas.width  = rect.width * ratio;
+      canvas.height = rect.height * ratio;
 
-function drawSparkline(points){
-  const canvas = document.getElementById("sparklineCanvas");
-  const empty  = document.getElementById("sparklineEmpty");
-  if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio,0,0,ratio,0,0);
+    }
 
-  const ctx = canvas.getContext("2d");
-  const w = canvas.width / (window.devicePixelRatio || 1);
-  const h = canvas.height / (window.devicePixelRatio || 1);
+    function drawZones(ctx, padL, padT, plotW, plotH){
+      // zones de bas en haut
+      const zones = [
+        {from:0,  to:52,  color:"#f8d7da"}, // rouge
+        {from:52, to:64,  color:"#ffe0b8"}, // orange
+        {from:64, to:76,  color:"#fff8c2"}, // jaune
+        {from:76, to:88,  color:"#d5f7dd"}, // vert clair
+        {from:88, to:100, color:"#b7f0c4"}  // vert foncé
+      ];
 
-  ctx.clearRect(0,0,w,h);
+      zones.forEach(z=>{
+        const yTop = padT + plotH * (1 - z.to/100);
+        const yBot = padT + plotH * (1 - z.from/100);
+        ctx.fillStyle = z.color;
+        ctx.fillRect(padL, yTop, plotW, yBot - yTop);
+      });
+    }
 
-  if(!points || points.length === 0){
-    if(empty) empty.style.display = "block";
-    return;
-  }
-  if(empty) empty.style.display = "none";
+    function drawSparkline(points){
+      const canvas = document.getElementById("sparklineCanvas");
+      const empty  = document.getElementById("sparklineEmpty");
+      if(!canvas) return;
 
-  // zone de dessin
-  const padL = 44, padR = 16, padT = 18, padB = 40;
-  const plotW = w - padL - padR;
-  const plotH = h - padT - padB;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      const h = canvas.height / (window.devicePixelRatio || 1);
 
-  const values = points.map(p => p.value);
-  const minV = 0;
-  const maxV = 100;
+      ctx.clearRect(0,0,w,h);
 
-  const stepX = plotW / Math.max(points.length - 1, 1);
+      if(!points || points.length === 0){
+        if(empty) empty.style.display = "block";
+        return;
+      }
+      if(empty) empty.style.display = "none";
 
-  const toXY = (v,i) => {
-    const x = padL + i * stepX;
-    const y = padT + plotH * (1 - (v - minV) / (maxV - minV));
-    return {x,y};
-  };
-  const pts = points.map((p,i)=> toXY(p.value,i));
+      // padding + zone dessin
+      const padL = 52, padR = 14, padT = 28, padB = 46;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
 
-  // grille horizontale
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = "#e2e8f0";
-  ctx.fillStyle = "#64748b";
-  ctx.font = "12px Arial";
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
+      // ✅ zones couleur
+      drawZones(ctx, padL, padT, plotW, plotH);
 
-  [0,25,50,75,100].forEach(g=>{
-    const y = padT + plotH * (1 - g/100);
-    ctx.beginPath();
-    ctx.moveTo(padL, y);
-    ctx.lineTo(w - padR, y);
-    ctx.stroke();
-    ctx.fillText(g + "%", padL - 6, y);
-  });
+      const values = points.map(p => p.value);
+      const minV = 0, maxV = 100;
+      const stepX = plotW / Math.max(points.length - 1, 1);
 
-  // axe X + dates
-  ctx.strokeStyle = "#cbd5e1";
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(padL, padT + plotH);
-  ctx.lineTo(w - padR, padT + plotH);
-  ctx.stroke();
+      const toXY = (v,i) => {
+        const x = padL + i * stepX;
+        const y = padT + plotH * (1 - (v-minV)/(maxV-minV));
+        return {x,y};
+      };
+      const pts = points.map((p,i)=>toXY(p.value,i));
 
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  ctx.fillStyle = "#334155";
+      // grille horizontale
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.fillStyle = "#64748b";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
 
-  points.forEach((p,i)=>{
-    const x = padL + i*stepX;
-    const yAxis = padT + plotH;
+      [0,25,50,75,100].forEach(g=>{
+        const y = padT + plotH * (1 - g/100);
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(w - padR, y);
+        ctx.stroke();
+        ctx.fillText(g + "%", padL - 6, y);
+      });
 
-    // petit tick
-    ctx.beginPath();
-    ctx.moveTo(x, yAxis);
-    ctx.lineTo(x, yAxis + 5);
-    ctx.stroke();
+      // axe X
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT + plotH);
+      ctx.lineTo(w - padR, padT + plotH);
+      ctx.stroke();
 
-    // label date
-    ctx.fillText(p.label || "", x, yAxis + 8);
-  });
+      // dates en X
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = "#334155";
+      points.forEach((p,i)=>{
+        const x = padL + i*stepX;
+        const yAxis = padT + plotH;
 
-  // courbe
-  ctx.strokeStyle = "#2f7ccc";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
-  ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, yAxis);
+        ctx.lineTo(x, yAxis + 5);
+        ctx.stroke();
 
-  // points + valeurs
-  pts.forEach((p,i)=>{
-    ctx.fillStyle = "#2f7ccc";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
-    ctx.fill();
+        ctx.fillText(p.label || "", x, yAxis + 8);
+      });
 
-    ctx.fillStyle = "#0f172a";
-    ctx.font = "12px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(values[i] + "%", p.x, p.y - 8);
-  });
-}
+      // courbe
+      ctx.strokeStyle = "#2f7ccc";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.stroke();
 
-function buildSparklineSelect(){
-  const sel = document.getElementById("sparklineSelect");
-  if(!sel) return;
+      // points + labels (anti-débordement)
+      pts.forEach((p,i)=>{
+        // point
+        ctx.fillStyle = "#2f7ccc";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+        ctx.fill();
 
-  const joueurs = [...new Set(enregistrements.map(r=>r.joueur))].sort();
+        // label %
+        let labelX = p.x;
+        let labelY = p.y - 10;
+        let align = "center";
+        let baseline = "bottom";
 
-  sel.innerHTML =
-    `<option value="">Choisir un joueur...</option>` +
-    joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
+        // si trop haut => on met dessous (évite le débordement à 100%)
+        if(labelY < padT + 4){
+          labelY = p.y + 12;
+          baseline = "top";
+        }
 
-  if(joueurs.length && !sel.value){
-    sel.value = joueurs[0];
-  }
+        // si proche gauche/droite => align adapté
+        if(i === 0) align="left";
+        if(i === pts.length-1) align="right";
 
-  resizeSparklineCanvas();
-  if(sel.value){
-    drawSparkline(getLastResults(sel.value, 5));
-  }else{
-    drawSparkline([]);
-  }
+        // clamp X pour ne pas sortir
+        labelX = Math.max(padL + 2, Math.min(labelX, w - padR - 2));
 
-  sel.onchange = () => {
-    resizeSparklineCanvas();
-    drawSparkline(getLastResults(sel.value, 5));
-  };
-}
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "12px Arial";
+        ctx.textAlign = align;
+        ctx.textBaseline = baseline;
+        ctx.fillText(values[i] + "%", labelX, labelY);
+      });
+    }
 
-// Redessine quand la fenêtre change
-window.addEventListener("resize", () => {
-  const sel = document.getElementById("sparklineSelect");
-  if(sel && sel.value){
-    resizeSparklineCanvas();
-    drawSparkline(getLastResults(sel.value, 5));
-  }
-});
+    function buildSparklineSelect(){
+      const sel = document.getElementById("sparklineSelect");
+      const rangeSel = document.getElementById("sparklineRange");
+      if(!sel || !rangeSel) return;
 
-    /* ✅ INIT APRÈS CHARGEMENT DOM */
+      const joueurs = [...new Set(enregistrements.map(r=>r.joueur))].sort();
+      sel.innerHTML =
+        `<option value="">Choisir un joueur...</option>` +
+        joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
+
+      if(joueurs.length && !sel.value){
+        sel.value = joueurs[0];
+      }
+
+      const redraw = () => {
+        const n = Number(rangeSel.value || 5);
+        resizeSparklineCanvas();
+        if(sel.value){
+          drawSparkline(getLastResults(sel.value, n));
+        } else {
+          drawSparkline([]);
+        }
+      };
+
+      sel.onchange = redraw;
+      rangeSel.onchange = redraw;
+
+      redraw();
+    }
+
+    window.addEventListener("resize", () => {
+      const sel = document.getElementById("sparklineSelect");
+      const rangeSel = document.getElementById("sparklineRange");
+      if(sel && rangeSel && sel.value){
+        resizeSparklineCanvas();
+        drawSparkline(getLastResults(sel.value, Number(rangeSel.value || 5)));
+      }
+    });
+
+    /* INIT DOM */
     document.addEventListener("DOMContentLoaded", () => {
       chargerDepuisStorage();
       initDateSeance();
