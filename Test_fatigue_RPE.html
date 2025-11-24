@@ -384,28 +384,51 @@
     <h2>Statistiques équipe (Google Sheets)</h2>
 
     <div class="stats-grid">
-      <div class="stats-chart-card">
-        <h3>Top 5 joueurs les plus fatigués</h3>
-        <div class="iframe-container">
-          <iframe
-            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
-            loading="lazy"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
 
-      <div class="stats-chart-card">
-        <h3>Top 5 joueurs les plus en forme</h3>
-        <div class="iframe-container">
-          <iframe
-            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
-            loading="lazy"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
+  <!-- TOP 5 fatigués -->
+  <div class="stats-chart-card">
+    <h3>Top 5 joueurs les plus fatigués</h3>
+
+    <div class="row" style="margin-bottom:8px; justify-content:center;">
+      <label for="topFatigueRange" style="flex:0 0 auto;">Dernières séances :</label>
+      <select id="topFatigueRange" style="flex:0 0 auto; min-width:90px;">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+      </select>
     </div>
+
+    <div class="iframe-container" style="background:#fff;">
+      <canvas id="topFatigueCanvas" aria-label="Top 5 fatigue"></canvas>
+    </div>
+    <div id="topFatigueEmpty" class="legend" style="text-align:center; display:none;">
+      Pas assez de données.
+    </div>
+  </div>
+
+  <!-- TOP 5 en forme -->
+  <div class="stats-chart-card">
+    <h3>Top 5 joueurs les plus en forme</h3>
+
+    <div class="row" style="margin-bottom:8px; justify-content:center;">
+      <label for="topFormeRange" style="flex:0 0 auto;">Dernières séances :</label>
+      <select id="topFormeRange" style="flex:0 0 auto; min-width:90px;">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+      </select>
+    </div>
+
+    <div class="iframe-container" style="background:#fff;">
+      <canvas id="topFormeCanvas" aria-label="Top 5 forme"></canvas>
+    </div>
+    <div id="topFormeEmpty" class="legend" style="text-align:center; display:none;">
+      Pas assez de données.
+    </div>
+  </div>
+
+</div>
+
 
     <div class="sparkline-card coach-only">
       <h3>Évolution joueur</h3>
@@ -1114,8 +1137,167 @@
         const n = Number(rangeSel.value || 5);
         resizeSparklineCanvas();
         drawSparkline(getLastResults(sel.value, n), getTeamAverageLastN(n));
+         buildTop5Charts();
       }
     });
+// =======================
+// TOP 5 (fatigués / en forme) avec choix 5/10/15 dernières séances
+// =======================
+
+// renvoie "YYYY-MM-DD" pour regrouper les séances
+function getSeanceKey(r){
+  const d = getDateFromSeance(r.seance) || new Date(r.date);
+  if(isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${dd}`;
+}
+
+// récupère les N dernières séances (uniques) côté équipe
+function getLastSessionKeys(n){
+  const keys = enregistrements
+    .map(getSeanceKey)
+    .filter(Boolean);
+
+  const unique = [...new Set(keys)]
+    .sort((a,b)=> new Date(a) - new Date(b)); // ordre chrono
+
+  return unique.slice(-n);
+}
+
+// calcule top5 à partir des dernières séances
+function computeTop5(n, mode="fatigue"){
+  const lastKeys = getLastSessionKeys(n);
+  if(!lastKeys.length) return [];
+
+  const windowRows = enregistrements
+    .filter(r => lastKeys.includes(getSeanceKey(r)));
+
+  // dernière mesure par joueur dans cette fenêtre
+  const lastByPlayer = {};
+  windowRows.forEach(r=>{
+    const key = r.joueur;
+    const dr = getDateFromSeance(r.seance) || new Date(r.date);
+    if(!lastByPlayer[key]) lastByPlayer[key] = r;
+    else{
+      const d0 = getDateFromSeance(lastByPlayer[key].seance) || new Date(lastByPlayer[key].date);
+      if(dr > d0) lastByPlayer[key] = r;
+    }
+  });
+
+  const list = Object.values(lastByPlayer)
+    .filter(r=> r.joueur && r.pourcentage !== "" && r.pourcentage != null)
+    .map(r=>({ joueur:r.joueur, val:Number(r.pourcentage) || 0 }));
+
+  // tri
+  list.sort((a,b)=> mode==="fatigue" ? a.val - b.val : b.val - a.val);
+
+  return list.slice(0,5);
+}
+
+function resizeTopCanvas(canvasId){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const parent = canvas.parentElement;
+  const ratio = window.devicePixelRatio || 1;
+  const rect = parent.getBoundingClientRect();
+
+  canvas.width  = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+}
+
+// dessin barres horizontales
+function drawTop5(canvasId, emptyId, data, mode="fatigue"){
+  const canvas = document.getElementById(canvasId);
+  const empty = document.getElementById(emptyId);
+  if(!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width / (window.devicePixelRatio || 1);
+  const h = canvas.height / (window.devicePixelRatio || 1);
+
+  ctx.clearRect(0,0,w,h);
+
+  if(!data.length){
+    if(empty) empty.style.display="block";
+    return;
+  }
+  if(empty) empty.style.display="none";
+
+  const padL=110, padR=18, padT=16, padB=18;
+  const plotW = w - padL - padR;
+  const rowH = (h - padT - padB) / data.length;
+
+  // fond lignes
+  ctx.font="14px Arial";
+  ctx.textBaseline="middle";
+
+  data.forEach((d,i)=>{
+    const y = padT + i*rowH + rowH/2;
+
+    // label joueur
+    ctx.fillStyle="#0f172a";
+    ctx.textAlign="left";
+    ctx.fillText(d.joueur, 8, y);
+
+    // barre
+    const barW = plotW * (d.val/100);
+    const xBar = padL;
+    const yBar = y - rowH*0.25;
+    const hBar = rowH*0.5;
+
+    ctx.fillStyle = mode==="fatigue" ? "#f59e0b" : "#22c55e";
+    ctx.fillRect(xBar, yBar, barW, hBar);
+
+    // contour léger
+    ctx.strokeStyle="#e2e8f0";
+    ctx.strokeRect(xBar, yBar, plotW, hBar);
+
+    // valeur %
+    ctx.fillStyle="#0f172a";
+    ctx.textAlign="right";
+    ctx.fillText(d.val.toFixed(0)+"%", xBar + barW - 4, y);
+  });
+}
+
+function buildTop5Charts(){
+  const selFat = document.getElementById("topFatigueRange");
+  const selFor = document.getElementById("topFormeRange");
+
+  if(!selFat || !selFor) return;
+
+  const redrawFat = ()=>{
+    const n = Number(selFat.value || 5);
+    resizeTopCanvas("topFatigueCanvas");
+    drawTop5(
+      "topFatigueCanvas",
+      "topFatigueEmpty",
+      computeTop5(n,"fatigue"),
+      "fatigue"
+    );
+  };
+
+  const redrawFor = ()=>{
+    const n = Number(selFor.value || 5);
+    resizeTopCanvas("topFormeCanvas");
+    drawTop5(
+      "topFormeCanvas",
+      "topFormeEmpty",
+      computeTop5(n,"forme"),
+      "forme"
+    );
+  };
+
+  selFat.onchange = redrawFat;
+  selFor.onchange = redrawFor;
+
+  redrawFat();
+  redrawFor();
+}
 
     // ✅ INIT
     document.addEventListener("DOMContentLoaded", async () => {
@@ -1126,6 +1308,7 @@
       majListeJoueurs();
       majStats();
       buildSparklineSelect();
+      buildTop5Charts(); 
       initDateSeance();
     });
   </script>
