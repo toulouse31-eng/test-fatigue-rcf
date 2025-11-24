@@ -837,61 +837,93 @@
     // =======================
     // GOOGLE SHEETS (GVIZ Fetch + Backup Offline)
     // =======================
-    async function chargerDepuisGoogleSheetsAvecBackup(){
-      const gvizUrl =
-        `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json`;
+// =======================
+// GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
+// =======================
 
-      if(navigator.onLine){
-        try{
-          const res = await fetch(gvizUrl, { cache:"no-store" });
-          const txt = await res.text();
+// JSONP = marche même si l'app est ouverte en PWA / file://
+function chargerDepuisGoogleSheetsJSONP(){
+  return new Promise((resolve) => {
+    const cbName = "gsCb_" + Date.now();
 
-          const jsonStr = txt.substring(txt.indexOf("{"), txt.lastIndexOf("}")+1);
-          const resp = JSON.parse(jsonStr);
+    window[cbName] = (resp) => {
+      try {
+        const rows = resp?.table?.rows || [];
 
-          const rows = resp.table.rows || [];
-          const data = rows.map(r => {
-            const c = r.c || [];
-            const pourcentage = Number(c[10]?.v) || 0;
-            const { zoneTexte, zoneClass } = computeZone(pourcentage);
+        const data = rows.map(r => {
+          const c = r.c || [];
 
-            return {
-              date: c[1]?.v || "",
-              joueur: c[2]?.v || "",
-              seance: c[3]?.v || "",
-              recuperation: Number(c[4]?.v) || "",
-              sommeil: Number(c[5]?.v) || "",
-              alimentation: Number(c[6]?.v) || "",
-              fatigue_physique: Number(c[7]?.v) || "",
-              fatigue_mentale: Number(c[8]?.v) || "",
-              total: Number(c[9]?.v) || "",
-              pourcentage,
-              zone: c[11]?.v || zoneTexte,
-              zoneClass,
-              douleurZone: c[12]?.v || "",
-              commentaire: c[13]?.v || "",
-              envoye: true
-            };
-          }).filter(x => x.joueur);
+          // K = pourcentage (colonne 11 -> index 10)
+          // Attention : parfois c[10].v est "76 %" (texte)
+          const rawPct = c[10]?.v;
+          const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
-          localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
-          return data;
+          const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-        }catch(e){
-          console.warn("Fetch GVIZ failed, fallback backup", e);
-        }
+          return {
+            date: c[1]?.v || "",                // B dateApp
+            joueur: c[2]?.v || "",              // C joueur
+            seance: c[3]?.v || "",              // D seance
+            recuperation: Number(c[4]?.v) || "",// E
+            sommeil: Number(c[5]?.v) || "",     // F
+            alimentation: Number(c[6]?.v) || "",// G
+            fatigue_physique: Number(c[7]?.v) || "", // H
+            fatigue_mentale: Number(c[8]?.v) || "",  // I
+            total: Number(c[9]?.v) || "",       // J score_total
+            pourcentage,                         // K
+            zone: c[11]?.v || zoneTexte,        // L zone
+            zoneClass,
+            douleurZone: c[12]?.v || "",        // M douleurs
+            commentaire: c[13]?.v || "",        // N commentaire
+            envoye: true
+          };
+        }).filter(x => x.joueur);
+
+        resolve(data);
+
+      } catch(e){
+        console.error("Parse JSONP error", e);
+        resolve([]);
       }
 
-      const backup = localStorage.getItem(STORAGE_SHEETS_KEY);
-      if(backup){
-        try{
-          const parsed = JSON.parse(backup);
-          return Array.isArray(parsed) ? parsed : [];
-        }catch(e){ return []; }
-      }
+      delete window[cbName];
+      script.remove();
+    };
 
-      return [];
-    }
+    const script = document.createElement("script");
+    script.src =
+      `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json;responseHandler:${cbName}`;
+
+    script.onerror = () => {
+      console.error("JSONP load error");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    };
+
+    document.body.appendChild(script);
+  });
+}
+
+async function chargerDepuisGoogleSheetsAvecBackup(){
+  // online → JSONP
+  if(navigator.onLine){
+    const data = await chargerDepuisGoogleSheetsJSONP();
+    localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
+    return data;
+  }
+
+  // offline → dernier backup
+  const backup = localStorage.getItem(STORAGE_SHEETS_KEY);
+  if(backup){
+    try{
+      const parsed = JSON.parse(backup);
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ return []; }
+  }
+  return [];
+}
+
 
     async function refreshSheetsData(){
       enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
