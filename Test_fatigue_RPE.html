@@ -455,14 +455,94 @@
 
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDx3q3ts0HUodvo2MJmXinAD428yvXzCK6N6AbzDExwlKV5mr4VLWxr1J3H9mbzlED/exec";
 
- // ✅ CSV export du fichier Suivi_Fatigue_RCF (Base)
-const GOOGLE_SHEETS_CSV =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pub?gid=0&single=true&output=csv";
+// ✅ Google Sheets publié (JSONP) — compatible PWA / pas de CORS
+const GOOGLE_SHEETS_PUB_ID =
+  "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
+const GOOGLE_SHEETS_GID = 0; // onglet Base
 
 selectJoueur.addEventListener("change", () => {
   if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
   else { rowAutre.style.display = "none"; inputAutre.value = ""; }
 });
+
+// =======================
+// IMPORT GOOGLE SHEETS (JSONP)
+// =======================
+function chargerDepuisGoogleSheets(){
+  return new Promise((resolve) => {
+    const cbName = "gsCallback_" + Date.now();
+
+    window[cbName] = (resp) => {
+      try {
+        const rows = resp.table.rows || [];
+
+        const data = rows.map(r => {
+          const c = r.c || [];
+
+          // ordre colonnes Base :
+          // 0 A timestamp serveur
+          // 1 B date locale
+          // 2 C joueur
+          // 3 D seance
+          // 4 E recuperation
+          // 5 F sommeil
+          // 6 G alimentation
+          // 7 H fatigue_physique
+          // 8 I fatigue_mentale
+          // 9 J total
+          // 10 K pourcentage
+          // 11 L zone
+          // 12 M douleurZone
+          // 13 N commentaire
+
+          const pourcentage = Number(c[10]?.v) || 0;
+          const { zoneTexte, zoneClass } = computeZone(pourcentage);
+
+          return {
+            date: c[1]?.v || "",
+            joueur: c[2]?.v || "",
+            seance: c[3]?.v || "",
+            recuperation: Number(c[4]?.v) || "",
+            sommeil: Number(c[5]?.v) || "",
+            alimentation: Number(c[6]?.v) || "",
+            fatigue_physique: Number(c[7]?.v) || "",
+            fatigue_mentale: Number(c[8]?.v) || "",
+            total: Number(c[9]?.v) || "",
+            pourcentage,
+            zone: c[11]?.v || zoneTexte,
+            zoneClass,
+            douleurZone: c[12]?.v || "",
+            commentaire: c[13]?.v || "",
+            envoye: true
+          };
+        }).filter(x => x.joueur); // garde lignes valides
+
+        resolve(data);
+
+      } catch(e){
+        console.error("Parse JSONP error", e);
+        resolve([]);
+      }
+
+      // cleanup
+      delete window[cbName];
+      script.remove();
+    };
+
+    const script = document.createElement("script");
+    script.src =
+      `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json;responseHandler:${cbName}`;
+    script.onerror = () => {
+      console.error("JSONP load error");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    };
+
+    document.body.appendChild(script);
+  });
+}
+
 
     // Bind des boutons 1-5
     document.querySelectorAll(".scale").forEach(scale => {
@@ -785,25 +865,6 @@ selectJoueur.addEventListener("change", () => {
     // =======================
     // IMPORT GOOGLE SHEETS
     // =======================
-
-    function parseCSVLine(line){
-      const res = [];
-      let cur = "", inQuotes = false;
-      for(let i=0;i<line.length;i++){
-        const ch = line[i];
-        if(ch === '"'){
-          if(inQuotes && line[i+1] === '"'){ cur += '"'; i++; }
-          else inQuotes = !inQuotes;
-        }else if(ch === ',' && !inQuotes){
-          res.push(cur);
-          cur = "";
-        }else{
-          cur += ch;
-        }
-      }
-      res.push(cur);
-      return res.map(s=>s.trim());
-    }
 
     async function chargerDepuisGoogleSheets(){
       try{
