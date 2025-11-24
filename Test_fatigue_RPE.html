@@ -164,6 +164,19 @@
   height:90px;  /* mini format tablette */
   display:block;
 }
+    /* 📈 Sparkline joueur */
+.sparkline-card{
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #c7ddff;
+  border-radius: 12px;
+  background: #f5f9ff;
+}
+#sparklineCanvas{
+  width: 100%;
+  height: 160px;
+  display: block;
+}
   </style>
 </head>
 
@@ -468,6 +481,7 @@
         btn.classList.add("coach-on");
         btn.setAttribute("aria-pressed","true");
         btn.textContent = "Mode coach ON";
+        buildSparklineSelect();
       } else {
         btn.classList.remove("coach-on");
         btn.setAttribute("aria-pressed","false");
@@ -577,6 +591,7 @@
 
       majListeJoueurs();
       majStats();
+      buildSparklineSelect();
       resetForm(false);   // ✅ garde la date du jour
     }
 function renderMiniChartForPlayer(joueurNom){
@@ -795,6 +810,7 @@ function updateMiniChartAuto(listeDerniereMesure){
       }catch(e){ enregistrements=[]; }
       majListeJoueurs();
       majStats();
+      buildSparklineSelect();
     }
 
     function resetDonnees(){
@@ -807,6 +823,114 @@ function updateMiniChartAuto(listeDerniereMesure){
 
     chargerDepuisStorage();
     initDateSeance();
+    // --------- SPARKLINE JOUEUR (5 DERNIERS) ---------
+
+function getDateFromSeance(seanceStr){
+  if(!seanceStr) return null;
+  const m = seanceStr.match(/^(\d{4}-\d{2}-\d{2})/);
+  if(!m) return null;
+  const d = new Date(m[1] + "T00:00:00");
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function getLastResults(player, n=5){
+  const rows = enregistrements.filter(r => r.joueur === player);
+
+  rows.sort((a,b) => {
+    const da = getDateFromSeance(a.seance) || new Date(a.date);
+    const db = getDateFromSeance(b.seance) || new Date(b.date);
+    return da - db;
+  });
+
+  const last = rows.slice(-n);
+  return last.map(r => Number(r.pourcentage));
+}
+
+function drawSparkline(values){
+  const canvas = document.getElementById("sparklineCanvas");
+  const empty  = document.getElementById("sparklineEmpty");
+  if(!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0,0,w,h);
+
+  if(!values || values.length === 0){
+    if(empty) empty.style.display = "block";
+    return;
+  }
+  if(empty) empty.style.display = "none";
+
+  const padding = 22;
+  const min = 0, max = 100;
+  const stepX = (w - 2*padding) / Math.max(values.length - 1, 1);
+  const scaleY = (h - 2*padding) / (max - min);
+
+  const pts = values.map((v,i)=>({
+    x: padding + i*stepX,
+    y: h - padding - (v-min)*scaleY
+  }));
+
+  // petites lignes de grille
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#cbd5e1";
+  for(let g=0; g<=4; g++){
+    const y = padding + g*(h-2*padding)/4;
+    ctx.beginPath();
+    ctx.moveTo(padding, y);
+    ctx.lineTo(w-padding, y);
+    ctx.stroke();
+  }
+
+  // courbe
+  ctx.strokeStyle = "#2f7ccc";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  // points + valeur
+  pts.forEach((p,i)=>{
+    ctx.fillStyle = "#2f7ccc";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(values[i] + "%", p.x, p.y - 10);
+  });
+}
+
+function buildSparklineSelect(){
+  const sel = document.getElementById("sparklineSelect");
+  if(!sel) return;
+
+  const joueurs = [...new Set(enregistrements.map(r=>r.joueur))].sort();
+
+  sel.innerHTML =
+    `<option value="">Choisir un joueur...</option>` +
+    joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
+
+  if(joueurs.length && !sel.value){
+    sel.value = joueurs[0];
+  }
+
+  if(sel.value){
+    drawSparkline(getLastResults(sel.value, 5));
+  }else{
+    drawSparkline([]);
+  }
+
+  sel.onchange = () => {
+    drawSparkline(getLastResults(sel.value, 5));
+  };
+}
+
   </script>
 
   <script>
@@ -843,7 +967,25 @@ function updateMiniChartAuto(listeDerniereMesure){
         </div>
       </div>
     </div>
+      <!-- 📈 ÉVOLUTION JOUEUR (5 derniers) -->
+  <div class="sparkline-card coach-only">
+    <h3>Évolution joueur (5 derniers résultats)</h3>
+
+    <div class="row" style="margin-bottom:8px;">
+      <label for="sparklineSelect" style="flex:0 0 auto;">Joueur :</label>
+      <select id="sparklineSelect" style="flex:1 1 auto; min-width:160px;"></select>
+    </div>
+
+    <canvas id="sparklineCanvas" width="420" height="160"
+            aria-label="Courbe évolution joueur"></canvas>
+
+    <div id="sparklineEmpty" class="legend" style="text-align:center; display:none;">
+      Pas encore de données pour ce joueur.
+    </div>
+  </div>
+
   </section>
 </body>
 </html>
+
 
