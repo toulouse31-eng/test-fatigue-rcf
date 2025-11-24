@@ -1,8 +1,8 @@
 {
   "name": "Test Fatigue RCF",
   "short_name": "Fatigue RCF",
-  "start_url": "./Test_fatigue_RPE.html",
-  "scope": "./",
+  "start_url": "./index.html",
+"scope": "./"
   "display": "standalone",
   "background_color": "#e3f1ff",
   "theme_color": "#2f7ccc",
@@ -11,3 +11,4 @@
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose":"any maskable" }
   ]
 }
+
