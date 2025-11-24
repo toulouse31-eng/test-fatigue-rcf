@@ -2,8 +2,8 @@
 const CACHE_NAME = "fatigue-rcf-v3"; // change ce numéro à chaque maj
 
 const ASSETS = [
-  "./",                    // racine du site
-  "./index.html",          // page d’accueil (à créer comme je t’ai dit)
+  "./",
+  "./index.html",
   "./Test_fatigue_RPE.html",
   "./manifest.webmanifest",
   "./logo_rcf.png",
@@ -11,7 +11,7 @@ const ASSETS = [
   "./icon-512.png"
 ];
 
-// 1) INSTALL : on met en cache les fichiers vitaux
+// 1) INSTALL
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -19,7 +19,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// 2) ACTIVATE : on nettoie les anciens caches
+// 2) ACTIVATE
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -29,11 +29,10 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// 3) FETCH : stratégie "cache d’abord, réseau ensuite"
+// 3) FETCH
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // On ignore les requêtes non GET (POST vers Google Sheets)
   if (req.method !== "GET") return;
 
   event.respondWith(
@@ -42,13 +41,11 @@ self.addEventListener("fetch", (event) => {
 
       return fetch(req)
         .then((res) => {
-          // On cache au passage pour la prochaine fois offline
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
           return res;
         })
         .catch(() => {
-          // Si offline et pas en cache : on renvoie l'accueil
           if (req.mode === "navigate") {
             return caches.match("./index.html");
           }
