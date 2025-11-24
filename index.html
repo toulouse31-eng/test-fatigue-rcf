@@ -466,6 +466,17 @@
     let enregistrementsLocal  = []; // tablette (queue + historique local)
     let enregistrementsSheets = []; // OFFICIEL Google Sheets (stats/graphiques)
 
+    // ✅ URL WebApp (ENVOI tablette → Sheets)
+const GOOGLE_SHEETS_URL =
+  "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
+
+// ✅ ID "Publié sur le web" (LECTURE pour stats/graphiques)
+const GOOGLE_SHEETS_PUB_ID =
+  "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
+
+// ✅ gid de l’onglet Base
+const GOOGLE_SHEETS_GID = 0;
+
     const STORAGE_LOCAL_KEY  = "test_fatigue_rcf_enregistrements_local_v1";
     const STORAGE_SHEETS_KEY = "test_fatigue_rcf_last_sync_sheets_v1";
 
