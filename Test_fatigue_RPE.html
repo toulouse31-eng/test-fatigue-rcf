@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Test de Fatigue RCF</title>
 
-  <!-- Librairie Excel (si tu la réactives un jour) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <link rel="manifest" href="manifest.webmanifest">
@@ -21,7 +20,6 @@
       font-size: 18px;
     }
 
-    /* ---------- TOP BAR ---------- */
     .top-bar {
       display: flex;
       align-items: center;
@@ -29,31 +27,13 @@
       gap: 10px;
       margin-bottom: 10px;
     }
-    .logo-container {
-      display: flex;
-      align-items: center;
-      flex: 0 0 auto;
-    }
-    .logo-rcf {
-      max-width: 60px;
-      height: auto;
-    }
-    .top-title {
-      flex: 1 1 auto;
-      text-align: center;
-    }
-    h1 {
-      margin: 0;
-      color: #2f7ccc;
-      font-size: 26px;
-    }
-    h2 {
-      margin: 0;
-      font-size: 16px;
-      color: #4a6580;
-    }
+    .logo-container { display:flex; align-items:center; flex:0 0 auto; }
+    .logo-rcf { max-width:60px; height:auto; }
 
-    /* Bouton Mode Coach */
+    .top-title { flex:1 1 auto; text-align:center; }
+    h1 { margin:0; color:#2f7ccc; font-size:26px; }
+    h2 { margin:0; font-size:16px; color:#4a6580; }
+
     .mode-toggle-btn {
       padding: 8px 14px;
       font-size: 12px;
@@ -64,223 +44,131 @@
       color: #fff;
       box-shadow: 0 3px 6px rgba(0,0,0,0.25);
       opacity: 0.85;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s ease, background 0.2s ease;
+      transition: transform .1s ease, box-shadow .1s ease, opacity .2s ease, background .2s ease;
       white-space: nowrap;
     }
-    .mode-toggle-btn:hover {
-      opacity: 1;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      transform: translateY(-1px);
-    }
-    .mode-toggle-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-    .mode-toggle-btn.coach-on {
-      background: linear-gradient(145deg, #12b886, #0f8f66);
-    }
+    .mode-toggle-btn:hover { opacity:1; box-shadow:0 4px 8px rgba(0,0,0,0.3); transform:translateY(-1px); }
+    .mode-toggle-btn:active { transform:translateY(0); box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+    .mode-toggle-btn.coach-on { background: linear-gradient(145deg, #12b886, #0f8f66); }
 
-    /* ---------- LAYOUT ---------- */
-    .layout {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
+    .layout { display:flex; flex-wrap:wrap; gap:16px; }
+    .card, .stats-card {
+      background:#fff; border-radius:16px; border:2px solid #6bb4ff;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+      min-width:0;
     }
-    .card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      border: 2px solid #6bb4ff;
-      flex: 2 1 540px;
-      min-width: 0;
-    }
-    .stats-card {
-      background: #fff;
-      padding: 16px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      border: 2px solid #6bb4ff;
-      flex: 1 1 260px;
-      min-width: 0;
-    }
+    .card { padding:20px; flex:2 1 540px; }
+    .stats-card { padding:16px; flex:1 1 260px; }
 
     .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 15px;
-      align-items: center;
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; align-items:center;
     }
-    .row label {
-      font-weight: bold;
-      flex: 1 0 140px;
-      font-size: 16px;
+    .row label { font-weight:bold; flex:1 0 140px; font-size:16px; }
+    .row input[type="text"], .row input[type="date"], .row select, .row textarea {
+      flex:2 1 200px; padding:12px; font-size:18px; border-radius:10px; border:1px solid #ccc; min-height:46px;
     }
-    .row input[type="text"],
-    .row input[type="date"],
-    .row select,
-    .row textarea {
-      flex: 2 1 200px;
-      padding: 12px;
-      font-size: 18px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      min-height: 46px;
-    }
-    textarea { min-height: 60px; resize: vertical; }
+    textarea { min-height:60px; resize:vertical; }
 
-    .question { margin-bottom: 22px; }
-    .question > label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 6px;
-    }
+    .question { margin-bottom:22px; }
+    .question > label { font-weight:bold; display:block; margin-bottom:6px; }
+    .qnum { font-weight:900; color:#2f7ccc; margin-right:6px; }
 
-    .scale {
-      display: flex;
-      gap: 10px;
-      flex-wrap: nowrap;
-      margin-top: 8px;
-    }
+    .scale { display:flex; gap:10px; flex-wrap:nowrap; margin-top:8px; }
     .scale button {
-      flex: 1 0 18%;
-      padding: 16px 0;
-      border-radius: 999px;
-      border: 1px solid #ccc;
-      font-size: 22px;
-      cursor: pointer;
-      background: #f5f5f5;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, border 0.1s ease;
+      flex:1 0 18%; padding:16px 0; border-radius:999px; border:1px solid #ccc;
+      font-size:22px; cursor:pointer; background:#f5f5f5;
+      transition: transform .1s ease, box-shadow .1s ease, border .1s ease;
     }
     .scale button[data-value="1"] { background:#ffb3b3; }
     .scale button[data-value="2"] { background:#ffd5a6; }
     .scale button[data-value="3"] { background:#fff6a3; }
     .scale button[data-value="4"] { background:#c9f7b5; }
     .scale button[data-value="5"] { background:#9ae69c; }
+    .scale button.active { border:2px solid #000; transform:scale(1.07); box-shadow:0 0 6px rgba(0,0,0,0.25); }
 
-    .scale button.active {
-      border: 2px solid #000;
-      transform: scale(1.07);
-      box-shadow: 0 0 6px rgba(0,0,0,0.25);
+    .legend { font-size:12px; color:#666; margin-top:4px; }
+
+    .actions { margin-top:20px; display:flex; flex-direction:column; gap:10px; }
+    .actions button { padding:16px; font-size:18px; border-radius:10px; border:none; cursor:pointer; }
+    .primary { background:#2f7ccc; color:#fff; }
+    .secondary { background:#ddd; }
+    .actions .danger { background:#b30000; color:#fff; }
+
+    .result { margin-top:15px; font-size:16px; font-weight:bold; padding:12px; border-radius:10px; }
+
+    .liste-joueurs ul { padding-left:20px; }
+    .liste-joueurs li { margin-bottom:4px; padding:4px 6px; border-radius:6px; }
+
+    .zone-vert-fonce { background:#b7f0c4; color:#145c2e; }
+    .zone-vert-clair { background:#d5f7dd; color:#1f7f3f; }
+    .zone-jaune { background:#fff8c2; color:#8a7400; }
+    .zone-orange { background:#ffe0b8; color:#8a4b06; }
+    .zone-rouge { background:#f8d7da; color:#721c24; }
+
+    .coach-only { display:none; }
+    body.coach-mode .coach-only { display:block; }
+
+    .stats-title { font-weight:bold; margin-bottom:8px; color:#2f4f6f; }
+    .stats-line { font-size:13px; margin-bottom:4px; }
+    .stats-bar-container { margin-top:10px; font-size:12px; }
+    .stats-bar-row { display:flex; align-items:center; margin-bottom:4px; gap:6px; }
+    .stats-bar-label { width:110px; white-space:nowrap; }
+    .stats-bar-bg { flex:1; background:#eee; border-radius:999px; overflow:hidden; height:10px; }
+    .stats-bar-fill { height:10px; }
+
+    .stats-indice-box {
+      margin-top:10px; padding:10px; border-radius:12px; text-align:center;
+      font-weight:bold; font-size:14px; background:#f0f4ff; color:#2f4f6f;
     }
+    .stats-indice-box.indice-vert { background:#b7f0c4; color:#145c2e; }
+    .stats-indice-box.indice-jaune { background:#fff8c2; color:#8a7400; }
+    .stats-indice-box.indice-orange { background:#ffe0b8; color:#8a4b06; }
+    .stats-indice-box.indice-rouge { background:#f8d7da; color:#721c24; }
 
-    .legend {
-      font-size: 12px;
-      color: #666;
-      margin-top: 4px;
-    }
+    .stats-reco { margin-top:8px; font-size:13px; color:#2f4f6f; }
+    .stats-alertes { margin-top:8px; font-size:13px; color:#333; }
 
-    .actions {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .actions button {
-      padding: 16px;
-      font-size: 18px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-    }
-    .primary { background: #2f7ccc; color: #fff; }
-    .secondary { background: #ddd; }
-    .danger { background: #b30000; color: #fff; }
-    .danger:hover { background: #d00000; }
-
-    .result {
-      margin-top: 15px;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 12px;
-      border-radius: 10px;
-    }
-
-    .liste-joueurs ul { padding-left: 20px; }
-    .liste-joueurs li {
-      margin-bottom: 4px;
-      padding: 4px 6px;
-      border-radius: 6px;
-    }
-
-    /* Zones */
-    .zone-vert-fonce { background: #b7f0c4; color: #145c2e; }
-    .zone-vert-clair { background: #d5f7dd; color: #1f7f3f; }
-    .zone-jaune      { background: #fff8c2; color: #8a7400; }
-    .zone-orange     { background: #ffe0b8; color: #8a4b06; }
-    .zone-rouge      { background: #f8d7da; color: #721c24; }
-
-    /* Coach-only */
-    .coach-only { display: none; }
-    body.coach-mode .coach-only { display: block; }
-
-    /* Stats équipe (graphiques) */
-    .stats-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-items: flex-start;
-    }
-    .stats-chart-card { flex: 1 1 280px; min-width: 260px; }
-    .stats-chart-card h3 {
-      font-size: 15px;
-      margin-bottom: 8px;
-      color: #2f4f6f;
-      text-align: center;
-    }
-
+    .stats-grid { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+    .stats-chart-card { flex:1 1 280px; min-width:260px; }
+    .stats-chart-card h3 { font-size:15px; margin-bottom:8px; color:#2f4f6f; text-align:center; }
     .iframe-container {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      overflow: hidden;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.15);
     }
     .iframe-container iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
+      position:absolute; top:0; left:0; width:100%; height:100%; border:0;
     }
-    @media (max-width: 700px) {
-      .stats-grid { flex-direction: column; }
-      .iframe-container { aspect-ratio: 3 / 4; }
+    @media (max-width:700px){
+      .stats-grid{ flex-direction:column; }
+      .iframe-container{ aspect-ratio:3/4; }
     }
   </style>
 </head>
 
 <body>
-
-  <!-- TOP BAR -->
   <div class="top-bar">
     <div class="logo-container">
       <img src="logo_rcf.png" class="logo-rcf" alt="Logo RCF">
     </div>
-
     <div class="top-title">
       <h1>Test de Fatigue N3</h1>
       <h2>Questionnaire bien-être avant l'entraînement</h2>
     </div>
-
     <button
       type="button"
       id="modeCoachBtn"
       class="mode-toggle-btn"
       onclick="toggleModeCoach()"
-      aria-pressed="false">
+      aria-pressed="false"
+      aria-label="Basculer le mode coach"
+    >
       Mode coach OFF
     </button>
   </div>
 
   <div class="layout">
-
-    <!-- FORMULAIRE -->
     <div class="card">
       <form id="fatigueForm">
-
         <!-- Joueur -->
         <div class="row">
           <label for="joueurSelect">Joueur :</label>
@@ -329,9 +217,9 @@
           <input type="date" id="seanceDate" name="seanceDate">
         </div>
 
-        <!-- QUESTIONS NOUVELLES -->
+        <!-- Q1 -->
         <div class="question">
-          <label>Qualité de la récupération depuis le dernier match 🧊</label>
+          <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
           <div class="scale" data-name="recuperation">
             <button type="button" data-value="1">1</button>
             <button type="button" data-value="2">2</button>
@@ -339,12 +227,13 @@
             <button type="button" data-value="4">4</button>
             <button type="button" data-value="5">5</button>
           </div>
-          <div class="legend">1 = Très mauvaise récup &nbsp;&nbsp; 5 = Très bonne récup</div>
+          <div class="legend">1 = Très mauvaise récupération &nbsp;&nbsp; 5 = Très bonne récupération</div>
           <input type="hidden" name="recuperation" />
         </div>
 
+        <!-- Q2 -->
         <div class="question">
-          <label>Qualité du sommeil 😴</label>
+          <label><span class="qnum">2.</span>Qualité du sommeil 😴</label>
           <div class="scale" data-name="sommeil">
             <button type="button" data-value="1">1</button>
             <button type="button" data-value="2">2</button>
@@ -352,12 +241,13 @@
             <button type="button" data-value="4">4</button>
             <button type="button" data-value="5">5</button>
           </div>
-          <div class="legend">1 = Très mauvais &nbsp;&nbsp; 5 = Très bon</div>
+          <div class="legend">1 = Très mauvais sommeil &nbsp;&nbsp; 5 = Très bon sommeil</div>
           <input type="hidden" name="sommeil" />
         </div>
 
+        <!-- Q3 -->
         <div class="question">
-          <label>Qualité alimentation / hydratation (24h) 🥗💧</label>
+          <label><span class="qnum">3.</span>Alimentation / hydratation (24 dernières heures) 🍽️💧</label>
           <div class="scale" data-name="alimentation">
             <button type="button" data-value="1">1</button>
             <button type="button" data-value="2">2</button>
@@ -369,8 +259,9 @@
           <input type="hidden" name="alimentation" />
         </div>
 
+        <!-- Q4 -->
         <div class="question">
-          <label>Fatigue physique / douleurs musculaires 💢</label>
+          <label><span class="qnum">4.</span>Fatigue physique / douleurs musculaires 💢</label>
           <div class="scale" data-name="fatigue_physique">
             <button type="button" data-value="1">1</button>
             <button type="button" data-value="2">2</button>
@@ -378,12 +269,13 @@
             <button type="button" data-value="4">4</button>
             <button type="button" data-value="5">5</button>
           </div>
-          <div class="legend">1 = Très fatigué/douloureux &nbsp;&nbsp; 5 = Très en forme</div>
+          <div class="legend">1 = Très fatigué / douleurs fortes &nbsp;&nbsp; 5 = Très en forme</div>
           <input type="hidden" name="fatigue_physique" />
         </div>
 
+        <!-- Q5 -->
         <div class="question">
-          <label>Fatigue mentale 🧠</label>
+          <label><span class="qnum">5.</span>Fatigue mentale 🧠</label>
           <div class="scale" data-name="fatigue_mentale">
             <button type="button" data-value="1">1</button>
             <button type="button" data-value="2">2</button>
@@ -395,11 +287,10 @@
           <input type="hidden" name="fatigue_mentale" />
         </div>
 
-        <!-- Bonus staff (coach only) -->
+        <!-- Bonus staff -->
         <div class="row coach-only">
           <label for="bonusStaff">Bonus staff :</label>
-          <input type="text" id="bonusStaff" name="bonusStaff"
-                 placeholder="Ex : attention adducteurs, charge réduite, etc.">
+          <input type="text" id="bonusStaff" name="bonusStaff" placeholder="Ex : charge réduite, vigilance, etc." />
         </div>
 
         <!-- Douleurs spécifiques -->
@@ -409,33 +300,34 @@
                  placeholder="Ex : ischios droit, adducteurs, cheville gauche..." />
         </div>
 
-        <!-- Commentaire joueur -->
+        <!-- Commentaire -->
         <div class="row">
           <label for="commentaire">Commentaire :</label>
           <textarea id="commentaire" name="commentaire"
                     placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
         </div>
 
-        <!-- Boutons -->
+        <!-- Actions -->
         <div class="actions">
           <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
-          <button type="button" class="primary coach-only" onclick="syncGoogleSheets()">Envoyer vers Google Sheets</button>
+          <button type="button" class="primary coach-only" onclick="syncGoogleSheets()">Envoyer les données vers Google Sheets</button>
           <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
-          <button type="button" class="secondary danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements</button>
+          <button type="button" class="secondary danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
         </div>
 
         <div class="result" id="resultat"></div>
       </form>
 
-      <div class="liste-joueurs coach-only">
-        <strong>Historique local :</strong>
+      <!-- Historique LOCAL complet -->
+      <div class="liste-joueurs coach-only" id="listeJoueurs">
+        <strong>Historique local (toutes les réponses) :</strong>
         <ul id="listeJoueursUl"></ul>
       </div>
     </div>
 
-    <!-- STATS COACH -->
+    <!-- Synthèse rapide Coach (identique) -->
     <div class="stats-card coach-only">
-      <div class="stats-title">Synthèse rapide (dernière saisie)</div>
+      <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
       <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
       <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
       <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
@@ -444,9 +336,7 @@
         <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
       </div>
 
-      <div class="stats-line stats-reco" id="statsRecoSeance">
-        Recommandation séance : -
-      </div>
+      <div class="stats-line stats-reco" id="statsRecoSeance">Recommandation séance : -</div>
 
       <div class="stats-alertes">
         <div class="stats-line"><strong>Joueurs en alerte (orange/rouge) :</strong></div>
@@ -483,7 +373,7 @@
     </div>
   </div>
 
-  <!-- JS -->
+  <!-- SCRIPT -->
   <script>
     let enregistrements = [];
 
@@ -491,18 +381,21 @@
     const selectJoueur = document.getElementById("joueurSelect");
     const rowAutre = document.getElementById("rowAutre");
     const inputAutre = document.getElementById("joueurAutre");
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyrlLJn8rtbpoDnzvMSKL26osTeoEM3vM3UX51JUn3FFS9jHPN-3iF5uYztcjJTo_g/exec";
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDx3q3ts0HUodvo2MJmXinAD428yvXzCK6N6AbzDExwlKV5mr4VLWxr1J3H9mbzlED/exec";
 
-    // Autre joueur
     selectJoueur.addEventListener("change", () => {
-      rowAutre.style.display = (selectJoueur.value === "Autre") ? "flex" : "none";
-      if (selectJoueur.value !== "Autre") inputAutre.value = "";
+      if (selectJoueur.value === "Autre") {
+        rowAutre.style.display = "flex";
+      } else {
+        rowAutre.style.display = "none";
+        inputAutre.value = "";
+      }
     });
 
-    // Scales -> hidden input
+    // Bind des boutons 1-5
     document.querySelectorAll(".scale").forEach(scale => {
       const name = scale.getAttribute("data-name");
-      const hiddenInput = document.querySelector(`input[name="${name}"]`);
+      const hiddenInput = document.querySelector('input[name="' + name + '"]');
       scale.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("click", () => {
           scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
@@ -513,13 +406,15 @@
     });
 
     function getNomJoueur() {
-      if (!selectJoueur.value) return "";
-      if (selectJoueur.value === "Autre") return inputAutre.value.trim();
-      return selectJoueur.value;
+      const valSelect = selectJoueur.value;
+      if (!valSelect) return "";
+      if (valSelect === "Autre") return inputAutre.value.trim();
+      return valSelect;
     }
 
     function getSeance() {
-      const valDate = document.getElementById("seanceDate").value;
+      const inputDate = document.getElementById("seanceDate");
+      const valDate = inputDate.value;
       if (!valDate) return "";
       const jours = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
       const d = new Date(valDate + "T00:00:00");
@@ -528,8 +423,12 @@
 
     function initDateSeance() {
       const inputDate = document.getElementById("seanceDate");
-      const d = new Date();
-      inputDate.value = d.toISOString().slice(0,10);
+      if (!inputDate) return;
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth()+1).padStart(2,"0");
+      const d = String(today.getDate()).padStart(2,"0");
+      inputDate.value = `${y}-${m}-${d}`;
     }
 
     function toggleModeCoach() {
@@ -537,249 +436,279 @@
       const btn = document.getElementById("modeCoachBtn");
       body.classList.toggle("coach-mode");
 
-      const on = body.classList.contains("coach-mode");
-      btn.classList.toggle("coach-on", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.textContent = on ? "Mode coach ON" : "Mode coach OFF";
+      if (body.classList.contains("coach-mode")) {
+        btn.classList.add("coach-on");
+        btn.setAttribute("aria-pressed","true");
+        btn.textContent = "Mode coach ON";
+      } else {
+        btn.classList.remove("coach-on");
+        btn.setAttribute("aria-pressed","false");
+        btn.textContent = "Mode coach OFF";
+      }
     }
 
     function envoyerVersGoogleSheets(rec) {
+      if (!GOOGLE_SHEETS_URL) return;
       if (!navigator.onLine) return;
 
-      const payload = { ...rec };
+      const payload = {...rec};
       delete payload.envoye;
 
       fetch(GOOGLE_SHEETS_URL, {
-        method: "POST",
-        mode: "no-cors",
+        method:"POST",
+        mode:"no-cors",
         body: JSON.stringify(payload)
-      }).then(() => {
+      })
+      .then(() => {
         rec.envoye = true;
         sauvegarderDansStorage();
-      }).catch(() => {});
+      })
+      .catch(() => {});
     }
 
     function syncGoogleSheets() {
       if (!navigator.onLine) {
-        alert("Pas de connexion Internet.");
+        alert("Pas de connexion internet.");
         return;
       }
 
       const aEnvoyer = enregistrements.filter(r => !r.envoye);
       if (aEnvoyer.length === 0) {
-        alert("Tout est déjà synchronisé.");
+        alert("Tout est déjà envoyé.");
         return;
       }
 
       if (!confirm("Envoyer " + aEnvoyer.length + " réponses ?")) return;
 
-      aEnvoyer.forEach(r => envoyerVersGoogleSheets(r));
+      aEnvoyer.forEach(rec => envoyerVersGoogleSheets(rec));
 
-      alert("Synchronisation lancée. Vérifie Sheets dans 10–20 sec.");
+      alert("Synchronisation lancée.");
     }
 
     function enregistrerJoueur() {
       const form = document.getElementById("fatigueForm");
       const joueur = getNomJoueur();
-      if (!joueur) return alert("Sélectionne un joueur.");
+      if (!joueur) return alert("Choisis un joueur.");
 
       const seance = getSeance();
 
-      const dejaFait = enregistrements.some(rec =>
-        rec.joueur === joueur && (rec.seance || "") === (seance || "")
-      );
-      if (dejaFait) return alert("⚠️ Déjà rempli pour cette séance.");
-
       const champs = [
-        { name: "recuperation", label: "Récupération" },
-        { name: "sommeil", label: "Sommeil" },
-        { name: "alimentation", label: "Alimentation / hydratation" },
-        { name: "fatigue_physique", label: "Fatigue physique" },
-        { name: "fatigue_mentale", label: "Fatigue mentale" }
+        { name:"recuperation",     label:"Qualité de la récupération" },
+        { name:"sommeil",          label:"Qualité du sommeil" },
+        { name:"alimentation",     label:"Qualité alimentation/hydratation" },
+        { name:"fatigue_physique", label:"Fatigue physique/douleurs" },
+        { name:"fatigue_mentale",  label:"Fatigue mentale" }
       ];
 
       const valeurs = {};
-      for (const c of champs) {
-        const val = form[c.name].value;
-        if (!val) return alert(`Réponds à : ${c.label} (1 à 5).`);
-        valeurs[c.name] = Number(val);
+      for (const champ of champs) {
+        const val = form[champ.name].value;
+        if (!val) return alert('Réponds à : "'+champ.label+'" (1 à 5).');
+        valeurs[champ.name]=Number(val);
       }
 
       const date = new Date().toLocaleString();
-      const total = champs.reduce((s,c) => s + valeurs[c.name], 0);
-      const pourcentage = Math.round((total / 25) * 100);
+      const recuperation     = valeurs.recuperation;
+      const sommeil          = valeurs.sommeil;
+      const alimentation     = valeurs.alimentation;
+      const fatigue_physique = valeurs.fatigue_physique;
+      const fatigue_mentale  = valeurs.fatigue_mentale;
+
+      const bonusStaff = (document.getElementById("bonusStaff")?.value || "").trim();
+      const douleurZone = document.getElementById("douleurZone").value.trim();
+      const commentaire = document.getElementById("commentaire").value.trim();
+
+      const total = recuperation + sommeil + alimentation + fatigue_physique + fatigue_mentale;
+      const pourcentage = Math.round((total/25)*100);
 
       let zoneTexte="", zoneClass="";
-      if (pourcentage >= 88)      { zoneTexte="VERT FONCÉ très bon état"; zoneClass="zone-vert-fonce"; }
-      else if (pourcentage >= 76) { zoneTexte="VERT CLAIR bon état"; zoneClass="zone-vert-clair"; }
-      else if (pourcentage >= 64) { zoneTexte="JAUNE fatigue légère"; zoneClass="zone-jaune"; }
-      else if (pourcentage >= 52) { zoneTexte="ORANGE fatigue notable"; zoneClass="zone-orange"; }
-      else                        { zoneTexte="ROUGE fatigue importante"; zoneClass="zone-rouge"; }
+      if (pourcentage >= 88)      { zoneTexte="VERT FONCE tres bon etat (22-25)"; zoneClass="zone-vert-fonce"; }
+      else if (pourcentage >= 76) { zoneTexte="VERT CLAIR bon etat general (19-21)"; zoneClass="zone-vert-clair"; }
+      else if (pourcentage >= 64) { zoneTexte="JAUNE fatigue legere (16-18)"; zoneClass="zone-jaune"; }
+      else if (pourcentage >= 52) { zoneTexte="ORANGE fatigue notable (13-15)"; zoneClass="zone-orange"; }
+      else                        { zoneTexte="ROUGE fatigue importante (5-12)"; zoneClass="zone-rouge"; }
 
       const record = {
-        date,
-        joueur,
-        seance,
-        recuperation: valeurs.recuperation,
-        sommeil: valeurs.sommeil,
-        alimentation: valeurs.alimentation,
-        fatigue_physique: valeurs.fatigue_physique,
-        fatigue_mentale: valeurs.fatigue_mentale,
-        total,
-        pourcentage,
-        zone: zoneTexte,
-        zoneClass,
-        bonusStaff: document.getElementById("bonusStaff")?.value.trim() || "",
-        douleurZone: document.getElementById("douleurZone").value.trim(),
-        commentaire: document.getElementById("commentaire").value.trim(),
-        envoye: false
+        date, joueur, seance,
+        recuperation, sommeil, alimentation,
+        fatigue_physique, fatigue_mentale,
+        total, pourcentage,
+        zone: zoneTexte, zoneClass,
+        bonusStaff, douleurZone, commentaire,
+        envoye:false
       };
 
       enregistrements.push(record);
       sauvegarderDansStorage();
-
       if (navigator.onLine) envoyerVersGoogleSheets(record);
 
-      const res = document.getElementById("resultat");
-      res.textContent = `${joueur} | ${seance || "séance non précisée"} | ${total}/25 (${pourcentage}%) - ${zoneTexte}`;
-      res.className = "result " + zoneClass;
+      const resultatDiv = document.getElementById("resultat");
+      resultatDiv.textContent =
+        `Enregistré : ${joueur} | Séance : ${seance || "non précisé"} | Score : ${total}/25 (${pourcentage}%) - Zone : ${zoneTexte} | Total formulaires : ${enregistrements.length}`;
+      resultatDiv.className = "result " + zoneClass;
 
       majListeJoueurs();
       majStats();
-      resetForm(false);
+      resetForm(false);   // ✅ garde la date du jour
     }
 
     function majListeJoueurs() {
       const ul = document.getElementById("listeJoueursUl");
       if (!ul) return;
-      ul.innerHTML = "";
+      ul.innerHTML="";
 
-      enregistrements.forEach((rec,i) => {
-        const li = document.createElement("li");
+      enregistrements.forEach((rec,i)=>{
+        const li=document.createElement("li");
+        li.textContent =
+          `${i+1}. ${rec.joueur} - ${rec.pourcentage}% (${rec.zone}) ${rec.seance ? " | "+rec.seance : ""} ${rec.envoye?"🟢":"🔴"}`;
         li.className = rec.zoneClass;
-        li.textContent = `${i+1}. ${rec.joueur} - ${rec.pourcentage}% (${rec.zone}) ${rec.envoye ? "🟢" : "🔴"}`;
         ul.appendChild(li);
       });
     }
 
     function majStats() {
-      const elNb = document.getElementById("statsNbJoueurs");
-      const elMoy = document.getElementById("statsMoyenneScore");
-      const elDom = document.getElementById("statsZoneDom");
-      const indiceBox = document.getElementById("statsIndiceBox");
-      const indiceLabel = document.getElementById("statsIndiceLabel");
-      const recoEl = document.getElementById("statsRecoSeance");
-      const alertesEl = document.getElementById("statsAlertesListe");
+      const elNb=document.getElementById("statsNbJoueurs");
+      const elMoy=document.getElementById("statsMoyenneScore");
+      const elDom=document.getElementById("statsZoneDom");
+      const indiceBox=document.getElementById("statsIndiceBox");
+      const indiceLabel=document.getElementById("statsIndiceLabel");
+      const recoEl=document.getElementById("statsRecoSeance");
+      const alertesEl=document.getElementById("statsAlertesListe");
 
-      const dernierParJoueur = {};
-      enregistrements.forEach(r => dernierParJoueur[r.joueur] = r);
-      const liste = Object.values(dernierParJoueur);
-      const nb = liste.length;
+      const dernierParJoueur={};
+      enregistrements.forEach(r=>{ dernierParJoueur[r.joueur]=r; });
+      const liste=Object.values(dernierParJoueur);
+      const nb=liste.length;
 
-      elNb.textContent = "Joueurs (dernière mesure) : " + nb;
-      if (!nb) {
-        elMoy.textContent = "Score moyen : -";
-        elDom.textContent = "Zone dominante : -";
-        indiceBox.className="stats-indice-box";
-        indiceLabel.textContent="Indice bien-être équipe : -";
-        recoEl.textContent="Recommandation séance : -";
-        alertesEl.textContent="-";
+      if (elNb) elNb.textContent="Joueurs (dernière mesure) : "+nb;
+
+      if (nb===0){
+        if(elMoy) elMoy.textContent="Score moyen : -";
+        if(elDom) elDom.textContent="Zone dominante : -";
+        if(indiceBox&&indiceLabel){ indiceBox.className="stats-indice-box"; indiceLabel.textContent="Indice bien-être équipe : -"; }
+        if(recoEl) recoEl.textContent="Recommandation séance : -";
+        if(alertesEl) alertesEl.textContent="-";
+        ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
+          const bar=document.getElementById("bar"+z);
+          const txt=document.getElementById("text"+z);
+          if(bar) bar.style.width="0%";
+          if(txt) txt.textContent="0";
+        });
         return;
       }
 
       let somme=0;
-      const z={vf:0,vc:0,j:0,o:0,r:0};
+      const compte={vf:0,vc:0,j:0,o:0,r:0};
+
       liste.forEach(rec=>{
         somme+=rec.total;
-        if(rec.zoneClass==="zone-vert-fonce") z.vf++;
-        else if(rec.zoneClass==="zone-vert-clair") z.vc++;
-        else if(rec.zoneClass==="zone-jaune") z.j++;
-        else if(rec.zoneClass==="zone-orange") z.o++;
-        else z.r++;
+        if(rec.zoneClass==="zone-vert-fonce") compte.vf++;
+        else if(rec.zoneClass==="zone-vert-clair") compte.vc++;
+        else if(rec.zoneClass==="zone-jaune") compte.j++;
+        else if(rec.zoneClass==="zone-orange") compte.o++;
+        else compte.r++;
       });
 
       const moy=(somme/nb).toFixed(1);
-      elMoy.textContent="Score moyen : "+moy+" / 25";
+      if(elMoy) elMoy.textContent="Score moyen : "+moy+" / 25";
 
-      const zonesOrdre=[
+      const ordre=[
         {code:"vf",nom:"VERT FONCÉ"},
         {code:"vc",nom:"VERT CLAIR"},
         {code:"j",nom:"JAUNE"},
         {code:"o",nom:"ORANGE"},
         {code:"r",nom:"ROUGE"}
       ];
-      let maxZone=""; let maxVal=-1;
-      zonesOrdre.forEach(t=>{
-        if(z[t.code]>maxVal){maxVal=z[t.code];maxZone=t.nom;}
-      });
-      elDom.textContent=`Zone dominante : ${maxZone} (${maxVal} joueurs)`;
+      let maxNom="",maxVal=-1;
+      ordre.forEach(z=>{ if(compte[z.code]>maxVal){maxVal=compte[z.code];maxNom=z.nom;} });
+      if(elDom) elDom.textContent=`Zone dominante : ${maxNom} (${maxVal} joueurs)`;
+
+      const pct=c=>Math.round((compte[c]/nb)*100);
+      const setBar=(id,code,count)=>{
+        const bar=document.getElementById("bar"+id);
+        const txt=document.getElementById("text"+id);
+        if(bar) bar.style.width=pct(code)+"%";
+        if(txt) txt.textContent=count;
+      };
+      setBar("VFonce","vf",compte.vf);
+      setBar("VClair","vc",compte.vc);
+      setBar("Jaune","j",compte.j);
+      setBar("Orange","o",compte.o);
+      setBar("Rouge","r",compte.r);
 
       const pctEquipe=Math.round((parseFloat(moy)/25)*100);
-      let classeIndice="",labelEquipe="";
-      if(pctEquipe>=88){classeIndice="indice-vert";labelEquipe="Très bon état";}
-      else if(pctEquipe>=76){classeIndice="indice-vert";labelEquipe="Bon état";}
-      else if(pctEquipe>=64){classeIndice="indice-jaune";labelEquipe="Fatigue légère";}
-      else if(pctEquipe>=52){classeIndice="indice-orange";labelEquipe="Fatigue notable";}
-      else {classeIndice="indice-rouge";labelEquipe="Fatigue importante";}
-      indiceBox.className="stats-indice-box "+classeIndice;
-      indiceLabel.textContent=`Indice bien-être équipe : ${pctEquipe}% – ${labelEquipe}`;
+      let classe="",texte="";
+      if(pctEquipe>=88){classe="indice-vert";texte="Très bon état général";}
+      else if(pctEquipe>=76){classe="indice-vert";texte="Bon état général";}
+      else if(pctEquipe>=64){classe="indice-jaune";texte="Fatigue légère";}
+      else if(pctEquipe>=52){classe="indice-orange";texte="Fatigue notable";}
+      else {classe="indice-rouge";texte="Fatigue importante";}
+
+      if(indiceBox&&indiceLabel){
+        indiceBox.className="stats-indice-box "+classe;
+        indiceLabel.textContent=`Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
+      }
 
       const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>r.joueur);
-      alertesEl.textContent=alertes.length?alertes.join(", "):"Aucun joueur en alerte.";
+      if(alertesEl){
+        alertesEl.textContent=alertes.length?alertes.join(", "):"Aucun joueur en alerte.";
+      }
 
-      const pctRO=Math.round(((z.o+z.r)/nb)*100);
+      const pctRO=Math.round(((compte.o+compte.r)/nb)*100);
       let reco="";
-      if(pctEquipe>=80 && pctRO<=10) reco="Équipe en forme : charge normale/haute possible.";
-      else if(pctEquipe>=70 && pctRO<=25) reco="Fatigue modérée : charge normale, surveiller alertes.";
-      else if(pctEquipe>=60 || pctRO>30) reco="Plusieurs fatigués : réduire volume/intensité, individualiser.";
-      else reco="Fatigue élevée : séance récupération/allégée.";
-      recoEl.textContent="Recommandation séance : "+reco;
+      if(pctEquipe>=80 && pctRO<=10) reco="Équipe en forme : charge normale ou légèrement haute.";
+      else if(pctEquipe>=70 && pctRO<=25) reco="Fatigue modérée : charge normale + surveillance.";
+      else if(pctEquipe>=60 || pctRO>30) reco="Plusieurs joueurs fatigués : réduis intensité/volume, individualise.";
+      else reco="Fatigue élevée : séance récupération / charge très réduite.";
+      if(recoEl) recoEl.textContent="Recommandation séance : "+reco;
     }
 
-    function resetForm(clearResult) {
-      const form = document.getElementById("fatigueForm");
+    function resetForm(clearResult){
+      const form=document.getElementById("fatigueForm");
       form.reset();
       rowAutre.style.display="none";
       inputAutre.value="";
+
       document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));
       document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");
 
+      // ✅ IMPORTANT : garder la date du jour après un enregistrement
+      if (!clearResult) initDateSeance();
+
       if(clearResult){
-        const res=document.getElementById("resultat");
-        res.textContent="";
-        res.className="result";
+        const r=document.getElementById("resultat");
+        r.textContent="";
+        r.className="result";
       }
     }
 
-    function sauvegarderDansStorage() {
+    function sauvegarderDansStorage(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(enregistrements));
     }
 
-    function chargerDepuisStorage() {
+    function chargerDepuisStorage(){
+      const data=localStorage.getItem(STORAGE_KEY);
+      if(!data){ enregistrements=[]; majListeJoueurs(); majStats(); return; }
       try{
-        const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const parsed=JSON.parse(data);
         enregistrements=Array.isArray(parsed)?parsed:[];
-      }catch{
-        enregistrements=[];
-      }
+      }catch(e){ enregistrements=[]; }
       majListeJoueurs();
       majStats();
     }
 
-    function resetDonnees() {
+    function resetDonnees(){
       if(!confirm("Supprimer toutes les réponses locales ?")) return;
       enregistrements=[];
       localStorage.removeItem(STORAGE_KEY);
-      majListeJoueurs();
-      majStats();
-      resetForm(true);
+      majListeJoueurs(); majStats(); resetForm(true);
+      alert("Historique local effacé.");
     }
 
     chargerDepuisStorage();
     initDateSeance();
   </script>
 
-  <!-- Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
@@ -788,7 +717,6 @@
     }
   </script>
 
-  <!-- GRAPHIQUES COACH -->
   <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
     <h2>Statistiques équipe (Google Sheets)</h2>
 
@@ -799,8 +727,8 @@
           <iframe
             src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=1899617904&format=interactive"
             loading="lazy"
-            allowfullscreen>
-          </iframe>
+            allowfullscreen
+          ></iframe>
         </div>
       </div>
 
@@ -810,12 +738,11 @@
           <iframe
             src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5/pubchart?oid=2032210019&format=interactive"
             loading="lazy"
-            allowfullscreen>
-          </iframe>
+            allowfullscreen
+          ></iframe>
         </div>
       </div>
     </div>
   </section>
-
 </body>
 </html>
