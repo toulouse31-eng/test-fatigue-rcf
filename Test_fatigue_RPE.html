@@ -518,29 +518,19 @@
   delete payload.envoye;
 
   try {
+    // ✅ "simple request" -> pas de preflight CORS
     const res = await fetch(GOOGLE_SHEETS_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload),
       cache: "no-store",
     });
 
     const txt = await res.text();
+    console.log("Réponse Apps Script :", txt);
 
-    // Ton Apps Script renvoie du HTML avec du JSON dedans
-    // donc on essaye de récupérer le JSON
     let json = null;
-    try {
-      json = JSON.parse(txt);
-    } catch {
-      // si c'est du HTML, on extrait la partie JSON
-      const m = txt.match(/\{[\s\S]*\}/);
-      if (m) {
-        try { json = JSON.parse(m[0]); } catch {}
-      }
-    }
-
-    console.log("Réponse serveur Sheets :", txt, json);
+    try { json = JSON.parse(txt); } catch {}
 
     if (json && json.status === "OK") {
       rec.envoye = true;
@@ -555,9 +545,10 @@
     console.error("Erreur fetch Sheets :", err);
     rec.envoye = false;
     sauvegarderDansStorage();
-    alert("Envoi impossible vers Google Sheets.");
+    alert("Envoi impossible vers Google Sheets (CORS / réseau).");
   }
 }
+
 // ======================
 // TEST ENVOI GOOGLE SHEETS
 // ======================
