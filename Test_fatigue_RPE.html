@@ -793,7 +793,7 @@
     }
 
     // =======================
-    // SPARKLINE PRO
+    // SPARKLINE PRO (joueur + moyenne ÉQUIPE)
     // =======================
 
     function getDateFromSeance(seanceStr){
@@ -829,6 +829,23 @@
       }));
     }
 
+    // ✅ moyenne équipe sur N derniers enregistrements globaux
+    function getTeamAverage(n=5){
+      if(!enregistrements.length) return null;
+
+      const rows = [...enregistrements].sort((a,b)=>{
+        const da = getDateFromSeance(a.seance) || new Date(a.date);
+        const db = getDateFromSeance(b.seance) || new Date(b.date);
+        return da - db;
+      });
+
+      const last = rows.slice(-n);
+      if(!last.length) return null;
+
+      const avg = last.reduce((s,r)=>s + Number(r.pourcentage || 0), 0) / last.length;
+      return avg;
+    }
+
     function resizeSparklineCanvas(){
       const canvas = document.getElementById("sparklineCanvas");
       const wrap = document.querySelector(".sparkline-wrap");
@@ -861,7 +878,7 @@
       });
     }
 
-    function drawSparkline(points){
+    function drawSparkline(points, teamAvg){
       const canvas = document.getElementById("sparklineCanvas");
       const empty  = document.getElementById("sparklineEmpty");
       if(!canvas) return;
@@ -895,25 +912,26 @@
       };
       const pts = points.map((p,i)=>toXY(p.value,i));
 
-      // moyenne mobile (sur points affichés)
-      const avg = values.reduce((a,b)=>a+b,0) / values.length;
-      const yAvg = padT + plotH * (1 - avg/100);
+      // ✅ moyenne ÉQUIPE pointillée
+      if(teamAvg !== null && teamAvg !== undefined){
+        const yAvg = padT + plotH * (1 - teamAvg/100);
 
-      ctx.save();
-      ctx.strokeStyle = "#0f172a";
-      ctx.lineWidth = 1.8;
-      ctx.setLineDash([6,6]);
-      ctx.beginPath();
-      ctx.moveTo(padL, yAvg);
-      ctx.lineTo(w - padR, yAvg);
-      ctx.stroke();
-      ctx.restore();
+        ctx.save();
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([6,6]);
+        ctx.beginPath();
+        ctx.moveTo(padL, yAvg);
+        ctx.lineTo(w - padR, yAvg);
+        ctx.stroke();
+        ctx.restore();
 
-      ctx.fillStyle = "#0f172a";
-      ctx.font = "12px Arial";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(`Moy. ${avg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(`Moy. équipe ${teamAvg.toFixed(0)}%`, w - padR - 2, yAvg - 4);
+      }
 
       // grille horizontale + labels y
       ctx.lineWidth = 1;
@@ -957,7 +975,7 @@
         ctx.fillText(p.label || "", x, yAxis + 8);
       });
 
-      // courbe
+      // courbe joueur
       ctx.strokeStyle = "#2f7ccc";
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -1012,10 +1030,13 @@
       const redraw = () => {
         const n = Number(rangeSel.value || 5);
         resizeSparklineCanvas();
+
+        const teamAvg = getTeamAverage(n);
+
         if(sel.value){
-          drawSparkline(getLastResults(sel.value, n));
+          drawSparkline(getLastResults(sel.value, n), teamAvg);
         } else {
-          drawSparkline([]);
+          drawSparkline([], teamAvg);
         }
       };
 
@@ -1027,9 +1048,11 @@
     window.addEventListener("resize", () => {
       const sel = document.getElementById("sparklineSelect");
       const rangeSel = document.getElementById("sparklineRange");
-      if(sel && rangeSel && sel.value){
+      if(sel && rangeSel){
+        const n = Number(rangeSel.value || 5);
         resizeSparklineCanvas();
-        drawSparkline(getLastResults(sel.value, Number(rangeSel.value || 5)));
+        const teamAvg = getTeamAverage(n);
+        drawSparkline(getLastResults(sel.value, n), teamAvg);
       }
     });
 
