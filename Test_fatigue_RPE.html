@@ -241,7 +241,6 @@
           <input type="date" id="seanceDate" name="seanceDate">
         </div>
 
-        <!-- Q1..Q5 -->
         <div class="question">
           <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
           <div class="scale" data-name="recuperation">
@@ -335,7 +334,7 @@
       </div>
     </div>
 
-    <!-- SYNTHÈSE RAPIDE COACH (UNIQUEMENT Google Sheets) -->
+    <!-- SYNTHÈSE RAPIDE COACH (Sheets ONLY) -->
     <div class="stats-card coach-only">
       <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
       <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
@@ -388,8 +387,6 @@
     <h2>Statistiques équipe (Google Sheets)</h2>
 
     <div class="stats-grid">
-
-      <!-- TOP 5 fatigués -->
       <div class="stats-chart-card">
         <h3>Top 5 joueurs les plus fatigués</h3>
 
@@ -410,7 +407,6 @@
         </div>
       </div>
 
-      <!-- TOP 5 en forme -->
       <div class="stats-chart-card">
         <h3>Top 5 joueurs les plus en forme</h3>
 
@@ -432,7 +428,6 @@
       </div>
     </div>
 
-    <!-- Sparkline -->
     <div class="sparkline-card coach-only">
       <h3>Évolution joueur</h3>
 
@@ -458,13 +453,12 @@
     </div>
   </section>
 
-  <!-- SCRIPT PRINCIPAL -->
   <script>
     // =======================
-    // 1) 2 sources séparées
+    // SOURCES DE DONNÉES
     // =======================
-    let enregistrementsLocal  = []; // tablette (queue + historique coach-only)
-    let enregistrementsSheets = []; // données OFFICIELLES Google Sheets (stats/graphiques)
+    let enregistrementsLocal  = []; // tablette (queue + historique coach)
+    let enregistrementsSheets = []; // OFFICIEL Google Sheets (stats/graphiques)
 
     const STORAGE_LOCAL_KEY  = "test_fatigue_rcf_enregistrements_local_v1";
     const STORAGE_SHEETS_KEY = "test_fatigue_rcf_last_sync_sheets_v1";
@@ -476,22 +470,19 @@
     const GOOGLE_SHEETS_URL =
       "https://script.google.com/macros/s/AKfycbyqJnAbCwrgJmYC4SPGonk3vbAIyNOJ3YuInmO9crW9MxA3PVWn2ae5MkHf-7cjfHw/exec";
 
-    // ✅ Google Sheets publié (JSONP)
     const GOOGLE_SHEETS_PUB_ID =
       "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
-    const GOOGLE_SHEETS_GID = 0; // Base
+    const GOOGLE_SHEETS_GID = 0;
 
-    // Helper : source unique pour stats/graphiques
-    function getVizData(){
-      return enregistrementsSheets; // ✅ UNIQUEMENT Sheets
-    }
+    // Uniquement Sheets pour viz
+    function getVizData(){ return enregistrementsSheets; }
 
     selectJoueur.addEventListener("change", () => {
       if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
       else { rowAutre.style.display = "none"; inputAutre.value = ""; }
     });
 
-    // Bind des boutons 1-5
+    // Bind boutons échelle
     document.querySelectorAll(".scale").forEach(scale => {
       const name = scale.getAttribute("data-name");
       const hiddenInput = document.querySelector(`input[name="${name}"]`);
@@ -530,8 +521,18 @@
       inputDate.value = `${y}-${m}-${d}`;
     }
 
-    // ✅ FIX : redraw Top5 quand mode coach devient visible
-    function toggleModeCoach() {
+    // ✅ Force resize/redraw après affichage coach
+    function forceResizeAllCharts(){
+      resizeTopCanvas("topFatigueCanvas");
+      resizeTopCanvas("topFormeCanvas");
+      drawTop5Now();
+
+      resizeSparklineCanvas();
+      drawSparklineNow();
+    }
+
+    // ✅ Mode coach async + refresh sheets + redraw visible
+    async function toggleModeCoach() {
       const body = document.body;
       const btn = document.getElementById("modeCoachBtn");
       body.classList.toggle("coach-mode");
@@ -541,11 +542,8 @@
         btn.setAttribute("aria-pressed","true");
         btn.textContent = "Mode coach ON";
 
-        setTimeout(() => {
-          buildSparklineSelect();
-          buildTop5Charts();
-          majStats();
-        }, 50);
+        await refreshSheetsData();
+        setTimeout(forceResizeAllCharts, 120);
 
       } else {
         btn.classList.remove("coach-on");
@@ -572,7 +570,6 @@
         rec.envoye = true;
         sauvegarderLocal();
 
-        // ✅ on refresh Sheets pour mettre à jour les graphes
         await refreshSheetsData();
 
       } catch (err) {
@@ -658,7 +655,6 @@
         envoye:false
       };
 
-      // ✅ local uniquement (queue)
       enregistrementsLocal.push(record);
       sauvegarderLocal();
       if (navigator.onLine) envoyerVersGoogleSheets(record);
@@ -669,12 +665,6 @@
       resultatDiv.className = "result " + zoneClass;
 
       majListeJoueursLocal();
-
-      // ⚠️ Stats/graphes restent sur Sheets -> pas de maj immédiate si pas encore sync
-      if (navigator.onLine){
-        refreshSheetsData();
-      }
-
       resetForm(false);
     }
 
@@ -693,7 +683,7 @@
     }
 
     // =======================
-    // ✅ STATS basées sur Sheets ONLY
+    // STATS (Sheets ONLY)
     // =======================
     function majStats() {
       const data = getVizData();
@@ -813,23 +803,19 @@
     }
 
     // =======================
-    // LOCAL STORAGE = QUEUE
+    // LOCAL STORAGE (Queue)
     // =======================
     function sauvegarderLocal(){
       localStorage.setItem(STORAGE_LOCAL_KEY, JSON.stringify(enregistrementsLocal));
     }
-
     function chargerLocal(){
       const data=localStorage.getItem(STORAGE_LOCAL_KEY);
       if(!data) return [];
       try{
         const parsed=JSON.parse(data);
         return Array.isArray(parsed)?parsed:[];
-      }catch(e){
-        return [];
-      }
+      }catch(e){ return []; }
     }
-
     function resetDonnees(){
       if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?")) return;
       enregistrementsLocal=[];
@@ -840,97 +826,74 @@
     }
 
     // =======================
-    // GOOGLE SHEETS (JSONP + BACKUP OFFLINE)
+    // GOOGLE SHEETS (GVIZ Fetch + Backup Offline)
     // =======================
-    function chargerDepuisGoogleSheetsJSONP(){
-      return new Promise((resolve) => {
-        const cbName = "gsCallback_" + Date.now();
-
-        window[cbName] = (resp) => {
-          try {
-            const rows = resp.table.rows || [];
-
-            const data = rows.map(r => {
-              const c = r.c || [];
-              const pourcentage = Number(c[10]?.v) || 0;
-              const { zoneTexte, zoneClass } = computeZone(pourcentage);
-
-              return {
-                date: c[1]?.v || "",
-                joueur: c[2]?.v || "",
-                seance: c[3]?.v || "",
-                recuperation: Number(c[4]?.v) || "",
-                sommeil: Number(c[5]?.v) || "",
-                alimentation: Number(c[6]?.v) || "",
-                fatigue_physique: Number(c[7]?.v) || "",
-                fatigue_mentale: Number(c[8]?.v) || "",
-                total: Number(c[9]?.v) || "",
-                pourcentage,
-                zone: c[11]?.v || zoneTexte,
-                zoneClass,
-                douleurZone: c[12]?.v || "",
-                commentaire: c[13]?.v || "",
-                envoye: true
-              };
-            }).filter(x => x.joueur);
-
-            resolve(data);
-
-          } catch(e){
-            console.error("Parse JSONP error", e);
-            resolve([]);
-          }
-
-          delete window[cbName];
-          script.remove();
-        };
-
-        const script = document.createElement("script");
-        script.src =
-          `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json;responseHandler:${cbName}`;
-
-        script.onerror = () => {
-          console.error("JSONP load error");
-          delete window[cbName];
-          script.remove();
-          resolve([]);
-        };
-
-        document.body.appendChild(script);
-      });
-    }
-
     async function chargerDepuisGoogleSheetsAvecBackup(){
-      // Online -> charge Sheets + backup
+      const gvizUrl =
+        `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&tqx=out:json`;
+
       if(navigator.onLine){
-        const data = await chargerDepuisGoogleSheetsJSONP();
-        localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
-        return data;
+        try{
+          const res = await fetch(gvizUrl, { cache:"no-store" });
+          const txt = await res.text();
+
+          const jsonStr = txt.substring(txt.indexOf("{"), txt.lastIndexOf("}")+1);
+          const resp = JSON.parse(jsonStr);
+
+          const rows = resp.table.rows || [];
+          const data = rows.map(r => {
+            const c = r.c || [];
+            const pourcentage = Number(c[10]?.v) || 0;
+            const { zoneTexte, zoneClass } = computeZone(pourcentage);
+
+            return {
+              date: c[1]?.v || "",
+              joueur: c[2]?.v || "",
+              seance: c[3]?.v || "",
+              recuperation: Number(c[4]?.v) || "",
+              sommeil: Number(c[5]?.v) || "",
+              alimentation: Number(c[6]?.v) || "",
+              fatigue_physique: Number(c[7]?.v) || "",
+              fatigue_mentale: Number(c[8]?.v) || "",
+              total: Number(c[9]?.v) || "",
+              pourcentage,
+              zone: c[11]?.v || zoneTexte,
+              zoneClass,
+              douleurZone: c[12]?.v || "",
+              commentaire: c[13]?.v || "",
+              envoye: true
+            };
+          }).filter(x => x.joueur);
+
+          localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
+          return data;
+
+        }catch(e){
+          console.warn("Fetch GVIZ failed, fallback backup", e);
+        }
       }
 
-      // Offline -> backup Sheets
       const backup = localStorage.getItem(STORAGE_SHEETS_KEY);
       if(backup){
         try{
           const parsed = JSON.parse(backup);
           return Array.isArray(parsed) ? parsed : [];
-        }catch(e){
-          return [];
-        }
+        }catch(e){ return []; }
       }
-      // jamais sync -> vide
+
       return [];
     }
 
     async function refreshSheetsData(){
       enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
+      console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
       majStats();
       buildSparklineSelect();
       buildTop5Charts();
     }
 
     // =======================
-    // SPARKLINE PRO (Sheets ONLY)
+    // SPARKLINE (Sheets ONLY)
     // =======================
     function getDateFromSeance(seanceStr){
       if(!seanceStr) return null;
@@ -976,8 +939,7 @@
       });
       const last = rows.slice(-n);
       if(!last.length) return null;
-      const avg = last.reduce((s,r)=>s + (Number(r.pourcentage)||0), 0) / last.length;
-      return avg;
+      return last.reduce((s,r)=>s + (Number(r.pourcentage)||0), 0) / last.length;
     }
 
     function resizeSparklineCanvas(){
@@ -988,8 +950,11 @@
       const ratio = window.devicePixelRatio || 1;
       const rect = wrap.getBoundingClientRect();
 
-      canvas.width  = rect.width * ratio;
-      canvas.height = rect.height * ratio;
+      const w = rect.width  > 10 ? rect.width  : 320;
+      const h = rect.height > 10 ? rect.height : 240;
+
+      canvas.width  = w * ratio;
+      canvas.height = h * ratio;
 
       const ctx = canvas.getContext("2d");
       ctx.setTransform(ratio,0,0,ratio,0,0);
@@ -1025,6 +990,11 @@
 
       if(!points || points.length === 0){
         if(empty) empty.style.display = "block";
+        ctx.fillStyle="#94a3b8";
+        ctx.font="14px Arial";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText("Aucune donnée", w/2, h/2);
         return;
       }
       if(empty) empty.style.display = "none";
@@ -1044,7 +1014,6 @@
       });
       const pts = points.map((p,i)=>toXY(p.value,i));
 
-      // moyenne équipe pointillée
       if(avgEquipe !== null && avgEquipe !== undefined){
         const yAvg = padT + plotH * (1 - avgEquipe/100);
 
@@ -1065,14 +1034,12 @@
         ctx.fillText(`Moy. équipe ${avgEquipe.toFixed(0)}%`, w - padR - 2, yAvg - 4);
       }
 
-      // grille horizontale
       ctx.lineWidth = 1;
       ctx.strokeStyle = "#e2e8f0";
       ctx.fillStyle = "#64748b";
       ctx.font = "12px Arial";
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-
       [0,25,50,75,100].forEach(g=>{
         const y = padT + plotH * (1 - g/100);
         ctx.beginPath();
@@ -1082,7 +1049,6 @@
         ctx.fillText(g + "%", padL - 6, y);
       });
 
-      // axe X
       ctx.strokeStyle = "#94a3b8";
       ctx.lineWidth = 1.3;
       ctx.beginPath();
@@ -1090,7 +1056,6 @@
       ctx.lineTo(w - padR, padT + plotH);
       ctx.stroke();
 
-      // dates en X
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = "#334155";
@@ -1106,7 +1071,6 @@
         ctx.fillText(p.label || "", x, yAxis + 8);
       });
 
-      // courbe
       ctx.strokeStyle = "#2f7ccc";
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -1114,7 +1078,6 @@
       pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
       ctx.stroke();
 
-      // points + labels
       pts.forEach((p,i)=>{
         ctx.fillStyle = "#2f7ccc";
         ctx.beginPath();
@@ -1143,9 +1106,21 @@
       });
     }
 
+    let sparklineHandlersBound = false;
+
+    function drawSparklineNow(){
+      const sel = document.getElementById("sparklineSelect");
+      const rangeSel = document.getElementById("sparklineRange");
+      const n = Number(rangeSel?.value || 5);
+      if(sel && sel.value){
+        drawSparkline(getLastResults(sel.value, n), getTeamAverageLastN(n));
+      } else {
+        drawSparkline([], null);
+      }
+    }
+
     function buildSparklineSelect(){
       const data = getVizData();
-
       const sel = document.getElementById("sparklineSelect");
       const rangeSel = document.getElementById("sparklineRange");
       if(!sel || !rangeSel) return;
@@ -1159,21 +1134,14 @@
         sel.value = joueurs[0];
       }
 
-      const redraw = () => {
-        const n = Number(rangeSel.value || 5);
-        resizeSparklineCanvas();
-        if(sel.value){
-          const points = getLastResults(sel.value, n);
-          const avgEquipe = getTeamAverageLastN(n);
-          drawSparkline(points, avgEquipe);
-        } else {
-          drawSparkline([], null);
-        }
-      };
+      if(!sparklineHandlersBound){
+        sel.addEventListener("change", () => { resizeSparklineCanvas(); drawSparklineNow(); });
+        rangeSel.addEventListener("change", () => { resizeSparklineCanvas(); drawSparklineNow(); });
+        sparklineHandlersBound = true;
+      }
 
-      sel.onchange = redraw;
-      rangeSel.onchange = redraw;
-      redraw();
+      resizeSparklineCanvas();
+      drawSparklineNow();
     }
 
     // =======================
@@ -1221,6 +1189,7 @@
       return list.slice(0,5);
     }
 
+    // ✅ anti 0px
     function resizeTopCanvas(canvasId){
       const canvas = document.getElementById(canvasId);
       if(!canvas) return;
@@ -1228,8 +1197,11 @@
       const ratio = window.devicePixelRatio || 1;
       const rect = parent.getBoundingClientRect();
 
-      canvas.width  = rect.width * ratio;
-      canvas.height = rect.height * ratio;
+      const w = rect.width  > 10 ? rect.width  : 320;
+      const h = rect.height > 10 ? rect.height : 240;
+
+      canvas.width  = w * ratio;
+      canvas.height = h * ratio;
 
       const ctx = canvas.getContext("2d");
       ctx.setTransform(ratio,0,0,ratio,0,0);
@@ -1246,10 +1218,8 @@
 
       ctx.clearRect(0,0,w,h);
 
-      // ✅ graphique visible même vide
       if(!data.length){
         if(empty) empty.style.display="block";
-        // petit message graphique "0"
         ctx.fillStyle="#94a3b8";
         ctx.font="14px Arial";
         ctx.textAlign="center";
@@ -1263,7 +1233,6 @@
       const plotW = w - padL - padR;
       const plotH = h - padT - padB;
 
-      // Grille Y
       ctx.font="12px Arial";
       ctx.fillStyle="#64748b";
       ctx.strokeStyle="#e2e8f0";
@@ -1279,7 +1248,6 @@
         ctx.fillText(g+"%", padL-6, y);
       });
 
-      // Barres
       const gap = 10;
       const barW = (plotW - gap*(data.length-1)) / data.length;
 
@@ -1292,14 +1260,12 @@
         ctx.fillStyle = mode==="fatigue" ? "#f59e0b" : "#22c55e";
         ctx.fillRect(x, y, barW, barH);
 
-        // valeur au-dessus
         ctx.fillStyle="#0f172a";
         ctx.textAlign="center";
         ctx.textBaseline="bottom";
         ctx.font="13px Arial";
         ctx.fillText(val.toFixed(0)+"%", x + barW/2, y - 4);
 
-        // label joueur en bas
         ctx.textBaseline="top";
         ctx.font="12px Arial";
         const label = d.joueur.length>10 ? d.joueur.slice(0,10)+"…" : d.joueur;
@@ -1307,46 +1273,46 @@
       });
     }
 
+    let top5HandlersBound = false;
+
+    function drawTop5Now(){
+      const selFat = document.getElementById("topFatigueRange");
+      const selFor = document.getElementById("topFormeRange");
+      const nFat = Number(selFat?.value || 5);
+      const nFor = Number(selFor?.value || 5);
+
+      resizeTopCanvas("topFatigueCanvas");
+      resizeTopCanvas("topFormeCanvas");
+
+      drawTop5Vertical("topFatigueCanvas","topFatigueEmpty",computeTop5(nFat,"fatigue"),"fatigue");
+      drawTop5Vertical("topFormeCanvas","topFormeEmpty",computeTop5(nFor,"forme"),"forme");
+    }
+
     function buildTop5Charts(){
       const selFat = document.getElementById("topFatigueRange");
       const selFor = document.getElementById("topFormeRange");
       if(!selFat || !selFor) return;
 
-      const redrawFat = ()=>{
-        const n = Number(selFat.value || 5);
-        resizeTopCanvas("topFatigueCanvas");
-        drawTop5Vertical("topFatigueCanvas","topFatigueEmpty",computeTop5(n,"fatigue"),"fatigue");
-      };
+      if(!top5HandlersBound){
+        selFat.addEventListener("change", drawTop5Now);
+        selFor.addEventListener("change", drawTop5Now);
+        top5HandlersBound = true;
+      }
 
-      const redrawFor = ()=>{
-        const n = Number(selFor.value || 5);
-        resizeTopCanvas("topFormeCanvas");
-        drawTop5Vertical("topFormeCanvas","topFormeEmpty",computeTop5(n,"forme"),"forme");
-      };
-
-      selFat.onchange = redrawFat;
-      selFor.onchange = redrawFor;
-
-      redrawFat();
-      redrawFor();
+      drawTop5Now();
     }
 
-    // ✅ redraw au resize
+    // ✅ Resize global
     window.addEventListener("resize", () => {
-      const sel = document.getElementById("sparklineSelect");
-      const rangeSel = document.getElementById("sparklineRange");
-      if(sel && rangeSel && sel.value){
-        const n = Number(rangeSel.value || 5);
-        resizeSparklineCanvas();
-        drawSparkline(getLastResults(sel.value, n), getTeamAverageLastN(n));
+      if(document.body.classList.contains("coach-mode")){
+        forceResizeAllCharts();
       }
-      buildTop5Charts();
     });
 
     // ✅ INIT
     document.addEventListener("DOMContentLoaded", async () => {
-      enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup(); // ✅ priorité Sheets/backup
-      enregistrementsLocal  = chargerLocal(); // queue seulement
+      enregistrementsLocal  = chargerLocal();
+      enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
 
       majListeJoueursLocal();
       majStats();
