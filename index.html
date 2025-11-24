@@ -5,16 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Test de Fatigue RCF</title>
 
-  <!-- Lib XLSX (export local si tu l'utilises plus tard) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2f7ccc">
-
-  <!-- Evite les vieilles pages en cache sur tablette -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
 
   <style>
     body {
@@ -347,7 +341,6 @@
       <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
       <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
       <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
-      <div class="stats-line" id="debugSheetsRows" style="color:#8aa; font-size:12px;"></div>
 
       <div class="stats-indice-box" id="statsIndiceBox">
         <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
@@ -393,8 +386,10 @@
   <!-- STATS ÉQUIPE (Google Sheets) -->
   <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
     <h2>Statistiques équipe (Google Sheets)</h2>
+    <div id="sheetsStatus" class="legend" style="text-align:center; margin:-6px 0 8px;">Chargement des données...</div>
 
     <div class="stats-grid">
+
       <!-- TOP 5 fatigués -->
       <div class="stats-chart-card">
         <h3>Top 5 joueurs les plus fatigués</h3>
@@ -482,9 +477,9 @@
     const GOOGLE_SHEETS_URL =
       "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
 
-    // ✅ ID "Publié sur le web" (LECTURE pour stats/graphiques)
-    const GOOGLE_SHEETS_PUB_ID =
-      "1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg";
+    // ✅ ID Google Sheets (LECTURE pour stats/graphiques)
+    // IMPORTANT: le fichier doit être partagé en "Toute personne avec le lien – Lecteur"
+    const GOOGLE_SHEETS_DOC_ID = "1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg";
 
     // ✅ gid de l’onglet Base
     const GOOGLE_SHEETS_GID = 0;
@@ -500,7 +495,7 @@
     // Bind boutons échelle
     document.querySelectorAll(".scale").forEach(scale => {
       const name = scale.getAttribute("data-name");
-      const hiddenInput = document.querySelector('input[name="'+name+'"]');
+      const hiddenInput = document.querySelector(`input[name="${name}"]`);
       scale.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("click", () => {
           scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
@@ -533,7 +528,7 @@
       const y = today.getFullYear();
       const m = String(today.getMonth()+1).padStart(2,"0");
       const d = String(today.getDate()).padStart(2,"0");
-      inputDate.value = y+"-"+m+"-"+d;
+      inputDate.value = `${y}-${m}-${d}`;
     }
 
     // ✅ Force resize/redraw après affichage coach
@@ -579,8 +574,7 @@
           method: "POST",
           mode: "no-cors",
           body: JSON.stringify(payload),
-          cache: "no-store",
-          headers: { "Content-Type":"text/plain;charset=utf-8" }
+          cache: "no-store"
         });
 
         rec.envoye = true;
@@ -677,8 +671,7 @@
 
       const resultatDiv = document.getElementById("resultat");
       resultatDiv.textContent =
-        "Enregistré : "+joueur+" | Séance : "+(seance || "non précisé")+" | Score : "+total+
-        "/25 ("+pourcentage+"%) - Zone : "+zoneTexte+" | Total formulaires tablette : "+enregistrementsLocal.length;
+        `Enregistré : ${joueur} | Séance : ${seance || "non précisé"} | Score : ${total}/25 (${pourcentage}%) - Zone : ${zoneTexte} | Total formulaires tablette : ${enregistrementsLocal.length}`;
       resultatDiv.className = "result " + zoneClass;
 
       majListeJoueursLocal();
@@ -693,8 +686,7 @@
       enregistrementsLocal.forEach((rec,i)=>{
         const li=document.createElement("li");
         li.textContent =
-          (i+1)+". "+rec.joueur+" - "+rec.pourcentage+"% ("+rec.zone+") "+
-          (rec.seance ? " | "+rec.seance : "")+" "+(rec.envoye?"🟢":"🔴");
+          `${i+1}. ${rec.joueur} - ${rec.pourcentage}% (${rec.zone}) ${rec.seance ? " | "+rec.seance : ""} ${rec.envoye?"🟢":"🔴"}`;
         li.className = rec.zoneClass;
         ul.appendChild(li);
       });
@@ -760,7 +752,7 @@
       ];
       let maxNom="",maxVal=-1;
       ordre.forEach(z=>{ if(compte[z.code]>maxVal){maxVal=compte[z.code];maxNom=z.nom;} });
-      if(elDom) elDom.textContent="Zone dominante : "+maxNom+" ("+maxVal+" joueurs)";
+      if(elDom) elDom.textContent=`Zone dominante : ${maxNom} (${maxVal} joueurs)`;
 
       const pct=c=>Math.round((compte[c]/nb)*100);
       const setBar=(id,code,count)=>{
@@ -785,7 +777,7 @@
 
       if(indiceBox&&indiceLabel){
         indiceBox.className="stats-indice-box "+classe;
-        indiceLabel.textContent="Indice bien-être équipe : "+pctEquipe+"% – "+texte;
+        indiceLabel.textContent=`Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
       }
 
       const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>r.joueur);
@@ -844,110 +836,120 @@
     }
 
     // =======================
-    // GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
+    // GOOGLE SHEETS (GVIZ Fetch + Backup Offline)
     // =======================
+// =======================
+// GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
+// =======================
 
-    function chargerDepuisGoogleSheetsJSONP(){
-      return new Promise((resolve) => {
-        const cbName = "gsCb_" + Date.now();
-        let done = false;
-        const script = document.createElement("script");
+// JSONP = marche même si l'app est ouverte en PWA / file://
+function chargerDepuisGoogleSheetsJSONP(){
+  return new Promise((resolve) => {
+    const cbName = "gsCb_" + Date.now();
+    let done = false;
 
-        window[cbName] = (resp) => {
-          done = true;
-          try {
-            const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
+    const script = document.createElement("script");
 
-            const data = rows.map(r => {
-              const c = r.c || [];
-              const rawPct = c[10] && c[10].v != null ? c[10].v : 0;
-              const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
-              const { zoneTexte, zoneClass } = computeZone(pourcentage);
+    window[cbName] = (resp) => {
+      done = true;
+      try {
+        const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
 
-              return {
-                date: c[1]?.v || "",
-                joueur: c[2]?.v || "",
-                seance: c[3]?.v || "",
-                recuperation: Number(c[4]?.v) || "",
-                sommeil: Number(c[5]?.v) || "",
-                alimentation: Number(c[6]?.v) || "",
-                fatigue_physique: Number(c[7]?.v) || "",
-                fatigue_mentale: Number(c[8]?.v) || "",
-                total: Number(c[9]?.v) || "",
-                pourcentage,
-                zone: c[11]?.v || zoneTexte,
-                zoneClass,
-                douleurZone: c[12]?.v || "",
-                commentaire: c[13]?.v || "",
-                envoye: true
-              };
-            }).filter(x => x.joueur);
+        const data = rows.map(r => {
+          const c = r.c || [];
 
-            resolve(data);
+          // K = pourcentage (index 10)
+          const rawPct = c[10]?.v;
+          const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
-          } catch(e){
-            console.error("Parse JSONP error", e);
-            resolve([]);
-          } finally {
-            delete window[cbName];
-            script.remove();
-          }
-        };
+          const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-        const tq = encodeURIComponent("select *");
-        const cacheBust = Date.now(); // ✅ évite cache Redmi
-        script.src =
-          "https://docs.google.com/spreadsheets/d/e/"+GOOGLE_SHEETS_PUB_ID+"/gviz/tq"+
-          "?gid="+GOOGLE_SHEETS_GID+"&headers=1&tq="+tq+
-          "&tqx=out:json;responseHandler="+cbName+
-          "&_cb="+cacheBust;
+          return {
+            date: c[1]?.v || "",                 // B dateApp
+            joueur: c[2]?.v || "",               // C joueur
+            seance: c[3]?.v || "",               // D seance
+            recuperation: Number(c[4]?.v) || "", // E
+            sommeil: Number(c[5]?.v) || "",      // F
+            alimentation: Number(c[6]?.v) || "", // G
+            fatigue_physique: Number(c[7]?.v) || "", // H
+            fatigue_mentale: Number(c[8]?.v) || "",  // I
+            total: Number(c[9]?.v) || "",        // J
+            pourcentage,                          // K
+            zone: c[11]?.v || zoneTexte,         // L
+            zoneClass,
+            douleurZone: c[12]?.v || "",         // M
+            commentaire: c[13]?.v || "",         // N
+            envoye: true
+          };
+        }).filter(x => x.joueur);
 
-        script.onerror = () => {
-          if(done) return;
-          console.error("JSONP load error");
-          delete window[cbName];
-          script.remove();
-          resolve([]);
-        };
+        resolve(data);
 
-        setTimeout(() => {
-          if(done) return;
-          console.warn("JSONP timeout → resolve([])");
-          delete window[cbName];
-          script.remove();
-          resolve([]);
-        }, 8000);
-
-        document.body.appendChild(script);
-      });
-    }
-
-    async function chargerDepuisGoogleSheetsAvecBackup(){
-      if(navigator.onLine){
-        const data = await chargerDepuisGoogleSheetsJSONP();
-        localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
-        return data;
+      } catch(e){
+        console.error("Parse JSONP error", e);
+        resolve([]);
+      } finally {
+        delete window[cbName];
+        script.remove();
       }
+    };
 
-      const backup = localStorage.getItem(STORAGE_SHEETS_KEY);
-      if(backup){
-        try{
-          const parsed = JSON.parse(backup);
-          return Array.isArray(parsed) ? parsed : [];
-        }catch(e){ return []; }
-      }
-      return [];
-    }
+    // ✅ URL GVIZ complète + tq=select *
+    const tq = encodeURIComponent("select *");
+    script.src =
+      `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
+      `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
+      `&tqx=out:json;responseHandler=${cbName}`;
+
+    script.onerror = () => {
+      if(done) return;
+      console.error("JSONP load error");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    };
+
+    // ✅ sécurité si Google ne répond pas
+    setTimeout(() => {
+      if(done) return;
+      console.warn("JSONP timeout → resolve([])");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    }, 6000);
+
+    document.body.appendChild(script);
+  });
+}
+
+
+async function chargerDepuisGoogleSheetsAvecBackup(){
+  // online → JSONP
+  if(navigator.onLine){
+    const data = await chargerDepuisGoogleSheetsJSONP();
+    localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
+    return data;
+  }
+
+  // offline → dernier backup
+  const backup = localStorage.getItem(STORAGE_SHEETS_KEY);
+  if(backup){
+    try{
+      const parsed = JSON.parse(backup);
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ return []; }
+  }
+  return [];
+}
+
 
     async function refreshSheetsData(){
       enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
-      console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
-
-      const dbg = document.getElementById("debugSheetsRows");
-      if(dbg){
-        dbg.textContent = "Sheets rows = " + enregistrementsSheets.length + (navigator.onLine ? " (online)" : " (offline backup)");
+      const statusEl = document.getElementById("sheetsStatus");
+      if(statusEl){
+        statusEl.textContent = "Sheets rows = " + enregistrementsSheets.length + (navigator.onLine ? " (en ligne)" : " (backup hors‑ligne)");
       }
-
+      console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
       majStats();
       buildSparklineSelect();
       buildTop5Charts();
@@ -958,7 +960,7 @@
     // =======================
     function getDateFromSeance(seanceStr){
       if(!seanceStr) return null;
-      const m = seanceStr.match(/^(\\d{4}-\\d{2}-\\d{2})/);
+      const m = seanceStr.match(/^(\d{4}-\d{2}-\d{2})/);
       if(!m) return null;
       const d = new Date(m[1] + "T00:00:00");
       return isNaN(d.getTime()) ? null : d;
@@ -969,7 +971,7 @@
       if(isNaN(d.getTime())) return "";
       const dd = String(d.getDate()).padStart(2,"0");
       const mm = String(d.getMonth()+1).padStart(2,"0");
-      return dd+"/"+mm;
+      return `${dd}/${mm}`;
     }
 
     function getLastResults(player, n=5){
@@ -992,7 +994,7 @@
 
     function getTeamAverageLastN(n){
       const data = getVizData();
-      const rows = data.slice();
+      const rows = [...data];
       rows.sort((a,b)=>{
         const da = getDateFromSeance(a.seance) || new Date(a.date);
         const db = getDateFromSeance(b.seance) || new Date(b.date);
@@ -1092,7 +1094,7 @@
         ctx.font = "12px Arial";
         ctx.textAlign = "right";
         ctx.textBaseline = "bottom";
-        ctx.fillText("Moy. équipe "+avgEquipe.toFixed(0)+"%", w - padR - 2, yAvg - 4);
+        ctx.fillText(`Moy. équipe ${avgEquipe.toFixed(0)}%`, w - padR - 2, yAvg - 4);
       }
 
       ctx.lineWidth = 1;
@@ -1172,7 +1174,7 @@
     function drawSparklineNow(){
       const sel = document.getElementById("sparklineSelect");
       const rangeSel = document.getElementById("sparklineRange");
-      const n = Number(rangeSel && rangeSel.value || 5);
+      const n = Number(rangeSel?.value || 5);
       if(sel && sel.value){
         drawSparkline(getLastResults(sel.value, n), getTeamAverageLastN(n));
       } else {
@@ -1186,10 +1188,10 @@
       const rangeSel = document.getElementById("sparklineRange");
       if(!sel || !rangeSel) return;
 
-      const joueurs = Array.from(new Set(data.map(r=>r.joueur))).sort();
+      const joueurs = [...new Set(data.map(r=>r.joueur))].sort();
       sel.innerHTML =
-        '<option value="">Choisir un joueur...</option>' +
-        joueurs.map(j => '<option value="'+j+'">'+j+'</option>').join("");
+        `<option value="">Choisir un joueur...</option>` +
+        joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
 
       if(joueurs.length && !sel.value){
         sel.value = joueurs[0];
@@ -1214,13 +1216,13 @@
       const y = d.getFullYear();
       const m = String(d.getMonth()+1).padStart(2,"0");
       const dd = String(d.getDate()).padStart(2,"0");
-      return y+"-"+m+"-"+dd;
+      return `${y}-${m}-${dd}`;
     }
 
     function getLastSessionKeys(n){
       const data = getVizData();
       const keys = data.map(getSeanceKey).filter(Boolean);
-      const unique = Array.from(new Set(keys)).sort((a,b)=> new Date(a) - new Date(b));
+      const unique = [...new Set(keys)].sort((a,b)=> new Date(a) - new Date(b));
       return unique.slice(-n);
     }
 
@@ -1250,6 +1252,7 @@
       return list.slice(0,5);
     }
 
+    // ✅ anti 0px
     function resizeTopCanvas(canvasId){
       const canvas = document.getElementById(canvasId);
       if(!canvas) return;
@@ -1338,8 +1341,8 @@
     function drawTop5Now(){
       const selFat = document.getElementById("topFatigueRange");
       const selFor = document.getElementById("topFormeRange");
-      const nFat = Number(selFat && selFat.value || 5);
-      const nFor = Number(selFor && selFor.value || 5);
+      const nFat = Number(selFat?.value || 5);
+      const nFor = Number(selFor?.value || 5);
 
       resizeTopCanvas("topFatigueCanvas");
       resizeTopCanvas("topFormeCanvas");
@@ -1371,14 +1374,10 @@
 
     // ✅ INIT
     document.addEventListener("DOMContentLoaded", async () => {
-      enregistrementsLocal  = chargerLocal();
-      enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
-
+      enregistrementsLocal = chargerLocal();
       majListeJoueursLocal();
-      majStats();
-      buildSparklineSelect();
-      buildTop5Charts();
       initDateSeance();
+      await refreshSheetsData();
     });
   </script>
 
