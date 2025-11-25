@@ -391,6 +391,11 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+  @media print {
+  .no-print {
+    display: none !important;
+  }
+}
 }
 
 /* Ligne info “+ X joueurs…” (cachée à l’écran, visible si on la remplit en JS) */
@@ -617,8 +622,13 @@
    <div class="stats-card coach-only">
   <div class="stats-header-row">
     <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
-    <button type="button" class="export-btn" onclick="exportPDF()">
-      Exporter le dashboard en PDF
+<button
+  type="button"
+  class="export-btn no-print"
+  onclick="exportPDF()"
+>
+  Exporter le dashboard en PDF
+</button>
     </button>
   </div>
 
