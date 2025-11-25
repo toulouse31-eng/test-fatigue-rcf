@@ -154,6 +154,76 @@
       border-radius: 12px;
       background: #f5f9ff;
     }
+    /* Bloc alertes du jour */
+.alert-card{
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #facc15;
+  background: #fef9c3;
+}
+.alert-card h3{
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #854d0e;
+}
+.alert-list{
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 14px;
+}
+.alert-list li{
+  margin-bottom: 4px;
+}
+.alert-tag{
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-right: 4px;
+  font-size: 11px;
+}
+.alert-tag-orange{
+  background:#fed7aa;
+  color:#9a3412;
+}
+.alert-tag-rouge{
+  background:#fecaca;
+  color:#b91c1c;
+}
+
+/* Bouton export PDF */
+.export-btn{
+  margin-top:8px;
+  padding:8px 14px;
+  font-size:14px;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+  background:#0f766e;
+  color:#fff;
+}
+
+/* Impression PDF : on garde seulement le dashboard coach */
+@media print {
+  body{
+    background:#fff;
+    max-width:100%;
+    padding:10px;
+  }
+  .mode-toggle-btn,
+  .card:first-of-type,        /* carte formulaire joueur */
+  .liste-joueurs,
+  .actions,
+  .coach-only .secondary.danger {
+    display:none !important;
+  }
+  .top-bar{
+    grid-template-columns: auto 1fr;
+  }
+  #stats-equipe{
+    margin-top:0 !important;
+  }
+}
     .sparkline-wrap{
       width:100%;
       height:240px;
@@ -385,9 +455,18 @@
 
   <!-- STATS ÉQUIPE (Google Sheets) -->
   <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
-    <h2>Statistiques équipe (Google Sheets)</h2>
-    <div id="sheetsStatus" class="legend" style="text-align:center; margin:-6px 0 8px;">Chargement des données...</div>
-
+   <h2>Statistiques équipe (Google Sheets)</h2>
+<button type="button" class="export-btn coach-only" onclick="exportPDF()">
+  Exporter le dashboard en PDF
+</button>
+    
+<div id="sheetsStatus" class="legend" style="text-align:center; margin:-6px 0 8px;">Chargement des données...</div>
+<div class="alert-card coach-only" id="alertesDuJourCard">
+  <h3>Alertes du jour</h3>
+  <div id="alertDateLabel" class="legend">Pas de séance enregistrée.</div>
+  <ul id="alertList" class="alert-list"></ul>
+</div>
+    
     <div class="stats-grid">
       <!-- TOP 5 fatigués -->
       <div class="stats-chart-card">
@@ -559,6 +638,11 @@
         btn.textContent = "Mode coach OFF";
       }
     }
+    
+function exportPDF(){
+  // On laisse le navigateur gérer l'impression -> PDF
+  window.print();
+}
 
     async function envoyerVersGoogleSheets(rec) {
       if (!GOOGLE_SHEETS_URL) return;
@@ -791,6 +875,93 @@
       else reco="Fatigue élevée : séance récupération / charge très réduite.";
       if(recoEl) recoEl.textContent="Recommandation séance : "+reco;
     }
+function computeAlertesDuJour(){
+  const data = getVizData();
+  if (!data.length) return { dateKey:null, alertes:[] };
+
+  // on récupère toutes les dates de séance valides
+  const keys = data.map(getSeanceKey).filter(Boolean);
+  if (!keys.length) return { dateKey:null, alertes:[] };
+
+  // dernière date de séance (la plus récente)
+  const lastKey = keys.sort((a,b)=> new Date(a) - new Date(b)).slice(-1)[0];
+
+  // on garde seulement les enregistrements de cette date
+  const rowsSameDay = data.filter(r => getSeanceKey(r) === lastKey);
+
+  // on ne garde que le DERNIER enregistrement par joueur pour ce jour-là
+  const lastByPlayer = {};
+  rowsSameDay.forEach(r => {
+    const d = getDateFromSeance(r.seance) || new Date(r.date);
+    const k = r.joueur;
+    if (!lastByPlayer[k]) lastByPlayer[k] = r;
+    else {
+      const d0 = getDateFromSeance(lastByPlayer[k].seance) || new Date(lastByPlayer[k].date);
+      if (d > d0) lastByPlayer[k] = r;
+    }
+  });
+
+  const alertes = Object.values(lastByPlayer)
+    .filter(r => r.zoneClass === "zone-orange" || r.zoneClass === "zone-rouge")
+    .map(r => ({
+      joueur: r.joueur,
+      pourcentage: r.pourcentage,
+      zoneClass: r.zoneClass,
+      zone: r.zone,
+      douleurZone: r.douleurZone || "",
+      commentaire: r.commentaire || ""
+    }));
+
+  return { dateKey:lastKey, alertes };
+}
+
+function majAlertesDuJour(){
+  const card = document.getElementById("alertesDuJourCard");
+  const dateLabel = document.getElementById("alertDateLabel");
+  const listEl = document.getElementById("alertList");
+  if (!card || !dateLabel || !listEl) return;
+
+  const { dateKey, alertes } = computeAlertesDuJour();
+
+  listEl.innerHTML = "";
+
+  if (!dateKey){
+    dateLabel.textContent = "Pas de séance enregistrée.";
+    return;
+  }
+
+  // format jj/mm/aaaa
+  const d = new Date(dateKey + "T00:00:00");
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  dateLabel.textContent = `Dernière séance : ${dd}/${mm}/${yyyy}`;
+
+  if (!alertes.length){
+    const li = document.createElement("li");
+    li.textContent = "Aucun joueur en alerte (orange/rouge) sur cette séance.";
+    listEl.appendChild(li);
+    return;
+  }
+
+  alertes.forEach(a => {
+    const li = document.createElement("li");
+    const tag = document.createElement("span");
+    tag.className = "alert-tag " + (a.zoneClass === "zone-orange" ? "alert-tag-orange" : "alert-tag-rouge");
+    tag.textContent = a.zoneClass === "zone-orange" ? "ORANGE" : "ROUGE";
+
+    li.appendChild(tag);
+
+    const txt = document.createElement("span");
+    let details = `${a.joueur} – ${a.pourcentage}% (${a.zone})`;
+    if (a.douleurZone) details += ` – Douleurs : ${a.douleurZone}`;
+    if (a.commentaire) details += ` – Note : ${a.commentaire}`;
+    txt.textContent = " " + details;
+
+    li.appendChild(txt);
+    listEl.appendChild(li);
+  });
+}
 
     function resetForm(clearResult){
       const form=document.getElementById("fatigueForm");
@@ -967,6 +1138,7 @@ function chargerDepuisGoogleSheetsJSONP(){
       console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
 
       majStats();
+      majAlertesDuJour();
       buildSparklineSelect();
       buildTop5Charts();
     }
