@@ -251,30 +251,35 @@
     }
 
     /* Impression PDF : on garde seulement le dashboard coach */
-    @media print {
-      body{
-        background:#fff;
-        max-width:100%;
-        padding:10px;
-      }
-      .mode-toggle-btn,
-      .card:first-of-type,        /* carte formulaire joueur */
-      .liste-joueurs,
-      .actions,
-      .coach-only .secondary.danger {
-        display:none !important;
-      }
-      .top-bar{
-        grid-template-columns: auto 1fr;
-      }
-      #stats-equipe{
-        margin-top:0 !important;
-      }
-      /* Ne pas imprimer le bouton */
-      .export-btn{
-        display:none !important;
-      }
-    }
+@media print {
+  body{
+    background:#fff;
+    max-width:100%;
+    padding:10px;
+  }
+  .mode-toggle-btn,
+  .card:first-of-type,
+  .liste-joueurs,
+  .actions,
+  .coach-only .secondary.danger {
+    display:none !important;
+  }
+  .top-bar{
+    grid-template-columns: auto 1fr;
+  }
+  #stats-equipe{
+    margin-top:0 !important;
+  }
+  .export-btn{
+    display:none !important;
+  }
+
+  /* ✅ on force l'affichage des blocs coach dans le PDF */
+  .stats-card.coach-only,
+  #stats-equipe.card.coach-only {
+    display:block !important;
+  }
+}
   </style>
 </head>
 
@@ -690,20 +695,26 @@ function exportPDF(){
   const body = document.body;
   const wasCoach = body.classList.contains("coach-mode");
 
-  // on force l'affichage du mode coach pour l'impression
+  // 1) On force le mode coach pour que #stats-equipe soit visible
   if (!wasCoach) {
     body.classList.add("coach-mode");
   }
 
-  // petit délai pour que les graphs/statistiques aient le temps de se redessiner
+  // 2) On redessine les graphiques (au cas où)
+  forceResizeAllCharts();
+
+  // 3) On remonte en haut de page pour le PDF
+  window.scrollTo(0, 0);
+
+  // 4) Petit délai puis impression
   setTimeout(() => {
     window.print();
 
-    // après impression, on revient à l'état initial
+    // 5) On remet l’état d’origine après l’impression
     if (!wasCoach) {
       body.classList.remove("coach-mode");
     }
-  }, 150);
+  }, 250);
 }
 
     async function envoyerVersGoogleSheets(rec) {
