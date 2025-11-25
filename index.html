@@ -368,6 +368,19 @@
   .export-btn{
     display:none !important;
   }
+  /* ✅ Forcer l'impression des couleurs de fond (barres, zones, etc.) */
+  body,
+  .stats-indice-box,
+  .stats-bar-fill,
+  .zone-vert-fonce,
+  .zone-vert-clair,
+  .zone-jaune,
+  .zone-orange,
+  .zone-rouge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
 }
 
 
