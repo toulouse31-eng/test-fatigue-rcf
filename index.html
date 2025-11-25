@@ -147,24 +147,29 @@
     }
 
     /* En-tête synthèse + bouton export */
-    .stats-header-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      margin-bottom:4px;
-    }
+.stats-header-row {
+  display: flex;
+  flex-wrap: wrap;        /* 🔥 Permet au bouton de passer à la ligne */
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
 
-    .export-btn{
-      padding:6px 12px;
-      font-size:12px;
-      border-radius:999px;
-      border:none;
-      cursor:pointer;
-      background:#0f766e;
-      color:#fff;
-      white-space:nowrap;
-    }
+/* S'assure qu'on le voit bien */
+.export-btn {
+  white-space: nowrap;     /* 🔥 Empêche le texte de se casser et disparaître */
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Au cas où une règle ailleurs le cache : */
+.stats-card .export-btn {
+  display: inline-flex !important;
+}
 
     @media (max-width:700px){
       .stats-grid{ flex-direction:column; }
