@@ -677,7 +677,6 @@
 
   <div id="alertDateLabel" class="legend">Pas de séance enregistrée.</div>
   <ul id="alertList" class="alert-list"></ul>
-  <ul id="alertList" class="alert-list"></ul>
 <div id="alertMorePrint" class="alert-more-print"></div>
 </div>
     
@@ -1180,14 +1179,14 @@ function majAlertesDuJour(){
   const dateLabel = document.getElementById("alertDateLabel");
   const listEl = document.getElementById("alertList");
   const select = document.getElementById("alertSeanceSelect");
-  const moreEl = document.getElementById("alertMorePrint");
+  const morePrintEl = document.getElementById("alertMorePrint");
   if (!card || !dateLabel || !listEl || !select) return;
 
   const selectedKey = select.value || null;
   const { dateKey, alertes } = computeAlertesDuJour(selectedKey);
 
   listEl.innerHTML = "";
-  if (moreEl) moreEl.style.display = "none";
+  if (morePrintEl) morePrintEl.textContent = "";
 
   if (!dateKey){
     dateLabel.textContent = "Pas de séance enregistrée.";
@@ -1203,10 +1202,9 @@ function majAlertesDuJour(){
     return;
   }
 
-  const MAX_ALERTES_IMPRIMEES = 12;
-  // On affiche tous les joueurs dans la liste (pour l’écran)
   alertes.forEach(a => {
     const li = document.createElement("li");
+
     const tag = document.createElement("span");
     tag.className = "alert-tag " + (a.zoneClass === "zone-orange" ? "alert-tag-orange" : "alert-tag-rouge");
     tag.textContent = a.zoneClass === "zone-orange" ? "ORANGE" : "ROUGE";
@@ -1222,12 +1220,10 @@ function majAlertesDuJour(){
     listEl.appendChild(li);
   });
 
-  // Si beaucoup de joueurs => message pour dire que le PDF n’en montrera qu’un certain nombre
-  if (moreEl && alertes.length > MAX_ALERTES_IMPRIMEES){
-    const hiddenCount = alertes.length - MAX_ALERTES_IMPRIMEES;
-    moreEl.textContent =
-      `Seuls les ${MAX_ALERTES_IMPRIMEES} premiers joueurs sont visibles dans le PDF (+ ${hiddenCount} joueur(s) supplémentaire(s) dans l'application).`;
-    moreEl.style.display = "block";
+  // Petit message pour le PDF si la liste est longue
+  if (morePrintEl && alertes.length > 6){
+    morePrintEl.textContent =
+      `NB : ${alertes.length} joueurs en alerte au total (la liste peut être tronquée sur le PDF).`;
   }
 }
 
