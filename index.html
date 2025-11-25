@@ -472,19 +472,18 @@
     const rowAutre    = document.getElementById("rowAutre");
     const inputAutre  = document.getElementById("joueurAutre");
 
-   // ✅ URL WebApp (ENVOI tablette → Sheets)
-const GOOGLE_SHEETS_URL =
-  "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
+    // ✅ URL WebApp (ENVOI tablette → Sheets)
+    const GOOGLE_SHEETS_URL =
+      "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
 
-// ✅ ID Google Sheets (LECTURE pour stats/graphiques)
-// IMPORTANT : c’est l’ID du fichier, pas le 2PACX
-const GOOGLE_SHEETS_DOC_ID = "1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg";
+    // ✅ ID Google Sheets (LECTURE pour stats/graphiques)
+    const GOOGLE_SHEETS_DOC_ID = "1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg";
 
-// ✅ gid de l’onglet Base
-const GOOGLE_SHEETS_GID = 0;
+    // ✅ gid de l’onglet Base
+    const GOOGLE_SHEETS_GID = 0;
 
-// Uniquement Sheets pour viz
-function getVizData(){ return enregistrementsSheets; }
+    // Uniquement Sheets pour viz
+    function getVizData(){ return enregistrementsSheets; }
 
     selectJoueur.addEventListener("change", () => {
       if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
@@ -837,7 +836,6 @@ function getVizData(){ return enregistrementsSheets; }
     // =======================
     // GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
     // =======================
-
     function chargerDepuisGoogleSheetsJSONP(){
       return new Promise((resolve) => {
         const cbName = "gsCb_" + Date.now();
@@ -887,51 +885,25 @@ function getVizData(){ return enregistrementsSheets; }
             script.remove();
           }
         };
- // ⬇⬇⬇ LA PARTIE IMPORTANTE ⬇⬇⬇
 
-    // requête GVIZ basée sur l’ID du fichier (DOC_ID)
-    const tq = encodeURIComponent("select *");
-    script.src =
-      `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
-      `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
-      `&tqx=out:json;responseHandler=${cbName}`;
-
-    script.onerror = () => {
-      if (done) return;
-      console.error("JSONP load error");
-      delete window[cbName];
-      script.remove();
-      resolve([]);
-    };
-
-    // sécurité : timeout si Google ne répond pas
-    setTimeout(() => {
-      if (done) return;
-      console.warn("JSONP timeout → resolve([])");
-      delete window[cbName];
-      script.remove();
-      resolve([]);
-    }, 6000);
-
-    document.body.appendChild(script);
-  });
-}
+        // Requête GVIZ basée sur l’ID du fichier (DOC_ID)
         const tq = encodeURIComponent("select *");
         script.src =
-          `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq` +
+          `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
           `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
           `&tqx=out:json;responseHandler=${cbName}`;
 
         script.onerror = () => {
-          if(done) return;
+          if (done) return;
           console.error("JSONP load error");
           delete window[cbName];
           script.remove();
           resolve([]);
         };
 
+        // sécurité : timeout si Google ne répond pas
         setTimeout(() => {
-          if(done) return;
+          if (done) return;
           console.warn("JSONP timeout → resolve([])");
           delete window[cbName];
           script.remove();
