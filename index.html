@@ -257,145 +257,105 @@
 /* ====== ULTRA-COMPACT PDF 1 PAGE ====== */
 @media print {
 
-  /* Format A4 avec marges réduites */
+  /* Format de page */
   @page {
-    size: A4 portrait;
-    margin: 6mm 5mm 8mm 5mm;
+    size: A4;
+    margin: 10mm;
   }
 
-  html, body{
-    width: auto;
-    height: auto;
-  }
-
-  body{
-    background:#fff;
-    max-width:none;
-    margin:0;
-    padding:0;
-    font-size:11px;
+  /* Fond blanc, pas de trucs PWA/tablette */
+  body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* En-tête plus compacte mais lisible */
-  .top-bar{
-    grid-template-columns: auto 1fr;
-    margin: 0 0 6px;
-  }
-  h1{
-    font-size:18px;
-    margin:0 0 3px;
-  }
-  h2{
-    font-size:12px;
-    margin:0;
-  }
-
-  /* ❌ On masque ce qui ne doit PAS apparaître dans le PDF */
+  /* Cacher tout ce qui est saisie / boutons / interface */
   .mode-toggle-btn,
-  .card:first-of-type,        /* carte formulaire joueur */
-  .liste-joueurs,
+  form#fatigueForm,
   .actions,
-  .coach-only .secondary.danger,
-  .sparkline-card {           /* évolution joueur cachée */
-    display:none !important;
-  }
-
-  /* ✔️ On force l’affichage de la synthèse + stats équipe */
-  .stats-card.coach-only,
-  #stats-equipe.card.coach-only{
-    display:block !important;
-  }
-
-  /* Cartes compactes + marges réduites */
-  .stats-card,
-  #stats-equipe{
-    padding:6px 8px !important;
-    margin:0 5mm 4mm 5mm !important;
-    border-width:1px;
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  .stats-line,
-  .legend{
-    font-size:9px;
-  }
-  .stats-title{
-    font-size:11px;
-  }
-
-  /* Alertes séance plus compactes */
-  .alert-card{
-    padding:6px 8px;
-    margin-top:4px;
-  }
-  .alert-card h3{
-    font-size:11px;
-    margin-bottom:2px;
-  }
-  .alert-list{
-    font-size:9px;
-    /* limite la hauteur dans le PDF pour éviter de pousser les graphes */
-    max-height:40mm;
-    overflow:hidden;
-  }
-  .alert-card .row label{
-    font-size:9px;
-  }
-  .alert-card select{
-    font-size:9px;
-    padding:2px 8px;
-  }
-
-  /* Graphiques Top 5 un peu plus hauts pour mieux remplir la page */
-  .stats-grid{
-    gap:8px;
-  }
-  .stats-chart-card{
-    padding:4px 4px 0 4px;
-  }
-  .stats-chart-card h3{
-    font-size:11px;
-    margin-bottom:4px;
-  }
-  .iframe-container{
-    aspect-ratio:auto;
-    height:145px;     /* un peu plus haut que 120px */
-    margin-top:6px;
-  }
-
-  /* Barres de la synthèse rapide */
-  .stats-bar-row{
-    margin-bottom:3px;
-  }
-  .stats-bar-label{
-    font-size:9px;
-    width:90px;
-  }
-
-  /* On ne veut pas imprimer le bouton d’export */
-  .export-btn{
-    display:none !important;
-  }
-
-  /* ✅ Forcer l'impression des couleurs de fond (barres, zones, etc.) */
-  .stats-indice-box,
-  .stats-bar-fill,
-  .zone-vert-fonce,
-  .zone-vert-clair,
-  .zone-jaune,
-  .zone-orange,
-  .zone-rouge {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-  @media print {
+  .liste-joueurs,
+  .alert-more-print,
   .no-print {
     display: none !important;
   }
-}
+
+  /* On ne garde que les cartes utiles pour le coach */
+  .layout {
+    display: block;
+  }
+
+  .card,
+  .stats-card,
+  #stats-equipe {
+    box-shadow: none;
+    border-radius: 8px;
+    margin: 0 0 8mm 0;
+    padding: 10px 14px;
+    width: 100%;
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+
+  .stats-card.coach-only,
+  #stats-equipe {
+    border: 1px solid #dddddd;
+  }
+
+  /* Top-bar : on garde le logo + titres, mais plus compact */
+  .top-bar {
+    margin-bottom: 6mm;
+  }
+
+  .top-bar .logo-rcf {
+    max-width: 50px;
+  }
+
+  .top-title h1 {
+    font-size: 20px;
+    margin-bottom: 0;
+  }
+
+  .top-title h2 {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* Synthèse rapide : texte un peu plus serré pour tenir sur A4 */
+  .stats-line {
+    font-size: 12px;
+  }
+
+  .stats-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .stats-indice-box {
+    margin-top: 4px;
+    margin-bottom: 6px;
+  }
+
+  /* Grille des charts : bien posée sur la largeur */
+  .stats-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .stats-chart-card,
+  .sparkline-card,
+  .alert-card {
+    page-break-inside: avoid;
+  }
+
+  .iframe-container,
+  .sparkline-wrap {
+    /* garantit une zone suffisante pour les canvases dans le PDF */
+    min-height: 180px;
+  }
 }
 
 /* Ligne info “+ X joueurs…” (cachée à l’écran, visible si on la remplit en JS) */
@@ -629,7 +589,6 @@
 >
   Exporter le dashboard en PDF
 </button>
-    </button>
   </div>
 
   <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
