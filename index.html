@@ -259,6 +259,8 @@
 }
 
 @media print {
+
+  /* Format A4 + marges réduites */
   html, body{
     width: 210mm;
     height: 297mm;
@@ -269,56 +271,52 @@
     max-width:100%;
     margin:0;
     padding:4mm;
-    font-size:10px;          /* texte global plus petit */
+    font-size:10px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
   }
 
-  /* En-tête plus compacte */
+  /* En-tête compacte */
   .top-bar{
     grid-template-columns: auto 1fr;
     margin: 0 0 4px;
   }
-  h1{
-    font-size:16px;
-    margin-bottom:2px;
-  }
-  h2{
-    font-size:11px;
-  }
+  h1{ font-size:16px; margin-bottom:2px; }
+  h2{ font-size:11px; }
 
-  /* On masque tout ce qui ne sert pas dans le PDF */
+  /* ❌ Masquer : formulaire, liste, boutons, mode coach, sparkline */
   .mode-toggle-btn,
-  .card:first-of-type,        /* carte formulaire joueur */
+  .card:first-of-type,
   .liste-joueurs,
   .actions,
-  .coach-only .secondary.danger {
+  .coach-only .secondary.danger,
+  .sparkline-card {
     display:none !important;
   }
 
-  /* On force l’affichage de la synthèse + stats équipe + sparkline */
+  /* ✔️ Forcer : synthèse + stats équipe */
   .stats-card.coach-only,
-  #stats-equipe.card.coach-only,
-  .sparkline-card{
+  #stats-equipe.card.coach-only {
     display:block !important;
   }
 
-  /* Cartes compactes + collées les unes aux autres */
+  /* Cartes compactes */
   .stats-card,
-  #stats-equipe,
-  .sparkline-card{
+  #stats-equipe {
     padding:6px 8px !important;
     margin:0 0 4px !important;
     border-width:1px;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
+  /* Textes + légendes */
   .stats-line,
-  .legend{
-    font-size:9px;
-  }
-  .stats-title{
-    font-size:11px;
-  }
+  .legend{ font-size:9px; }
+  .stats-title{ font-size:11px; }
 
-  /* Alertes séance plus compactes */
+  /* Alertes */
   .alert-card{
     padding:6px 8px;
     margin-top:4px;
@@ -327,49 +325,34 @@
     font-size:11px;
     margin-bottom:2px;
   }
-  .alert-list{
-    font-size:9px;
-  }
-  .alert-card .row label{
+  .alert-list{ font-size:9px; }
+  .alert-card .row label,
+  .alert-card select{
     font-size:9px;
   }
   .alert-card select{
-    font-size:9px;
     padding:2px 8px;
   }
 
-  /* Graphiques plus petits pour tenir sur 1 page */
+  /* Graphiques : top 5 */
   .iframe-container{
     aspect-ratio:auto;
-    height:120px;          /* top 5 fatigués / en forme */
-  }
-  .sparkline-wrap{
-    height:120px;          /* courbe évolution joueur */
+    height:120px;
   }
 
-  /* Barres et textes plus fins */
-  .stats-bar-row{
-    margin-bottom:2px;
-  }
+  /* Barres de zones dans la synthèse rapide */
+  .stats-bar-row{ margin-bottom:2px; }
   .stats-bar-label{
     font-size:9px;
     width:90px;
   }
 
-  /* On évite autant que possible de couper une carte en 2 pages */
-  .stats-card,
-  #stats-equipe,
-  .sparkline-card{
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  /* On ne veut pas imprimer le bouton d’export */
+  /* Ne pas imprimer le bouton d'export */
   .export-btn{
     display:none !important;
   }
-  /* ✅ Forcer l'impression des couleurs de fond (barres, zones, etc.) */
-  body,
+
+  /* Obligatoire pour garder les couleurs des zones, graph, barres */
   .stats-indice-box,
   .stats-bar-fill,
   .zone-vert-fonce,
@@ -377,12 +360,11 @@
   .zone-jaune,
   .zone-orange,
   .zone-rouge {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 }
-
 
   </style>
 </head>
