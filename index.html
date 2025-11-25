@@ -19,7 +19,10 @@
       background: #e3f1ff;
       font-size: 18px;
     }
-
+    @page {
+  size: A4;
+  margin: 10mm;
+}
     /* TOP BAR GRID */
     .top-bar{
       display:grid;
@@ -250,36 +253,68 @@
       min-height:auto;
     }
 
-    /* Impression PDF : on garde seulement le dashboard coach */
 @media print {
+  /* Mise en page générale pour le PDF */
   body{
     background:#fff;
     max-width:100%;
-    padding:10px;
+    padding:0;
+    margin:0;
+    font-size:14px;
   }
+
+  .top-bar{
+    grid-template-columns: auto 1fr;
+    margin: 4px 8px 8px;
+  }
+
+  /* On masque tout ce qui ne sert pas au PDF */
   .mode-toggle-btn,
-  .card:first-of-type,
+  .card:first-of-type,        /* carte formulaire joueur */
   .liste-joueurs,
   .actions,
   .coach-only .secondary.danger {
     display:none !important;
   }
-  .top-bar{
-    grid-template-columns: auto 1fr;
+
+  /* On veut voir Synthèse rapide + Statistiques équipe + Évolution joueur */
+  .stats-card.coach-only,
+  #stats-equipe.card.coach-only,
+  .sparkline-card{
+    display:block !important;
   }
-  #stats-equipe{
-    margin-top:0 !important;
+
+  /* ✅ Chaque “carte” ne doit pas être coupée sur 2 pages */
+  .card,
+  .stats-card,
+  #stats-equipe,
+  .sparkline-card{
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
+
+  /* On compacte un peu les cartes pour que tout tienne mieux */
+  .stats-card,
+  #stats-equipe,
+  .sparkline-card{
+    padding:10px !important;
+    margin: 0 8px 8px !important;
+  }
+
+  /* Graphiques un poil plus compacts en hauteur */
+  .iframe-container{
+    aspect-ratio: 4 / 3;
+  }
+  .sparkline-wrap{
+    height: 180px;
+  }
+
+  /* On ne veut pas imprimer le bouton d’export */
   .export-btn{
     display:none !important;
   }
-
-  /* ✅ on force l'affichage des blocs coach dans le PDF */
-  .stats-card.coach-only,
-  #stats-equipe.card.coach-only {
-    display:block !important;
-  }
 }
+
   </style>
 </head>
 
