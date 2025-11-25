@@ -19,10 +19,7 @@
       background: #e3f1ff;
       font-size: 18px;
     }
-    @page {
-  size: A4;
-  margin: 10mm;
-}
+
     /* TOP BAR GRID */
     .top-bar{
       display:grid;
@@ -253,11 +250,6 @@
       min-height:auto;
     }
 /* ====== ULTRA-COMPACT PDF 1 PAGE ====== */
-@page {
-  size: A4 portrait;
-  margin: 5mm;
-}
-
 @media print {
 
   /* Format A4 avec marges réduites */
@@ -311,7 +303,25 @@
     display:block !important;
   }
 
-   /* Alertes séance plus compactes */
+  /* Cartes compactes + marges réduites */
+  .stats-card,
+  #stats-equipe{
+    padding:6px 8px !important;
+    margin:0 5mm 4mm 5mm !important;
+    border-width:1px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .stats-line,
+  .legend{
+    font-size:9px;
+  }
+  .stats-title{
+    font-size:11px;
+  }
+
+  /* Alertes séance plus compactes */
   .alert-card{
     padding:6px 8px;
     margin-top:4px;
@@ -334,13 +344,57 @@
     padding:2px 8px;
   }
 
-  /* La petite ligne “+ X joueurs…” est visible à l’impression si JS l’active */
-  .alert-more-print{
-    display:block;
-    font-size:9px;
+  /* Graphiques Top 5 un peu plus hauts pour mieux remplir la page */
+  .stats-grid{
+    gap:8px;
+  }
+  .stats-chart-card{
+    padding:4px 4px 0 4px;
+  }
+  .stats-chart-card h3{
+    font-size:11px;
+    margin-bottom:4px;
+  }
+  .iframe-container{
+    aspect-ratio:auto;
+    height:145px;     /* un peu plus haut que 120px */
+    margin-top:6px;
   }
 
-  /* … le reste de ton @media print reste identique … */
+  /* Barres de la synthèse rapide */
+  .stats-bar-row{
+    margin-bottom:3px;
+  }
+  .stats-bar-label{
+    font-size:9px;
+    width:90px;
+  }
+
+  /* On ne veut pas imprimer le bouton d’export */
+  .export-btn{
+    display:none !important;
+  }
+
+  /* ✅ Forcer l'impression des couleurs de fond (barres, zones, etc.) */
+  .stats-indice-box,
+  .stats-bar-fill,
+  .zone-vert-fonce,
+  .zone-vert-clair,
+  .zone-jaune,
+  .zone-orange,
+  .zone-rouge {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Ligne info “+ X joueurs…” (cachée à l’écran, visible si on la remplit en JS) */
+.alert-more-print{
+  display:none;
+  font-size:11px;
+  margin-top:4px;
+  color:#854d0e;
+  font-style:italic;
 }
 
   /* Graphiques Top 5 un peu plus hauts pour mieux remplir la page */
