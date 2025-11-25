@@ -252,23 +252,40 @@
       background:#fef3c7;
       min-height:auto;
     }
+/* ====== ULTRA-COMPACT PDF 1 PAGE ====== */
+@page {
+  size: A4 portrait;
+  margin: 5mm;
+}
 
 @media print {
-  /* Mise en page générale pour le PDF */
+  html, body{
+    width: 210mm;
+    height: 297mm;
+  }
+
   body{
     background:#fff;
     max-width:100%;
-    padding:0;
     margin:0;
-    font-size:14px;
+    padding:4mm;
+    font-size:10px;          /* texte global plus petit */
   }
 
+  /* En-tête plus compacte */
   .top-bar{
     grid-template-columns: auto 1fr;
-    margin: 4px 8px 8px;
+    margin: 0 0 4px;
+  }
+  h1{
+    font-size:16px;
+    margin-bottom:2px;
+  }
+  h2{
+    font-size:11px;
   }
 
-  /* On masque tout ce qui ne sert pas au PDF */
+  /* On masque tout ce qui ne sert pas dans le PDF */
   .mode-toggle-btn,
   .card:first-of-type,        /* carte formulaire joueur */
   .liste-joueurs,
@@ -277,15 +294,69 @@
     display:none !important;
   }
 
-  /* On veut voir Synthèse rapide + Statistiques équipe + Évolution joueur */
+  /* On force l’affichage de la synthèse + stats équipe + sparkline */
   .stats-card.coach-only,
   #stats-equipe.card.coach-only,
   .sparkline-card{
     display:block !important;
   }
 
-  /* ✅ Chaque “carte” ne doit pas être coupée sur 2 pages */
-  .card,
+  /* Cartes compactes + collées les unes aux autres */
+  .stats-card,
+  #stats-equipe,
+  .sparkline-card{
+    padding:6px 8px !important;
+    margin:0 0 4px !important;
+    border-width:1px;
+  }
+
+  .stats-line,
+  .legend{
+    font-size:9px;
+  }
+  .stats-title{
+    font-size:11px;
+  }
+
+  /* Alertes séance plus compactes */
+  .alert-card{
+    padding:6px 8px;
+    margin-top:4px;
+  }
+  .alert-card h3{
+    font-size:11px;
+    margin-bottom:2px;
+  }
+  .alert-list{
+    font-size:9px;
+  }
+  .alert-card .row label{
+    font-size:9px;
+  }
+  .alert-card select{
+    font-size:9px;
+    padding:2px 8px;
+  }
+
+  /* Graphiques plus petits pour tenir sur 1 page */
+  .iframe-container{
+    aspect-ratio:auto;
+    height:120px;          /* top 5 fatigués / en forme */
+  }
+  .sparkline-wrap{
+    height:120px;          /* courbe évolution joueur */
+  }
+
+  /* Barres et textes plus fins */
+  .stats-bar-row{
+    margin-bottom:2px;
+  }
+  .stats-bar-label{
+    font-size:9px;
+    width:90px;
+  }
+
+  /* On évite autant que possible de couper une carte en 2 pages */
   .stats-card,
   #stats-equipe,
   .sparkline-card{
@@ -293,27 +364,12 @@
     break-inside: avoid;
   }
 
-  /* On compacte un peu les cartes pour que tout tienne mieux */
-  .stats-card,
-  #stats-equipe,
-  .sparkline-card{
-    padding:10px !important;
-    margin: 0 8px 8px !important;
-  }
-
-  /* Graphiques un poil plus compacts en hauteur */
-  .iframe-container{
-    aspect-ratio: 4 / 3;
-  }
-  .sparkline-wrap{
-    height: 180px;
-  }
-
   /* On ne veut pas imprimer le bouton d’export */
   .export-btn{
     display:none !important;
   }
 }
+
 
   </style>
 </head>
