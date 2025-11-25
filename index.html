@@ -821,28 +821,31 @@ function exportPDF(){
   }, 250);
 }
 
-    async function envoyerVersGoogleSheets(rec) {
+async function envoyerVersGoogleSheets(rec) {
   if (!GOOGLE_SHEETS_URL) return false;
-  if (!navigator.onLine) return false;
 
   const payload = { ...rec };
   delete payload.envoye;
 
   try {
-    await fetch(GOOGLE_SHEETS_URL, {
+    console.log("Envoi vers Sheets :", rec.joueur, rec.seance);
+
+    const res = await fetch(GOOGLE_SHEETS_URL, {
       method: "POST",
-      mode: "no-cors",
+      mode: "no-cors",           // reste en no-cors pour éviter les blocages CORS
       body: JSON.stringify(payload),
       cache: "no-store"
     });
 
+    // Si on arrive ici sans exception, on considère que c'est OK
     rec.envoye = true;
     sauvegarderLocal();
-    return true;   // ✅ on considère que c'est bon
+
+    return true;
 
   } catch (err) {
-    console.error("Erreur fetch Sheets :", err);
-    rec.envoye = false;
+    console.error("Erreur fetch Sheets pour", rec.joueur, ":", err);
+    rec.envoye = false;          // on garde en "non envoyé"
     sauvegarderLocal();
     return false;
   }
@@ -850,35 +853,45 @@ function exportPDF(){
 
 async function syncGoogleSheets() {
   if (!navigator.onLine) {
-    alert("Pas de connexion internet.");
+    alert("Pas de connexion internet (le bouton ne fonctionne qu'en ligne).");
     return;
   }
 
   const aEnvoyer = enregistrementsLocal.filter(r => !r.envoye);
-  if (aEnvoyer.length === 0) {
-    alert("Tout est déjà envoyé.");
+  const total = aEnvoyer.length;
+
+  if (total === 0) {
+    alert("Tout est déjà envoyé vers Google Sheets.");
     return;
   }
 
-  if (!confirm("Envoyer " + aEnvoyer.length + " réponses vers Google Sheets ?")) return;
+  if (!confirm("Envoyer " + total + " réponses vers Google Sheets ?")) return;
 
   let ok = 0;
   let fail = 0;
 
-  for (const rec of aEnvoyer) {
+  for (let i = 0; i < total; i++) {
+    const rec = aEnvoyer[i];
+
+    // petit message dans la console (utile en debug)
+    console.log(`Sync ${i+1}/${total}:`, rec.joueur, rec.seance);
+
     const res = await envoyerVersGoogleSheets(rec);
     if (res) ok++;
     else fail++;
+
+    // petite pause de 150 ms pour ne pas saturer Apps Script
+    await new Promise(r => setTimeout(r, 150));
   }
 
-  // on recharge les données officielles depuis Sheets
+  // on recharge les données officielles de Sheets (stats + graphes)
   await refreshSheetsData();
   majListeJoueursLocal();
 
   alert(
     "Synchronisation terminée.\n" +
-    ok + " enregistrements envoyés.\n" +
-    (fail ? (fail + " enregistrements en erreur (garder la tablette allumée et réessayer).") : "")
+    ok + " enregistrements envoyés avec succès.\n" +
+    (fail ? (fail + " enregistrements en échec (restent en rouge dans la liste).") : "0 en échec.")
   );
 }
 
