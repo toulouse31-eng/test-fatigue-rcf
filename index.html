@@ -835,27 +835,30 @@
 
     // =======================
 // =======================
+// =======================
 // GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
 // =======================
 function chargerDepuisGoogleSheetsJSONP(){
   return new Promise((resolve) => {
     let done = false;
 
-    // On garde l'ancien handler s'il existe déjà
+    // Sauvegarde éventuelle d'un ancien handler (au cas où)
     const oldGoogle = window.google || {};
-    const oldVisu   = (oldGoogle.visualization && oldGoogle.visualization.Query && oldGoogle.visualization.Query.setResponse)
+    const oldVisu   = (oldGoogle.visualization &&
+                       oldGoogle.visualization.Query &&
+                       oldGoogle.visualization.Query.setResponse)
                       ? oldGoogle.visualization.Query.setResponse
                       : null;
 
-    // On s'assure que l'objet google.visualization.Query existe
+    // On crée l'objet global "google" attendu par GVIZ
     window.google = window.google || {};
     google.visualization = google.visualization || {};
     google.visualization.Query = google.visualization.Query || {};
 
-    // 👉 Notre handler qui intercepte la réponse GVIZ
+    // 👉 Notre handler qui sera appelé par GVIZ
     google.visualization.Query.setResponse = (resp) => {
       if (done) {
-        // Si jamais Google nous rappelle alors qu'on a déjà traité, on laisse l'ancien handler gérer
+        // Si déjà traité, on laisse éventuellement l'ancien handler gérer
         if (typeof oldVisu === "function") oldVisu(resp);
         return;
       }
@@ -898,7 +901,7 @@ function chargerDepuisGoogleSheetsJSONP(){
         console.error("Parse JSON GVIZ error", e);
         resolve([]);
       } finally {
-        // on peut éventuellement restaurer l'ancien handler si besoin
+        // On peut restaurer l'ancien handler si besoin
         if (typeof oldVisu === "function") {
           google.visualization.Query.setResponse = oldVisu;
         }
@@ -909,7 +912,8 @@ function chargerDepuisGoogleSheetsJSONP(){
     const script = document.createElement("script");
 
     const tq = encodeURIComponent("select *");
-    // ❗ on ne met PLUS responseHandler=... : on intercepte le handler par défaut
+
+    // ❗❗ IMPORTANT : PAS de responseHandler ici
     script.src =
       `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
       `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}&tqx=out:json`;
@@ -927,7 +931,7 @@ function chargerDepuisGoogleSheetsJSONP(){
       console.warn("JSONP timeout → resolve([])");
       done = true;
       resolve([]);
-    }, 15000); // un peu plus de marge
+    }, 15000);
 
     document.body.appendChild(script);
   });
