@@ -822,50 +822,65 @@ function exportPDF(){
 }
 
     async function envoyerVersGoogleSheets(rec) {
-      if (!GOOGLE_SHEETS_URL) return;
-      if (!navigator.onLine) return;
+  if (!GOOGLE_SHEETS_URL) return false;
+  if (!navigator.onLine) return false;
 
-      const payload = { ...rec };
-      delete payload.envoye;
+  const payload = { ...rec };
+  delete payload.envoye;
 
-      try {
-        await fetch(GOOGLE_SHEETS_URL, {
-          method: "POST",
-          mode: "no-cors",
-          body: JSON.stringify(payload),
-          cache: "no-store"
-        });
+  try {
+    await fetch(GOOGLE_SHEETS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify(payload),
+      cache: "no-store"
+    });
 
-        rec.envoye = true;
-        sauvegarderLocal();
+    rec.envoye = true;
+    sauvegarderLocal();
+    return true;   // ✅ on considère que c'est bon
 
-        await refreshSheetsData();
+  } catch (err) {
+    console.error("Erreur fetch Sheets :", err);
+    rec.envoye = false;
+    sauvegarderLocal();
+    return false;
+  }
+}
 
-      } catch (err) {
-        console.error("Erreur fetch Sheets :", err);
-        rec.envoye = false;
-        sauvegarderLocal();
-        alert("Envoi impossible vers Google Sheets (réseau).");
-      }
-    }
+async function syncGoogleSheets() {
+  if (!navigator.onLine) {
+    alert("Pas de connexion internet.");
+    return;
+  }
 
-    function syncGoogleSheets() {
-      if (!navigator.onLine) {
-        alert("Pas de connexion internet.");
-        return;
-      }
+  const aEnvoyer = enregistrementsLocal.filter(r => !r.envoye);
+  if (aEnvoyer.length === 0) {
+    alert("Tout est déjà envoyé.");
+    return;
+  }
 
-      const aEnvoyer = enregistrementsLocal.filter(r => !r.envoye);
-      if (aEnvoyer.length === 0) {
-        alert("Tout est déjà envoyé.");
-        return;
-      }
+  if (!confirm("Envoyer " + aEnvoyer.length + " réponses vers Google Sheets ?")) return;
 
-      if (!confirm("Envoyer " + aEnvoyer.length + " réponses ?")) return;
+  let ok = 0;
+  let fail = 0;
 
-      aEnvoyer.forEach(rec => envoyerVersGoogleSheets(rec));
-      alert("Synchronisation lancée.");
-    }
+  for (const rec of aEnvoyer) {
+    const res = await envoyerVersGoogleSheets(rec);
+    if (res) ok++;
+    else fail++;
+  }
+
+  // on recharge les données officielles depuis Sheets
+  await refreshSheetsData();
+  majListeJoueursLocal();
+
+  alert(
+    "Synchronisation terminée.\n" +
+    ok + " enregistrements envoyés.\n" +
+    (fail ? (fail + " enregistrements en erreur (garder la tablette allumée et réessayer).") : "")
+  );
+}
 
     function computeZone(pourcentage){
       let zoneTexte="", zoneClass="";
