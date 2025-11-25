@@ -687,8 +687,23 @@
     }
     
 function exportPDF(){
-  // On laisse le navigateur gérer l'impression -> PDF
-  window.print();
+  const body = document.body;
+  const wasCoach = body.classList.contains("coach-mode");
+
+  // on force l'affichage du mode coach pour l'impression
+  if (!wasCoach) {
+    body.classList.add("coach-mode");
+  }
+
+  // petit délai pour que les graphs/statistiques aient le temps de se redessiner
+  setTimeout(() => {
+    window.print();
+
+    // après impression, on revient à l'état initial
+    if (!wasCoach) {
+      body.classList.remove("coach-mode");
+    }
+  }, 150);
 }
 
     async function envoyerVersGoogleSheets(rec) {
