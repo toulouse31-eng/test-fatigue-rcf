@@ -389,7 +389,6 @@
     <div id="sheetsStatus" class="legend" style="text-align:center; margin:-6px 0 8px;">Chargement des données...</div>
 
     <div class="stats-grid">
-
       <!-- TOP 5 fatigués -->
       <div class="stats-chart-card">
         <h3>Top 5 joueurs les plus fatigués</h3>
@@ -466,17 +465,6 @@
     let enregistrementsLocal  = []; // tablette (queue + historique local)
     let enregistrementsSheets = []; // OFFICIEL Google Sheets (stats/graphiques)
 
-    // ✅ URL WebApp (ENVOI tablette → Sheets)
-const GOOGLE_SHEETS_URL =
-  "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
-
-// ✅ ID "Publié sur le web" (LECTURE pour stats/graphiques)
-const GOOGLE_SHEETS_PUB_ID =
-  "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
-
-// ✅ gid de l’onglet Base
-const GOOGLE_SHEETS_GID = 0;
-
     const STORAGE_LOCAL_KEY  = "test_fatigue_rcf_enregistrements_local_v1";
     const STORAGE_SHEETS_KEY = "test_fatigue_rcf_last_sync_sheets_v1";
 
@@ -488,11 +476,11 @@ const GOOGLE_SHEETS_GID = 0;
     const GOOGLE_SHEETS_URL =
       "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
 
-    // ✅ ID Google Sheets (LECTURE pour stats/graphiques)
-    // IMPORTANT: le fichier doit être partagé en "Toute personne avec le lien – Lecteur"
-    const GOOGLE_SHEETS_DOC_ID = "1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg";
+    // ✅ PUB_ID (celui de ton lien pubhtml)
+    const GOOGLE_SHEETS_PUB_ID =
+      "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
 
-    // ✅ gid de l’onglet Base
+    // ✅ gid onglet Base
     const GOOGLE_SHEETS_GID = 0;
 
     // Uniquement Sheets pour viz
@@ -847,120 +835,114 @@ const GOOGLE_SHEETS_GID = 0;
     }
 
     // =======================
-    // GOOGLE SHEETS (GVIZ Fetch + Backup Offline)
+    // GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
     // =======================
-// =======================
-// GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
-// =======================
 
-// JSONP = marche même si l'app est ouverte en PWA / file://
-function chargerDepuisGoogleSheetsJSONP(){
-  return new Promise((resolve) => {
-    const cbName = "gsCb_" + Date.now();
-    let done = false;
+    function chargerDepuisGoogleSheetsJSONP(){
+      return new Promise((resolve) => {
+        const cbName = "gsCb_" + Date.now();
+        let done = false;
 
-    const script = document.createElement("script");
+        const script = document.createElement("script");
 
-    window[cbName] = (resp) => {
-      done = true;
-      try {
-        const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
+        window[cbName] = (resp) => {
+          done = true;
+          try {
+            const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
 
-        const data = rows.map(r => {
-          const c = r.c || [];
+            const data = rows.map(r => {
+              const c = r.c || [];
 
-          // K = pourcentage (index 10)
-          const rawPct = c[10]?.v;
-          const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
+              const rawPct = c[10]?.v;
+              const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
-          const { zoneTexte, zoneClass } = computeZone(pourcentage);
+              const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-          return {
-            date: c[1]?.v || "",                 // B dateApp
-            joueur: c[2]?.v || "",               // C joueur
-            seance: c[3]?.v || "",               // D seance
-            recuperation: Number(c[4]?.v) || "", // E
-            sommeil: Number(c[5]?.v) || "",      // F
-            alimentation: Number(c[6]?.v) || "", // G
-            fatigue_physique: Number(c[7]?.v) || "", // H
-            fatigue_mentale: Number(c[8]?.v) || "",  // I
-            total: Number(c[9]?.v) || "",        // J
-            pourcentage,                          // K
-            zone: c[11]?.v || zoneTexte,         // L
-            zoneClass,
-            douleurZone: c[12]?.v || "",         // M
-            commentaire: c[13]?.v || "",         // N
-            envoye: true
-          };
-        }).filter(x => x.joueur);
+              return {
+                date: c[1]?.v || "",
+                joueur: c[2]?.v || "",
+                seance: c[3]?.v || "",
+                recuperation: Number(c[4]?.v) || "",
+                sommeil: Number(c[5]?.v) || "",
+                alimentation: Number(c[6]?.v) || "",
+                fatigue_physique: Number(c[7]?.v) || "",
+                fatigue_mentale: Number(c[8]?.v) || "",
+                total: Number(c[9]?.v) || "",
+                pourcentage,
+                zone: c[11]?.v || zoneTexte,
+                zoneClass,
+                douleurZone: c[12]?.v || "",
+                commentaire: c[13]?.v || "",
+                envoye: true
+              };
+            }).filter(x => x.joueur);
 
-        resolve(data);
+            resolve(data);
 
-      } catch(e){
-        console.error("Parse JSONP error", e);
-        resolve([]);
-      } finally {
-        delete window[cbName];
-        script.remove();
+          } catch(e){
+            console.error("Parse JSONP error", e);
+            resolve([]);
+          } finally {
+            delete window[cbName];
+            script.remove();
+          }
+        };
+
+        const tq = encodeURIComponent("select *");
+        script.src =
+          `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq` +
+          `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
+          `&tqx=out:json;responseHandler=${cbName}`;
+
+        script.onerror = () => {
+          if(done) return;
+          console.error("JSONP load error");
+          delete window[cbName];
+          script.remove();
+          resolve([]);
+        };
+
+        setTimeout(() => {
+          if(done) return;
+          console.warn("JSONP timeout → resolve([])");
+          delete window[cbName];
+          script.remove();
+          resolve([]);
+        }, 6000);
+
+        document.body.appendChild(script);
+      });
+    }
+
+    async function chargerDepuisGoogleSheetsAvecBackup(){
+      if(navigator.onLine){
+        const data = await chargerDepuisGoogleSheetsJSONP();
+        localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
+        return data;
       }
-    };
 
-    // ✅ URL GVIZ complète + tq=select *
-    const tq = encodeURIComponent("select *");
-    script.src =
-      `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
-      `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
-      `&tqx=out:json;responseHandler=${cbName}`;
-
-    script.onerror = () => {
-      if(done) return;
-      console.error("JSONP load error");
-      delete window[cbName];
-      script.remove();
-      resolve([]);
-    };
-
-    // ✅ sécurité si Google ne répond pas
-    setTimeout(() => {
-      if(done) return;
-      console.warn("JSONP timeout → resolve([])");
-      delete window[cbName];
-      script.remove();
-      resolve([]);
-    }, 6000);
-
-    document.body.appendChild(script);
-  });
-}
-
-
-async function chargerDepuisGoogleSheetsAvecBackup(){
-  // online → JSONP
-  if(navigator.onLine){
-    const data = await chargerDepuisGoogleSheetsJSONP();
-    localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(data));
-    return data;
-  }
-
-  // offline → dernier backup
-  const backup = localStorage.getItem(STORAGE_SHEETS_KEY);
-  if(backup){
-    try{
-      const parsed = JSON.parse(backup);
-      return Array.isArray(parsed) ? parsed : [];
-    }catch(e){ return []; }
-  }
-  return [];
-}
-
+      const backup = localStorage.getItem(STORAGE_SHEETS_KEY);
+      if(backup){
+        try{
+          const parsed = JSON.parse(backup);
+          return Array.isArray(parsed) ? parsed : [];
+        }catch(e){ return []; }
+      }
+      return [];
+    }
 
     async function refreshSheetsData(){
       enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
+
       const statusEl = document.getElementById("sheetsStatus");
       if(statusEl){
-        statusEl.textContent = "Sheets rows = " + enregistrementsSheets.length + (navigator.onLine ? " (en ligne)" : " (backup hors‑ligne)");
+        statusEl.textContent =
+          "Sheets rows = " + enregistrementsSheets.length +
+          (navigator.onLine ? " (en ligne)" : " (backup hors-ligne)");
       }
+
       console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
+
       majStats();
       buildSparklineSelect();
       buildTop5Charts();
@@ -1263,7 +1245,6 @@ async function chargerDepuisGoogleSheetsAvecBackup(){
       return list.slice(0,5);
     }
 
-    // ✅ anti 0px
     function resizeTopCanvas(canvasId){
       const canvas = document.getElementById(canvasId);
       if(!canvas) return;
@@ -1376,14 +1357,12 @@ async function chargerDepuisGoogleSheetsAvecBackup(){
       drawTop5Now();
     }
 
-    // ✅ Resize global
     window.addEventListener("resize", () => {
       if(document.body.classList.contains("coach-mode")){
         forceResizeAllCharts();
       }
     });
 
-    // ✅ INIT
     document.addEventListener("DOMContentLoaded", async () => {
       enregistrementsLocal = chargerLocal();
       majListeJoueursLocal();
@@ -1392,7 +1371,6 @@ async function chargerDepuisGoogleSheetsAvecBackup(){
     });
   </script>
 
-  <!-- Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
