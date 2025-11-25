@@ -834,85 +834,85 @@
     }
 
     // =======================
-    // GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
-    // =======================
-    function chargerDepuisGoogleSheetsJSONP(){
-      return new Promise((resolve) => {
-        const cbName = "gsCb_" + Date.now();
-        let done = false;
+ // GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
+function chargerDepuisGoogleSheetsJSONP(){
+  return new Promise((resolve) => {
+    const cbName = "gsCb_" + Date.now();
+    let done = false;
 
-        const script = document.createElement("script");
+    const script = document.createElement("script");
 
-        window[cbName] = (resp) => {
-          done = true;
-          try {
-            const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
+    window[cbName] = (resp) => {
+      done = true;
+      try {
+        const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
 
-            const data = rows.map(r => {
-              const c = r.c || [];
+        const data = rows.map(r => {
+          const c = r.c || [];
 
-              const rawPct = c[10]?.v;
-              const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
+          const rawPct = c[10]?.v;
+          const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
-              const { zoneTexte, zoneClass } = computeZone(pourcentage);
+          const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-              return {
-                date: c[1]?.v || "",
-                joueur: c[2]?.v || "",
-                seance: c[3]?.v || "",
-                recuperation: Number(c[4]?.v) || "",
-                sommeil: Number(c[5]?.v) || "",
-                alimentation: Number(c[6]?.v) || "",
-                fatigue_physique: Number(c[7]?.v) || "",
-                fatigue_mentale: Number(c[8]?.v) || "",
-                total: Number(c[9]?.v) || "",
-                pourcentage,
-                zone: c[11]?.v || zoneTexte,
-                zoneClass,
-                douleurZone: c[12]?.v || "",
-                commentaire: c[13]?.v || "",
-                envoye: true
-              };
-            }).filter(x => x.joueur);
+          return {
+            date: c[1]?.v || "",
+            joueur: c[2]?.v || "",
+            seance: c[3]?.v || "",
+            recuperation: Number(c[4]?.v) || "",
+            sommeil: Number(c[5]?.v) || "",
+            alimentation: Number(c[6]?.v) || "",
+            fatigue_physique: Number(c[7]?.v) || "",
+            fatigue_mentale: Number(c[8]?.v) || "",
+            total: Number(c[9]?.v) || "",
+            pourcentage,
+            zone: c[11]?.v || zoneTexte,
+            zoneClass,
+            douleurZone: c[12]?.v || "",
+            commentaire: c[13]?.v || "",
+            envoye: true
+          };
+        }).filter(x => x.joueur);
 
-            resolve(data);
+        resolve(data);
 
-          } catch(e){
-            console.error("Parse JSONP error", e);
-            resolve([]);
-          } finally {
-            delete window[cbName];
-            script.remove();
-          }
-        };
+      } catch(e){
+        console.error("Parse JSONP error", e);
+        resolve([]);
+      } finally {
+        delete window[cbName];
+        script.remove();
+      }
+    };
 
-        // Requête GVIZ basée sur l’ID du fichier (DOC_ID)
-        const tq = encodeURIComponent("select *");
-        script.src =
-          `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
-          `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
-          `&tqx=out:json;responseHandler=${cbName}`;
+    // 👉 ligne qui manquait
+    const tq = encodeURIComponent("select *");
 
-        script.onerror = () => {
-          if (done) return;
-          console.error("JSONP load error");
-          delete window[cbName];
-          script.remove();
-          resolve([]);
-        };
+    script.src =
+      `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
+      `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
+      `&tqx=out:json;responseHandler=${cbName}`;
 
-        // sécurité : timeout si Google ne répond pas
-        setTimeout(() => {
-          if (done) return;
-          console.warn("JSONP timeout → resolve([])");
-          delete window[cbName];
-          script.remove();
-          resolve([]);
-        }, 6000);
+    script.onerror = () => {
+      if (done) return;
+      console.error("JSONP load error");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    };
 
-        document.body.appendChild(script);
-      });
-    }
+    // sécurité : timeout si Google ne répond pas
+    setTimeout(() => {
+      if (done) return;
+      console.warn("JSONP timeout → resolve([])");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    }, 6000);
+
+    document.body.appendChild(script);
+  });
+}
 
     async function chargerDepuisGoogleSheetsAvecBackup(){
       if(navigator.onLine){
