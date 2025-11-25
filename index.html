@@ -462,7 +462,13 @@
     
 <div id="sheetsStatus" class="legend" style="text-align:center; margin:-6px 0 8px;">Chargement des données...</div>
 <div class="alert-card coach-only" id="alertesDuJourCard">
-  <h3>Alertes du jour</h3>
+  <h3>Alertes séance</h3>
+
+  <div class="row" style="margin-bottom:6px;">
+    <label for="alertSeanceSelect" style="flex:0 0 auto;">Séance :</label>
+    <select id="alertSeanceSelect" style="flex:1 1 auto; min-width:140px;"></select>
+  </div>
+
   <div id="alertDateLabel" class="legend">Pas de séance enregistrée.</div>
   <ul id="alertList" class="alert-list"></ul>
 </div>
@@ -875,21 +881,18 @@ function exportPDF(){
       else reco="Fatigue élevée : séance récupération / charge très réduite.";
       if(recoEl) recoEl.textContent="Recommandation séance : "+reco;
     }
-function computeAlertesDuJour(){
+function computeAlertesDuJour(selectedKey){
   const data = getVizData();
   if (!data.length) return { dateKey:null, alertes:[] };
 
-  // on récupère toutes les dates de séance valides
-  const keys = data.map(getSeanceKey).filter(Boolean);
-  if (!keys.length) return { dateKey:null, alertes:[] };
+  const allKeys = getSessionKeysSorted();
+  if (!allKeys.length) return { dateKey:null, alertes:[] };
 
-  // dernière date de séance (la plus récente)
-  const lastKey = keys.sort((a,b)=> new Date(a) - new Date(b)).slice(-1)[0];
+  // si aucune séance choisie, on prend la dernière
+  const dateKey = selectedKey || allKeys[allKeys.length - 1];
 
-  // on garde seulement les enregistrements de cette date
-  const rowsSameDay = data.filter(r => getSeanceKey(r) === lastKey);
+  const rowsSameDay = data.filter(r => getSeanceKey(r) === dateKey);
 
-  // on ne garde que le DERNIER enregistrement par joueur pour ce jour-là
   const lastByPlayer = {};
   rowsSameDay.forEach(r => {
     const d = getDateFromSeance(r.seance) || new Date(r.date);
@@ -912,16 +915,18 @@ function computeAlertesDuJour(){
       commentaire: r.commentaire || ""
     }));
 
-  return { dateKey:lastKey, alertes };
+  return { dateKey, alertes };
 }
 
 function majAlertesDuJour(){
   const card = document.getElementById("alertesDuJourCard");
   const dateLabel = document.getElementById("alertDateLabel");
   const listEl = document.getElementById("alertList");
-  if (!card || !dateLabel || !listEl) return;
+  const select = document.getElementById("alertSeanceSelect");
+  if (!card || !dateLabel || !listEl || !select) return;
 
-  const { dateKey, alertes } = computeAlertesDuJour();
+  const selectedKey = select.value || null;
+  const { dateKey, alertes } = computeAlertesDuJour(selectedKey);
 
   listEl.innerHTML = "";
 
@@ -930,12 +935,7 @@ function majAlertesDuJour(){
     return;
   }
 
-  // format jj/mm/aaaa
-  const d = new Date(dateKey + "T00:00:00");
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const yyyy = d.getFullYear();
-  dateLabel.textContent = `Dernière séance : ${dd}/${mm}/${yyyy}`;
+  dateLabel.textContent = `Séance : ${formatDateKey(dateKey)}`;
 
   if (!alertes.length){
     const li = document.createElement("li");
@@ -961,6 +961,41 @@ function majAlertesDuJour(){
     li.appendChild(txt);
     listEl.appendChild(li);
   });
+}
+let alertSeanceHandlersBound = false;
+
+function buildAlertSeanceSelect(){
+  const select = document.getElementById("alertSeanceSelect");
+  if (!select) return;
+
+  const keys = getSessionKeysSorted();
+  select.innerHTML = "";
+
+  if (!keys.length){
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Aucune séance";
+    select.appendChild(opt);
+    majAlertesDuJour();
+    return;
+  }
+
+  keys.forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = formatDateKey(k);
+    select.appendChild(opt);
+  });
+
+  // par défaut : dernière séance
+  select.value = keys[keys.length - 1];
+
+  if (!alertSeanceHandlersBound){
+    select.addEventListener("change", majAlertesDuJour);
+    alertSeanceHandlersBound = true;
+  }
+
+  majAlertesDuJour();
 }
 
     function resetForm(clearResult){
@@ -1138,7 +1173,7 @@ function chargerDepuisGoogleSheetsJSONP(){
       console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
 
       majStats();
-      majAlertesDuJour();
+      buildAlertSeanceSelect();
       buildSparklineSelect();
       buildTop5Charts();
     }
@@ -1406,6 +1441,22 @@ function chargerDepuisGoogleSheetsJSONP(){
       const dd = String(d.getDate()).padStart(2,"0");
       return `${y}-${m}-${dd}`;
     }
+function getSessionKeysSorted(){
+  const data = getVizData();
+  const keys = data.map(getSeanceKey).filter(Boolean);
+  const unique = [...new Set(keys)];
+  unique.sort((a,b) => new Date(a) - new Date(b));
+  return unique;
+}
+
+function formatDateKey(key){
+  const d = new Date(key + "T00:00:00");
+  if (isNaN(d.getTime())) return key;
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
 
     function getLastSessionKeys(n){
       const data = getVizData();
