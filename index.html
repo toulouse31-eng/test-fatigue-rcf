@@ -472,19 +472,19 @@
     const rowAutre    = document.getElementById("rowAutre");
     const inputAutre  = document.getElementById("joueurAutre");
 
-    // ✅ URL WebApp (ENVOI tablette → Sheets)
-    const GOOGLE_SHEETS_URL =
-      "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
+   // ✅ URL WebApp (ENVOI tablette → Sheets)
+const GOOGLE_SHEETS_URL =
+  "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
 
-    // ✅ PUB_ID (celui de ton lien pubhtml)
-    const GOOGLE_SHEETS_PUB_ID =
-      "2PACX-1vSZOoAxXWypXm2R1xpiBnnW7CZ_qYsAuB3_OIZbcrspuwPy8iYjWmOlouo5gPhskbbRB5RZVFC2WBL5";
+// ✅ ID Google Sheets (LECTURE pour stats/graphiques)
+// IMPORTANT : c’est l’ID du fichier, pas le 2PACX
+const GOOGLE_SHEETS_DOC_ID = "1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg";
 
-    // ✅ gid onglet Base
-    const GOOGLE_SHEETS_GID = 0;
+// ✅ gid de l’onglet Base
+const GOOGLE_SHEETS_GID = 0;
 
-    // Uniquement Sheets pour viz
-    function getVizData(){ return enregistrementsSheets; }
+// Uniquement Sheets pour viz
+function getVizData(){ return enregistrementsSheets; }
 
     selectJoueur.addEventListener("change", () => {
       if (selectJoueur.value === "Autre") rowAutre.style.display = "flex";
@@ -887,7 +887,35 @@
             script.remove();
           }
         };
+ // ⬇⬇⬇ LA PARTIE IMPORTANTE ⬇⬇⬇
 
+    // requête GVIZ basée sur l’ID du fichier (DOC_ID)
+    const tq = encodeURIComponent("select *");
+    script.src =
+      `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq` +
+      `?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${tq}` +
+      `&tqx=out:json;responseHandler=${cbName}`;
+
+    script.onerror = () => {
+      if (done) return;
+      console.error("JSONP load error");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    };
+
+    // sécurité : timeout si Google ne répond pas
+    setTimeout(() => {
+      if (done) return;
+      console.warn("JSONP timeout → resolve([])");
+      delete window[cbName];
+      script.remove();
+      resolve([]);
+    }, 6000);
+
+    document.body.appendChild(script);
+  });
+}
         const tq = encodeURIComponent("select *");
         script.src =
           `https://docs.google.com/spreadsheets/d/e/${GOOGLE_SHEETS_PUB_ID}/gviz/tq` +
