@@ -268,24 +268,28 @@
 
   body{
     background:#fff;
-    max-width:100%;
     margin:0;
-    padding:4mm;
+    padding:6mm 5mm;
     font-size:10px;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    color-adjust: exact;
   }
 
   /* En-tête compacte */
   .top-bar{
     grid-template-columns: auto 1fr;
-    margin: 0 0 4px;
+    margin-bottom:4px;
   }
-  h1{ font-size:16px; margin-bottom:2px; }
-  h2{ font-size:11px; }
+  h1{
+    font-size:16px;
+    margin:0 0 2px;
+  }
+  h2{
+    font-size:11px;
+    margin:0;
+  }
 
-  /* ❌ Masquer : formulaire, liste, boutons, mode coach, sparkline */
+  /* ❌ Masquer tout ce qui doit disparaître */
   .mode-toggle-btn,
   .card:first-of-type,
   .liste-joueurs,
@@ -295,64 +299,55 @@
     display:none !important;
   }
 
-  /* ✔️ Forcer : synthèse + stats équipe */
+  /* ✔️ Garder synthèse + stats équipe */
   .stats-card.coach-only,
-  #stats-equipe.card.coach-only {
+  #stats-equipe.card.coach-only{
     display:block !important;
   }
 
-  /* Cartes compactes */
+  /* Cartes compactes + suppression des espaces */
   .stats-card,
-  #stats-equipe {
+  #stats-equipe{
     padding:6px 8px !important;
-    margin:0 0 4px !important;
+    margin:0 0 5px !important;
     border-width:1px;
     page-break-inside: avoid;
-    break-inside: avoid;
   }
 
-  /* Textes + légendes */
+  /* Texte compact */
   .stats-line,
-  .legend{ font-size:9px; }
-  .stats-title{ font-size:11px; }
+  .legend{ font-size:9px; line-height:1.25; }
+  .stats-title{ font-size:11px; margin-bottom:3px; }
 
   /* Alertes */
   .alert-card{
     padding:6px 8px;
-    margin-top:4px;
+    margin:4px 0;
   }
   .alert-card h3{
     font-size:11px;
     margin-bottom:2px;
   }
   .alert-list{ font-size:9px; }
-  .alert-card .row label,
-  .alert-card select{
-    font-size:9px;
-  }
-  .alert-card select{
-    padding:2px 8px;
-  }
 
-  /* Graphiques : top 5 */
+  /* Graphiques (top 5) — plus petits mais lisibles */
   .iframe-container{
-    aspect-ratio:auto;
-    height:120px;
+    height:125px !important;
+    aspect-ratio:auto !important;
+    margin-top:4px;
   }
 
-  /* Barres de zones dans la synthèse rapide */
-  .stats-bar-row{ margin-bottom:2px; }
+  /* Barres verticales synthèse rapide */
+  .stats-bar-row{ margin-bottom:3px; }
   .stats-bar-label{
     font-size:9px;
     width:90px;
   }
 
-  /* Ne pas imprimer le bouton d'export */
-  .export-btn{
-    display:none !important;
-  }
+  /* Bouton export */
+  .export-btn{ display:none !important; }
 
-  /* Obligatoire pour garder les couleurs des zones, graph, barres */
+  /* Couleurs forcées */
   .stats-indice-box,
   .stats-bar-fill,
   .zone-vert-fonce,
@@ -362,7 +357,6 @@
   .zone-rouge {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    color-adjust: exact !important;
   }
 }
 
