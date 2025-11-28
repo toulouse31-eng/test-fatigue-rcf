@@ -10,332 +10,336 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2f7ccc">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
-      background: #e3f1ff;
-      font-size: 18px;
-    }
-
-    /* TOP BAR GRID */
-    .top-bar{
-      display:grid;
-      grid-template-columns: auto 1fr auto;
-      align-items:center;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .logo-container { display:flex; align-items:center; }
-    .logo-rcf { max-width:60px; height:auto; }
-
-    .top-title { text-align:center; }
-    h1 { margin:0; color:#2f7ccc; font-size:26px; }
-    h2 { margin:0; font-size:16px; color:#4a6580; }
-
-    .mode-toggle-btn {
-      padding: 8px 14px;
-      font-size: 12px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(145deg, #3f82cf, #1f5ba8);
-      color: #fff;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.25);
-      opacity: 0.85;
-      transition: transform .1s ease, box-shadow .1s ease, opacity .2s ease, background .2s ease;
-      white-space: nowrap;
-    }
-    .mode-toggle-btn:hover { opacity:1; box-shadow:0 4px 8px rgba(0,0,0,0.3); transform:translateY(-1px); }
-    .mode-toggle-btn:active { transform:translateY(0); box-shadow:0 1px 3px rgba(0,0,0,0.2); }
-    .mode-toggle-btn.coach-on { background: linear-gradient(145deg, #12b886, #0f8f66); }
-
-    .layout { display:flex; flex-wrap:wrap; gap:16px; }
-    .card, .stats-card {
-      background:#fff; border-radius:16px; border:2px solid #6bb4ff;
-      box-shadow:0 4px 12px rgba(0,0,0,0.08);
-      min-width:0;
-    }
-    .card { padding:20px; flex:2 1 540px; }
-    .stats-card { padding:16px; flex:1 1 260px; }
-
-    .row {
-      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; align-items:center;
-    }
-    .row label { font-weight:bold; flex:1 0 140px; font-size:16px; }
-    .row input[type="text"], .row input[type="date"], .row select, .row textarea {
-      flex:2 1 200px; padding:12px; font-size:18px; border-radius:10px; border:1px solid #ccc; min-height:46px;
-    }
-    textarea { min-height:60px; resize:vertical; }
-
-    .question { margin-bottom:22px; }
-    .question > label { font-weight:bold; display:block; margin-bottom:6px; }
-    .qnum { font-weight:900; color:#2f7ccc; margin-right:6px; }
-
-    .scale { display:flex; gap:10px; flex-wrap:nowrap; margin-top:8px; }
-    .scale button {
-      flex:1 0 18%; padding:16px 0; border-radius:999px; border:1px solid #ccc;
-      font-size:22px; cursor:pointer; background:#f5f5f5;
-      transition: transform .1s ease, box-shadow .1s ease, border .1s ease;
-    }
-    .scale button[data-value="1"] { background:#ffb3b3; }
-    .scale button[data-value="2"] { background:#ffd5a6; }
-    .scale button[data-value="3"] { background:#fff6a3; }
-    .scale button[data-value="4"] { background:#c9f7b5; }
-    .scale button[data-value="5"] { background:#9ae69c; }
-    .scale button.active { border:2px solid #000; transform:scale(1.07); box-shadow:0 0 6px rgba(0,0,0,0.25); }
-
-    .legend { font-size:12px; color:#666; margin-top:4px; }
-
-    .actions { margin-top:20px; display:flex; flex-direction:column; gap:10px; }
-    .actions button { padding:16px; font-size:18px; border-radius:10px; border:none; cursor:pointer; }
-    .primary { background:#2f7ccc; color:#fff; }
-    .secondary { background:#ddd; }
-    .actions .danger { background:#b30000; color:#fff; }
-
-    .result { margin-top:15px; font-size:16px; font-weight:bold; padding:12px; border-radius:10px; }
-
-    .liste-joueurs ul { padding-left:20px; }
-    .liste-joueurs li { margin-bottom:4px; padding:4px 6px; border-radius:6px; }
-
-    .zone-vert-fonce { background:#b7f0c4; color:#145c2e; }
-    .zone-vert-clair { background:#d5f7dd; color:#1f7f3f; }
-    .zone-jaune { background:#fff8c2; color:#8a7400; }
-    .zone-orange { background:#ffe0b8; color:#8a4b06; }
-    .zone-rouge { background:#f8d7da; color:#721c24; }
-
-    .coach-only { display:none; }
-    body.coach-mode .coach-only { display:block; }
-
-    .stats-title{
-      font-weight:bold;
-      margin:0;
-      color:#2f4f6f;
-    }
-    .stats-line { font-size:13px; margin-bottom:4px; }
-    .stats-bar-container { margin-top:10px; font-size:12px; }
-    .stats-bar-row { display:flex; align-items:center; margin-bottom:4px; gap:6px; }
-    .stats-bar-label { width:110px; white-space:nowrap; }
-    .stats-bar-bg { flex:1; background:#eee; border-radius:999px; overflow:hidden; height:10px; }
-    .stats-bar-fill { height:10px; }
-
-    .stats-indice-box {
-      margin-top:10px; padding:10px; border-radius:12px; text-align:center;
-      font-weight:bold; font-size:14px; background:#f0f4ff; color:#2f4f6f;
-    }
-    .stats-indice-box.indice-vert { background:#b7f0c4; color:#145c2e; }
-    .stats-indice-box.indice-jaune { background:#fff8c2; color:#8a7400; }
-    .stats-indice-box.indice-orange { background:#ffe0b8; color:#8a4b06; }
-    .stats-indice-box.indice-rouge { background:#f8d7da; color:#721c24; }
-
-    .stats-reco { margin-top:8px; font-size:13px; color:#2f4f6f; }
-    .stats-alertes { margin-top:8px; font-size:13px; color:#333; }
-
-    .stats-grid { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
-    .stats-chart-card { flex:1 1 280px; min-width:260px; }
-    .stats-chart-card h3 { font-size:15px; margin-bottom:8px; color:#2f4f6f; text-align:center; }
-    .iframe-container {
-      position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; border-radius:10px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.15);
-      background:#fff;
-    }
-    .iframe-container canvas {
-      position:absolute; top:0; left:0; width:100%; height:100%;
-      border:0;
-    }
-
-    /* En-tête synthèse + bouton export */
-.stats-header-row {
-  display: flex;
-  flex-wrap: wrap;        /* 🔥 Permet au bouton de passer à la ligne */
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-/* S'assure qu'on le voit bien */
-.export-btn {
-  white-space: nowrap;     /* 🔥 Empêche le texte de se casser et disparaître */
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* Au cas où une règle ailleurs le cache : */
-.stats-card .export-btn {
-  display: inline-flex !important;
-}
-
-@media (max-width:700px){
-  .stats-grid{ flex-direction:column; }
-  .iframe-container{ aspect-ratio:3/4; }
-}
-
-/* ======================================= */
-/*          RÈGLE POUR L’IMPRESSION        */
-/* ======================================= */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-}
-
-/* 📈 Sparkline */
-.sparkline-card{
-  margin-top: 14px;
-  padding: 12px;
-  border: 1px solid #c7ddff;
-  border-radius: 12px;
-  background: #f5f9ff;
-}
-    .sparkline-wrap{
-      width:100%;
-      height:240px;
-      position:relative;
-    }
-    #sparklineCanvas{
-      width:100%;
-      height:100%;
-      display:block;
-      border-radius:10px;
-      background:#ffffff;
-      box-shadow: inset 0 0 0 1px #e6eefc;
-    }
-
-    /* Bloc alertes séance */
-    .alert-card{
-      margin-top: 14px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: 1px solid #facc15;
-      background: #fef9c3;
-    }
-    .alert-card h3{
-      margin: 0 0 6px;
-      font-size: 15px;
-      color: #854d0e;
-    }
-    .alert-list{
-      margin: 6px 0 0;
-      padding-left: 18px;
-      font-size: 14px;
-    }
-    .alert-list li{
-      margin-bottom: 4px;
-    }
-    .alert-tag{
-      font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 999px;
-      margin-right: 4px;
-      font-size: 11px;
-    }
-    .alert-tag-orange{
-      background:#fed7aa;
-      color:#9a3412;
-    }
-    .alert-tag-rouge{
-      background:#fecaca;
-      color:#b91c1c;
-    }
-
-    /* Select + label intégrés dans le cadre alertes */
-    .alert-card .row{
-      margin-bottom:4px;
-    }
-    .alert-card .row label{
-      font-size:13px;
-      font-weight:normal;
-      color:#854d0e;
-      flex:0 0 auto;
-    }
-    .alert-card select{
-      font-size:13px;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid #facc15;
-      background:#fef3c7;
-      min-height:auto;
-    }
-    
-  /* On garde le fond blanc et on enlève les effets inutiles */
+<style>
   body {
-    background: #ffffff !important;
-    margin: 0;
-    padding: 0;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 900px;
+    margin: auto;
+    background: #e3f1ff;
+    font-size: 18px;
   }
 
-  .card,
-  .stats-card,
-  #stats-equipe {
-    box-shadow: none;
+  /* TOP BAR GRID */
+  .top-bar{
+    display:grid;
+    grid-template-columns: auto 1fr auto;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .logo-container { display:flex; align-items:center; }
+  .logo-rcf { max-width:60px; height:auto; }
+
+  .top-title { text-align:center; }
+  h1 { margin:0; color:#2f7ccc; font-size:26px; }
+  h2 { margin:0; font-size:16px; color:#4a6580; }
+
+  .mode-toggle-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(145deg, #3f82cf, #1f5ba8);
+    color: #fff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    opacity: 0.85;
+    transition: transform .1s ease, box-shadow .1s ease, opacity .2s ease, background .2s ease;
+    white-space: nowrap;
+  }
+  .mode-toggle-btn:hover { opacity:1; box-shadow:0 4px 8px rgba(0,0,0,0.3); transform:translateY(-1px); }
+  .mode-toggle-btn:active { transform:translateY(0); box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+  .mode-toggle-btn.coach-on { background: linear-gradient(145deg, #12b886, #0f8f66); }
+
+  .layout { display:flex; flex-wrap:wrap; gap:16px; }
+  .card, .stats-card {
+    background:#fff; border-radius:16px; border:2px solid #6bb4ff;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    min-width:0;
+  }
+  .card { padding:20px; flex:2 1 540px; }
+  .stats-card { padding:16px; flex:1 1 260px; }
+
+  .row {
+    display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; align-items:center;
+  }
+  .row label { font-weight:bold; flex:1 0 140px; font-size:16px; }
+  .row input[type="text"], .row input[type="date"], .row select, .row textarea {
+    flex:2 1 200px; padding:12px; font-size:18px; border-radius:10px; border:1px solid #ccc; min-height:46px;
+  }
+  textarea { min-height:60px; resize:vertical; }
+
+  .question { margin-bottom:22px; }
+  .question > label { font-weight:bold; display:block; margin-bottom:6px; }
+  .qnum { font-weight:900; color:#2f7ccc; margin-right:6px; }
+
+  .scale { display:flex; gap:10px; flex-wrap:nowrap; margin-top:8px; }
+  .scale button {
+    flex:1 0 18%; padding:16px 0; border-radius:999px; border:1px solid #ccc;
+    font-size:22px; cursor:pointer; background:#f5f5f5;
+    transition: transform .1s ease, box-shadow .1s ease, border .1s ease;
+  }
+  .scale button[data-value="1"] { background:#ffb3b3; }
+  .scale button[data-value="2"] { background:#ffd5a6; }
+  .scale button[data-value="3"] { background:#fff6a3; }
+  .scale button[data-value="4"] { background:#c9f7b5; }
+  .scale button[data-value="5"] { background:#9ae69c; }
+  .scale button.active { border:2px solid #000; transform:scale(1.07); box-shadow:0 0 6px rgba(0,0,0,0.25); }
+
+  .legend { font-size:12px; color:#666; margin-top:4px; }
+
+  .na-option {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #475569;
+  }
+  .na-option input { margin-right: 4px; }
+
+  .actions { margin-top:20px; display:flex; flex-direction:column; gap:10px; }
+  .actions button { padding:16px; font-size:18px; border-radius:10px; border:none; cursor:pointer; }
+  .primary { background:#2f7ccc; color:#fff; }
+  .secondary { background:#ddd; }
+  .actions .danger { background:#b30000; color:#fff; }
+
+  .result { margin-top:15px; font-size:16px; font-weight:bold; padding:12px; border-radius:10px; }
+
+  .liste-joueurs ul { padding-left:20px; }
+  .liste-joueurs li { margin-bottom:4px; padding:4px 6px; border-radius:6px; }
+
+  .zone-vert-fonce { background:#b7f0c4; color:#145c2e; }
+  .zone-vert-clair { background:#d5f7dd; color:#1f7f3f; }
+  .zone-jaune { background:#fff8c2; color:#8a7400; }
+  .zone-orange { background:#ffe0b8; color:#8a4b06; }
+  .zone-rouge { background:#f8d7da; color:#721c24; }
+
+  .coach-only { display:none; }
+  body.coach-mode .coach-only { display:block; }
+
+  .stats-title{
+    font-weight:bold;
+    margin:0;
+    color:#2f4f6f;
   }
 
-  /* Évite les coupures moches à l’intérieur des blocs principaux */
-  .stats-card,
-  #stats-equipe {
-    page-break-inside: avoid;
-  }
-}
+  .stats-line { font-size:13px; margin-bottom:4px; }
+  .stats-bar-container { margin-top:10px; font-size:12px; }
+  .stats-bar-row { display:flex; align-items:center; margin-bottom:4px; gap:6px; }
+  .stats-bar-label { width:110px; white-space:nowrap; }
+  .stats-bar-bg { flex:1; background:#eee; border-radius:999px; overflow:hidden; height:10px; }
+  .stats-bar-fill { height:10px; }
 
-/* Ligne info “+ X joueurs…” (cachée à l’écran, visible si on la remplit en JS) */
-.alert-more-print{
-  display:none;
-  font-size:11px;
-  margin-top:4px;
-  color:#854d0e;
-  font-style:italic;
-}
+  .stats-indice-box {
+    margin-top:10px; padding:10px; border-radius:12px; text-align:center;
+    font-weight:bold; font-size:14px; background:#f0f4ff; color:#2f4f6f;
+  }
+  .stats-indice-box.indice-vert { background:#b7f0c4; color:#145c2e; }
+  .stats-indice-box.indice-jaune { background:#fff8c2; color:#8a7400; }
+  .stats-indice-box.indice-orange { background:#ffe0b8; color:#8a4b06; }
+  .stats-indice-box.indice-rouge { background:#f8d7da; color:#721c24; }
 
-  /* Graphiques Top 5 un peu plus hauts pour mieux remplir la page */
-  .stats-grid{
-    gap:8px;
-  }
-  .iframe-container{
-    aspect-ratio:auto !important;
-    height:145px !important;   /* +20px par rapport à avant */
-    margin-top:6px;
-  }
+  .stats-reco { margin-top:8px; font-size:13px; color:#2f4f6f; }
+  .stats-alertes { margin-top:8px; font-size:13px; color:#333; }
 
-  /* Barres de la synthèse rapide */
-  .stats-bar-row{
-    margin-bottom:3px;
+  .stats-grid { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  .stats-chart-card { flex:1 1 280px; min-width:260px; }
+  .stats-chart-card h3 { font-size:15px; margin-bottom:8px; color:#2f4f6f; text-align:center; }
+
+  .iframe-container {
+    position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    background:#fff;
   }
-  .stats-bar-label{
-    font-size:10px;
-    width:95px;
+  .iframe-container canvas {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    border:0;
   }
 
-  /* On ne veut pas imprimer le bouton d’export */
-  .export-btn{
-    display:none !important;
+  /* En-tête synthèse + bouton export */
+  .stats-header-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
   }
 
-  /* ✅ Forcer les couleurs de fond (zones, barres, indice) */
-  .stats-indice-box,
-  .stats-bar-fill,
-  .zone-vert-fonce,
-  .zone-vert-clair,
-  .zone-jaune,
-  .zone-orange,
-  .zone-rouge {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  .export-btn {
+    white-space: nowrap;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    background:#2f7ccc;
+    color:#fff;
   }
-}
-.alert-more-print{
-  display:none;            /* caché par défaut */
-  font-size:11px;
-  margin-top:4px;
-  color:#854d0e;
-  font-style:italic;
-}
-  </style>
+
+  .stats-card .export-btn {
+    display: inline-flex;
+  }
+
+  /* Bloc alertes séance */
+  .alert-card{
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #facc15;
+    background: #fef9c3;
+  }
+  .alert-card h3{
+    margin: 0 0 6px;
+    font-size: 15px;
+    color: #854d0e;
+  }
+  .alert-list{
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-size: 14px;
+  }
+  .alert-list li{
+    margin-bottom: 4px;
+  }
+  .alert-tag{
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 999px;
+    margin-right: 4px;
+    font-size: 11px;
+  }
+  .alert-tag-orange{
+    background:#fed7aa;
+    color:#9a3412;
+  }
+  .alert-tag-rouge{
+    background:#fecaca;
+    color:#b91c1c;
+  }
+
+  .alert-card .row{
+    margin-bottom:4px;
+  }
+  .alert-card .row label{
+    font-size:13px;
+    font-weight:normal;
+    color:#854d0e;
+    flex:0 0 auto;
+  }
+  .alert-card select{
+    font-size:13px;
+    padding:4px 10px;
+    border-radius:999px;
+    border:1px solid #facc15;
+    background:#fef3c7;
+    min-height:auto;
+  }
+
+  /* ligne "NB : X joueurs..." */
+  .alert-more-print{
+    display:none;
+    font-size:11px;
+    margin-top:4px;
+    color:#854d0e;
+    font-style:italic;
+  }
+
+  .sparkline-card{
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid #c7ddff;
+    border-radius: 12px;
+    background: #f5f9ff;
+  }
+  .sparkline-wrap{
+    width:100%;
+    height:240px;
+    position:relative;
+  }
+  #sparklineCanvas{
+    width:100%;
+    height:100%;
+    display:block;
+    border-radius:10px;
+    background:#ffffff;
+    box-shadow: inset 0 0 0 1px #e6eefc;
+  }
+
+  /* Responsive */
+  @media (max-width:700px){
+    .stats-grid{ flex-direction:column; }
+    .iframe-container{ aspect-ratio:3/4; }
+  }
+
+  /* Impression */
+  @media print {
+
+    /* cacher ce qui a la classe no-print (bouton export, etc.) */
+    .no-print,
+    .export-btn {
+      display: none !important;
+    }
+
+    body {
+      background: #ffffff !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    .card,
+    .stats-card,
+    #stats-equipe {
+      box-shadow: none;
+    }
+
+    .stats-card,
+    #stats-equipe {
+      page-break-inside: avoid;
+    }
+
+    /* Graphiques un peu plus compacts sur le PDF */
+    .stats-grid{
+      gap:8px;
+    }
+    .iframe-container{
+      aspect-ratio:auto !important;
+      height:145px !important;
+      margin-top:6px;
+    }
+
+    .stats-bar-row{
+      margin-bottom:3px;
+    }
+    .stats-bar-label{
+      font-size:10px;
+      width:95px;
+    }
+
+    /* Montrer la petite ligne “NB : X joueurs…” si textContent rempli */
+    .alert-more-print{
+      display:block;
+    }
+
+    /* Forcer l’impression des couleurs de fond importantes */
+    .stats-indice-box,
+    .stats-bar-fill,
+    .zone-vert-fonce,
+    .zone-vert-clair,
+    .zone-jaune,
+    .zone-orange,
+    .zone-rouge {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+
+  /* Cacher à l'impression uniquement : */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+  }
+</style>
 </head>
 
 <body>
@@ -409,30 +413,33 @@
           <input type="date" id="seanceDate" name="seanceDate">
         </div>
         
-        <div class="row">
-          <label for="minutesMatch">Temps de jeu au dernier match :</label>
-          <select id="minutesMatch" name="minutesMatch">
-            <option value="0">N’a pas joué</option>
-            <option value="1">Remplaçant (≤ 30’)</option>
-            <option value="2">30–60’</option>
-            <option value="3">60–90’</option>
-            <option value="4">+90’ / match très intense</option>
-          </select>
-        </div>
+     <!-- Q1..Q5 -->
+<div class="question">
+  <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
 
-        <!-- Q1..Q5 -->
-        <div class="question">
-          <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
-          <div class="scale" data-name="recuperation">
-            <button type="button" data-value="1">1</button>
-            <button type="button" data-value="2">2</button>
-            <button type="button" data-value="3">3</button>
-            <button type="button" data-value="4">4</button>
-            <button type="button" data-value="5">5</button>
-          </div>
-          <div class="legend">1 = Très mauvaise récupération &nbsp;&nbsp; 5 = Très bonne récupération</div>
-          <input type="hidden" name="recuperation" />
-        </div>
+  <div class="scale" data-name="recuperation">
+    <button type="button" data-value="1">1</button>
+    <button type="button" data-value="2">2</button>
+    <button type="button" data-value="3">3</button>
+    <button type="button" data-value="4">4</button>
+    <button type="button" data-value="5">5</button>
+  </div>
+
+  <div class="legend">
+    1 = Très mauvaise récupération &nbsp;&nbsp; 5 = Très bonne récupération
+  </div>
+
+  <!-- 🔽 Nouvelle option N/A -->
+  <div class="na-option">
+    <label>
+      <input type="checkbox" id="recupNA">
+      Je n’ai pas joué le dernier match (N/A)
+    </label>
+  </div>
+  <!-- 🔼 -->
+
+  <input type="hidden" name="recuperation" />
+</div>
 
         <div class="question">
           <label><span class="qnum">2.</span>Qualité du sommeil 😴</label>
@@ -514,43 +521,50 @@
       </div>
     </div>
 
-<!-- SYNTHÈSE RAPIDE COACH (Sheets ONLY) -->
-<div class="stats-card coach-only">
+    <!-- SYNTHÈSE RAPIDE COACH (Sheets ONLY) -->
+    <div class="stats-card coach-only">
 
-  <div class="stats-header-row">
-    <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
+      <div class="stats-header-row">
+        <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
 
-    <button type="button" class="export-btn no-print"onclick="exportPDF()" >
-      Exporter le dashboard en PDF
-    </button>
-  </div>
+        <button
+          type="button"
+          class="export-btn no-print"
+          onclick="exportPDF()"
+        >
+          Exporter le dashboard en PDF
+        </button>
+      </div>
 
-  <div class="stats-line" id="statsNbJoueurs">
-    Joueurs (dernière mesure) : 0
-  </div>
+      <div class="stats-line" id="statsNbJoueurs">
+        Joueurs (dernière mesure) : 0
+      </div>
 
-  <div class="stats-line" id="statsMoyenneScore">
-    Score moyen : -
-  </div>
+      <div class="stats-line" id="statsMoyenneScore">
+        Score moyen : -
+      </div>
 
-  <div class="stats-line" id="statsZoneDom">
-    Zone dominante : -
-  </div>
+      <div class="stats-line" id="statsZoneDom">
+        Zone dominante : -
+      </div>
 
-  <!-- 🔽 Groupe Match / Non-Match -->
-  <div class="stats-line" id="statsNbMatch">
-    Joueurs ayant joué le match : 0
-  </div>
+      <!-- 🔽 Groupe Match / Non-Match -->
+      <div class="stats-line" id="statsNbMatch">
+        Joueurs ayant joué le match : 0
+      </div>
 
-  <div class="stats-line" id="statsNonMatch">
-    N’ont pas joué : -
-  </div>
-  <div class="stats-indice-box" id="statsIndiceBox">
-    <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
-  </div>
-</div>
+      <div class="stats-line" id="statsNonMatch">
+        N’ont pas joué : -
+      </div>
+      <!-- 🔼 -->
 
-      <div class="stats-line stats-reco" id="statsRecoSeance">Recommandation séance : -</div>
+      <div class="stats-indice-box" id="statsIndiceBox">
+        <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
+      </div>
+
+      <div class="stats-line stats-reco" id="statsRecoSeance">
+        Recommandation séance : -
+      </div>
 
       <div class="stats-alertes">
         <div class="stats-line"><strong>Joueurs en alerte (orange/rouge) :</strong></div>
@@ -560,32 +574,42 @@
       <div class="stats-bar-container">
         <div class="stats-bar-row">
           <div class="stats-bar-label">Très bon état</div>
-          <div class="stats-bar-bg"><div id="barVFonce" class="stats-bar-fill zone-vert-fonce" style="width:0%"></div></div>
+          <div class="stats-bar-bg">
+            <div id="barVFonce" class="stats-bar-fill zone-vert-fonce" style="width:0%"></div>
+          </div>
           <div id="textVFonce">0</div>
         </div>
         <div class="stats-bar-row">
           <div class="stats-bar-label">Bon état</div>
-          <div class="stats-bar-bg"><div id="barVClair" class="stats-bar-fill zone-vert-clair" style="width:0%"></div></div>
+          <div class="stats-bar-bg">
+            <div id="barVClair" class="stats-bar-fill zone-vert-clair" style="width:0%"></div>
+          </div>
           <div id="textVClair">0</div>
         </div>
         <div class="stats-bar-row">
           <div class="stats-bar-label">Fatigue légère</div>
-          <div class="stats-bar-bg"><div id="barJaune" class="stats-bar-fill zone-jaune" style="width:0%"></div></div>
+          <div class="stats-bar-bg">
+            <div id="barJaune" class="stats-bar-fill zone-jaune" style="width:0%"></div>
+          </div>
           <div id="textJaune">0</div>
         </div>
         <div class="stats-bar-row">
           <div class="stats-bar-label">Fatigue notable</div>
-          <div class="stats-bar-bg"><div id="barOrange" class="stats-bar-fill zone-orange" style="width:0%"></div></div>
+          <div class="stats-bar-bg">
+            <div id="barOrange" class="stats-bar-fill zone-orange" style="width:0%"></div>
+          </div>
           <div id="textOrange">0</div>
         </div>
         <div class="stats-bar-row">
           <div class="stats-bar-label">Fatigue importante</div>
-          <div class="stats-bar-bg"><div id="barRouge" class="stats-bar-fill zone-rouge" style="width:0%"></div></div>
+          <div class="stats-bar-bg">
+            <div id="barRouge" class="stats-bar-fill zone-rouge" style="width:0%"></div>
+          </div>
           <div id="textRouge">0</div>
         </div>
       </div>
-    </div>
-  </div>
+    </div> <!-- fin .stats-card -->
+  </div> <!-- fin .layout -->
 
   <!-- STATS ÉQUIPE (Google Sheets) -->
   <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
@@ -688,15 +712,26 @@
     const selectJoueur = document.getElementById("joueurSelect");
     const rowAutre    = document.getElementById("rowAutre");
     const inputAutre  = document.getElementById("joueurAutre");
-    const TEMPS_JEU_LABELS = [
-      "N’a pas joué",
-      "Remplaçant (≤ 30’)",
-      "30–60’",
-      "60–90’",
-      "+90’ / match très intense"
-    ];
+    const recupNACheckbox = document.getElementById("recupNA");
     
-    // ✅ URL WebApp (ENVOI tablette → Sheets)
+   if (recupNACheckbox) {
+  recupNACheckbox.addEventListener("change", () => {
+    const hiddenRecup = document.querySelector('input[name="recuperation"]');
+    const scaleRecup  = document.querySelector('.scale[data-name="recuperation"]');
+
+    if (recupNACheckbox.checked) {
+      // on efface les boutons 1..5
+      if (scaleRecup) {
+        scaleRecup.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      }
+      if (hiddenRecup) hiddenRecup.value = "N/A";
+    } else {
+      // on impose de rechoisir 1..5
+      if (hiddenRecup) hiddenRecup.value = "";
+    }
+  });
+}
+        // ✅ URL WebApp (ENVOI tablette → Sheets)
     const GOOGLE_SHEETS_URL =
       "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
 
@@ -714,18 +749,29 @@
       else { rowAutre.style.display = "none"; inputAutre.value = ""; }
     });
 
-    // Bind boutons échelle
-    document.querySelectorAll(".scale").forEach(scale => {
-      const name = scale.getAttribute("data-name");
-      const hiddenInput = document.querySelector(`input[name="${name}"]`);
-      scale.querySelectorAll("button").forEach(btn => {
-        btn.addEventListener("click", () => {
-          scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          hiddenInput.value = btn.getAttribute("data-value");
-        });
-      });
+   // Bind boutons échelle (1 à 5)
+document.querySelectorAll(".scale").forEach(scale => {
+  const name = scale.getAttribute("data-name");
+  const hiddenInput = document.querySelector(`input[name="${name}"]`);
+
+  scale.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      // visuel des boutons
+      scale.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      // valeur stockée
+      if (hiddenInput) {
+        hiddenInput.value = btn.getAttribute("data-value");
+      }
+
+      // 👉 Si on clique sur la Q1 (récupération), on enlève le N/A
+      if (name === "recuperation" && recupNACheckbox) {
+        recupNACheckbox.checked = false;
+      }
     });
+  });
+});
 
     function getNomJoueur() {
       const valSelect = selectJoueur.value;
@@ -901,11 +947,6 @@ function enregistrerJoueur() {
 
   const seance = getSeance();
 
-  // 👉 temps de jeu
-  const minutesMatchSelect = document.getElementById("minutesMatch");
-  const tempsJeuCode = minutesMatchSelect ? Number(minutesMatchSelect.value) || 0 : 0;
-  const tempsJeuTexte = TEMPS_JEU_LABELS[tempsJeuCode] || "N’a pas joué";
-
   const champs = [
     { name:"recuperation",     label:"Qualité de la récupération" },
     { name:"sommeil",          label:"Qualité du sommeil" },
@@ -917,36 +958,60 @@ function enregistrerJoueur() {
   const valeurs = {};
   for (const champ of champs) {
     const val = form[champ.name].value;
-    if (!val) return alert('Réponds à : "'+champ.label+'" (1 à 5).');
-    valeurs[champ.name] = Number(val);
+
+    // ⚠️ Q1 (récupération) peut être "N/A"
+    if (!val && champ.name !== "recuperation") {
+      return alert('Réponds à : "'+champ.label+'" (1 à 5).');
+    }
+    valeurs[champ.name] = val;
   }
 
   const date = new Date().toLocaleString();
-  const recuperation     = valeurs.recuperation;
-  const sommeil          = valeurs.sommeil;
-  const alimentation     = valeurs.alimentation;
-  const fatigue_physique = valeurs.fatigue_physique;
-  const fatigue_mentale  = valeurs.fatigue_mentale;
+
+  // ----- Récupération : 1..5 ou "N/A"
+  const recupRaw = valeurs.recuperation;    // "1".."5" ou "N/A" ou ""
+  const recupNA  = (recupRaw === "N/A");
+  const recuperationNum = recupNA ? 0 : Number(recupRaw || 0);
+
+  const sommeil          = Number(valeurs.sommeil);
+  const alimentation     = Number(valeurs.alimentation);
+  const fatigue_physique = Number(valeurs.fatigue_physique);
+  const fatigue_mentale  = Number(valeurs.fatigue_mentale);
 
   const douleurZone = document.getElementById("douleurZone").value.trim();
   const commentaire = document.getElementById("commentaire").value.trim();
 
-  const total = recuperation + sommeil + alimentation + fatigue_physique + fatigue_mentale;
-  const pourcentage = Math.round((total/25)*100);
+  // ----- Total & pourcentage
+  // Si N/A : total = somme des 4 questions (Q2 à Q5), denom = 20
+  // Sinon : total = 5 questions, denom = 25
+  const total = recuperationNum + sommeil + alimentation + fatigue_physique + fatigue_mentale;
+  const denom = recupNA ? 20 : 25;
+  const pourcentage = Math.round((total / denom) * 100);
 
-  const {zoneTexte, zoneClass} = computeZone(pourcentage);
+  const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
- const record = {
-  date, joueur, seance,
-  recuperation, sommeil, alimentation,
-  fatigue_physique, fatigue_mentale,
-  total, pourcentage,
-  zone: zoneTexte, zoneClass,
-  douleurZone, commentaire,
-  tempsJeuCode,      // 👈 ajouté
-  tempsJeuTexte,     // 👈 ajouté
-  envoye:false
-};
+  const record = {
+    date,
+    joueur,
+    seance,
+
+    // Ce qui partira dans Google Sheets
+    recuperation: recupNA ? "N/A" : recuperationNum,
+    sommeil,
+    alimentation,
+    fatigue_physique,
+    fatigue_mentale,
+    total,
+    pourcentage,
+    zone: zoneTexte,
+
+    // Pour la logique interne / stats
+    zoneClass,
+    douleurZone,
+    commentaire,
+    naMatch: recupNA,   // 👈 flag : n’a pas joué le match
+    envoye: false
+  };
 
   enregistrementsLocal.push(record);
   sauvegarderLocal();
@@ -955,9 +1020,9 @@ function enregistrerJoueur() {
   const resultatDiv = document.getElementById("resultat");
   resultatDiv.textContent =
     `Enregistré : ${joueur} | Séance : ${seance || "non précisé"} | ` +
-    `Score : ${total}/25 (${pourcentage}%) - Zone : ${zoneTexte} | ` +
-    `Temps de jeu : ${tempsJeuTexte} | ` +
-    `Total formulaires tablette : ${enregistrementsLocal.length}`;
+    `Score : ${total}/${denom} (${pourcentage}%) - Zone : ${zoneTexte}` +
+    (recupNA ? " | N’a pas joué le dernier match" : "") +
+    ` | Total formulaires tablette : ${enregistrementsLocal.length}`;
   resultatDiv.className = "result " + zoneClass;
 
   majListeJoueursLocal();
@@ -995,7 +1060,7 @@ function majStats() {
   const recoEl     = document.getElementById("statsRecoSeance");
   const alertesEl  = document.getElementById("statsAlertesListe");
 
-  // On ne garde que la DERNIÈRE saisie par joueur
+  // Dernière mesure par joueur
   const dernierParJoueur = {};
   data.forEach(r => {
     if (!r.joueur) return;
@@ -1017,7 +1082,7 @@ function majStats() {
       indiceBox.className     = "stats-indice-box";
       indiceLabel.textContent = "Indice bien-être équipe : -";
     }
-    if (recoEl)   recoEl.textContent   = "Recommandation séance : -";
+    if (recoEl)    recoEl.textContent    = "Recommandation séance : -";
     if (alertesEl) alertesEl.textContent = "-";
 
     ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
@@ -1029,11 +1094,11 @@ function majStats() {
     return;
   }
 
-  // 🧩 Séparation joueurs match / non-match (via tempsJeuCode 0..4)
-  const listeMatch    = liste.filter(r => (r.tempsJeuCode || 0) > 0);
-  const listeNonMatch = liste.filter(r => !r.tempsJeuCode || r.tempsJeuCode === 0);
+  // ⚽ Séparation joueurs ayant joué / non joué via naMatch
+  const listeMatch    = liste.filter(r => !r.naMatch); // a joué
+  const listeNonMatch = liste.filter(r =>  r.naMatch); // N’a pas joué (Q1 = N/A)
 
-  // 📊 Moyenne globale (tout groupe) comme avant
+  // Moyenne globale (tout le groupe) sur la base du total (J)
   let somme = 0;
   const compte = { vf:0, vc:0, j:0, o:0, r:0 };
 
@@ -1050,9 +1115,9 @@ function majStats() {
   });
 
   const moy = (somme / nb).toFixed(1);
-  if (elMoy) elMoy.textContent = "Score moyen (tout groupe) : " + moy + " / 25";
+  if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
 
-  // 📊 Moyenne spécifique pour les joueurs ayant joué le match
+  // Infos joueurs ayant joué
   let moyMatchTxt = "-";
   if (listeMatch.length) {
     let sommeMatch = 0;
@@ -1065,13 +1130,13 @@ function majStats() {
   if (elNbMatch) {
     if (listeMatch.length) {
       elNbMatch.textContent =
-        `Joueurs ayant joué le match : ${listeMatch.length} (moyenne : ${moyMatchTxt} / 25)`;
+        `Joueurs ayant joué le match : ${listeMatch.length} (moyenne brute : ${moyMatchTxt})`;
     } else {
       elNbMatch.textContent = "Joueurs ayant joué le match : 0";
     }
   }
 
-  // 📋 Liste des joueurs qui n’ont pas joué
+  // Liste des joueurs qui n’ont pas joué
   if (elNonMatch) {
     if (listeNonMatch.length) {
       const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
@@ -1082,7 +1147,7 @@ function majStats() {
     }
   }
 
-  // 🟩 Zone dominante (tout groupe) + barres
+  // Zone dominante + barres
   const ordre = [
     { code:"vf", nom:"VERT FONCÉ" },
     { code:"vc", nom:"VERT CLAIR" },
@@ -1112,7 +1177,7 @@ function majStats() {
   setBar("Orange", "o",  compte.o);
   setBar("Rouge",  "r",  compte.r);
 
-  // 🧮 Indice global équipe (comme avant)
+  // Indice global équipe (toujours base 25 pour l’échelle de zones)
   const pctEquipe = Math.round((parseFloat(moy) / 25) * 100);
   let classe = "", texte = "";
   if      (pctEquipe >= 88){ classe="indice-vert";   texte="Très bon état général"; }
@@ -1126,7 +1191,7 @@ function majStats() {
     indiceLabel.textContent = `Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
   }
 
-  // 🧨 Joueurs en alerte (orange / rouge)
+  // Joueurs en alerte (orange / rouge)
   const alertes = liste
     .filter(r => r.zoneClass === "zone-orange" || r.zoneClass === "zone-rouge")
     .map(r => r.joueur);
@@ -1136,7 +1201,7 @@ function majStats() {
       : "Aucun joueur en alerte.";
   }
 
-  // 🎯 Recommandation séance (logique inchangée)
+  // Recommandation séance
   const pctRO = Math.round(((compte.o + compte.r) / nb) * 100);
   let reco = "";
   if      (pctEquipe >= 80 && pctRO <= 10) reco = "Équipe en forme : charge normale ou légèrement haute.";
@@ -1272,23 +1337,25 @@ function buildAlertSeanceSelect(){
   majAlertesDuJour();
 }
 
-    function resetForm(clearResult){
-      const form=document.getElementById("fatigueForm");
-      form.reset();
-      rowAutre.style.display="none";
-      inputAutre.value="";
+function resetForm(clearResult){
+  const form = document.getElementById("fatigueForm");
+  form.reset();
+  rowAutre.style.display="none";
+  inputAutre.value="";
 
-      document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));
-      document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");
+  document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");
 
-      if (!clearResult) initDateSeance();
+  if (recupNACheckbox) recupNACheckbox.checked = false;  // 👈 ajout
 
-      if(clearResult){
-        const r=document.getElementById("resultat");
-        r.textContent="";
-        r.className="result";
-      }
-    }
+  if (!clearResult) initDateSeance();
+
+  if(clearResult){
+    const r=document.getElementById("resultat");
+    r.textContent="";
+    r.className="result";
+  }
+}
 
     // =======================
     // LOCAL STORAGE (Queue)
@@ -1350,40 +1417,41 @@ function chargerDepuisGoogleSheetsJSONP(){
 const data = rows.map(r => {
   const c = r.c || [];
 
-  // L = pourcentage (index 11 maintenant)
-  const rawPct = c[11]?.v;
+  // Colonne K = pourcentage (index 10)
+  const rawPct = c[10]?.v;
   const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
   const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-  const tempsJeuCode  = Number(c[4]?.v) || 0;  // col E
-  const tempsJeuTexte = TEMPS_JEU_LABELS[tempsJeuCode] || "N’a pas joué";
+  // E = recuperation_depuis_match (1..5 ou "N/A")
+  const recupBrut = (c[4]?.v ?? "");
+  const naMatch   = (recupBrut === "N/A");
+  const recupNum  = naMatch ? "" : (Number(recupBrut) || "");
 
   return {
-    date: c[1]?.v || "",                  // B dateApp
-    joueur: c[2]?.v || "",                // C joueur
-    seance: c[3]?.v || "",                // D seance
+    date: c[1]?.v || "",                 // B dateApp
+    joueur: c[2]?.v || "",               // C joueur
+    seance: c[3]?.v || "",               // D seance
 
-    // 👉 nouvelle info temps de jeu
-    tempsJeuCode,
-    tempsJeuTexte,
+    // récupération
+    recuperation: recupNum,              // pour éventuels calculs numériques
+    recuperationBrut: recupBrut,         // pour affichage ("N/A" ou 1..5)
+    naMatch,                             // 👈 n’a pas joué le match ?
 
-    recuperation:     Number(c[5]?.v) || "", // F
-    sommeil:          Number(c[6]?.v) || "", // G
-    alimentation:     Number(c[7]?.v) || "", // H
-    fatigue_physique: Number(c[8]?.v) || "", // I
-    fatigue_mentale:  Number(c[9]?.v) || "", // J
-    total:            Number(c[10]?.v) || "",// K
+    sommeil:          Number(c[5]?.v) || "",  // F
+    alimentation:     Number(c[6]?.v) || "",  // G
+    fatigue_physique: Number(c[7]?.v) || "",  // H
+    fatigue_mentale:  Number(c[8]?.v) || "",  // I
+    total:            Number(c[9]?.v) || "",  // J
 
-    pourcentage,                             // L
-    zone:        c[12]?.v || zoneTexte,      // M
+    pourcentage,                          // K
+    zone:        c[11]?.v || zoneTexte,   // L
     zoneClass,
-    douleurZone: c[13]?.v || "",             // N
-    commentaire: c[14]?.v || "",             // O
+    douleurZone: c[12]?.v || "",          // M
+    commentaire: c[13]?.v || "",          // N
     envoye: true
   };
 }).filter(x => x.joueur);
-
 
         console.log("GVIZ rows =", rows.length, "data filtrée =", data.length);
         resolve(data);
