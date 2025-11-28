@@ -411,6 +411,17 @@
           <label for="seanceDate">Date de la séance :</label>
           <input type="date" id="seanceDate" name="seanceDate">
         </div>
+        
+        <div class="row">
+          <label for="minutesMatch">Temps de jeu au dernier match :</label>
+          <select id="minutesMatch" name="minutesMatch">
+            <option value="0">N’a pas joué</option>
+            <option value="1">Remplaçant (≤ 30’)</option>
+            <option value="2">30–60’</option>
+            <option value="3">60–90’</option>
+            <option value="4">+90’ / match très intense</option>
+          </select>
+        </div>
 
         <!-- Q1..Q5 -->
         <div class="question">
@@ -510,6 +521,7 @@
    <div class="stats-card coach-only">
   <div class="stats-header-row">
     <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
+    
 <button
   type="button"
   class="export-btn no-print"
@@ -522,6 +534,9 @@
   <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
   <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
   <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
+  <div class="stats-line" id="statsNbMatch">Joueurs ayant joué le match : 0</div>
+  <div class="stats-line" id="statsNonMatch">N’ont pas joué : -</div>
+
 
       <div class="stats-indice-box" id="statsIndiceBox">
         <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
@@ -665,7 +680,14 @@
     const selectJoueur = document.getElementById("joueurSelect");
     const rowAutre    = document.getElementById("rowAutre");
     const inputAutre  = document.getElementById("joueurAutre");
-
+    const TEMPS_JEU_LABELS = [
+      "N’a pas joué",
+      "Remplaçant (≤ 30’)",
+      "30–60’",
+      "60–90’",
+      "+90’ / match très intense"
+    ];
+    
     // ✅ URL WebApp (ENVOI tablette → Sheets)
     const GOOGLE_SHEETS_URL =
       "https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
@@ -864,65 +886,75 @@ async function syncGoogleSheets() {
       return {zoneTexte, zoneClass};
     }
 
-    function enregistrerJoueur() {
-      const form = document.getElementById("fatigueForm");
-      const joueur = getNomJoueur();
-      if (!joueur) return alert("Choisis un joueur.");
+function enregistrerJoueur() {
+  const form = document.getElementById("fatigueForm");
+  const joueur = getNomJoueur();
+  if (!joueur) return alert("Choisis un joueur.");
 
-      const seance = getSeance();
+  const seance = getSeance();
 
-      const champs = [
-        { name:"recuperation",     label:"Qualité de la récupération" },
-        { name:"sommeil",          label:"Qualité du sommeil" },
-        { name:"alimentation",     label:"Qualité alimentation/hydratation" },
-        { name:"fatigue_physique", label:"Fatigue physique/douleurs" },
-        { name:"fatigue_mentale",  label:"Fatigue mentale" }
-      ];
+  // 👉 temps de jeu
+  const minutesMatchSelect = document.getElementById("minutesMatch");
+  const tempsJeuCode = minutesMatchSelect ? Number(minutesMatchSelect.value) || 0 : 0;
+  const tempsJeuTexte = TEMPS_JEU_LABELS[tempsJeuCode] || "N’a pas joué";
 
-      const valeurs = {};
-      for (const champ of champs) {
-        const val = form[champ.name].value;
-        if (!val) return alert('Réponds à : "'+champ.label+'" (1 à 5).');
-        valeurs[champ.name]=Number(val);
-      }
+  const champs = [
+    { name:"recuperation",     label:"Qualité de la récupération" },
+    { name:"sommeil",          label:"Qualité du sommeil" },
+    { name:"alimentation",     label:"Qualité alimentation/hydratation" },
+    { name:"fatigue_physique", label:"Fatigue physique/douleurs" },
+    { name:"fatigue_mentale",  label:"Fatigue mentale" }
+  ];
 
-      const date = new Date().toLocaleString();
-      const recuperation     = valeurs.recuperation;
-      const sommeil          = valeurs.sommeil;
-      const alimentation     = valeurs.alimentation;
-      const fatigue_physique = valeurs.fatigue_physique;
-      const fatigue_mentale  = valeurs.fatigue_mentale;
+  const valeurs = {};
+  for (const champ of champs) {
+    const val = form[champ.name].value;
+    if (!val) return alert('Réponds à : "'+champ.label+'" (1 à 5).');
+    valeurs[champ.name] = Number(val);
+  }
 
-      const douleurZone = document.getElementById("douleurZone").value.trim();
-      const commentaire = document.getElementById("commentaire").value.trim();
+  const date = new Date().toLocaleString();
+  const recuperation     = valeurs.recuperation;
+  const sommeil          = valeurs.sommeil;
+  const alimentation     = valeurs.alimentation;
+  const fatigue_physique = valeurs.fatigue_physique;
+  const fatigue_mentale  = valeurs.fatigue_mentale;
 
-      const total = recuperation + sommeil + alimentation + fatigue_physique + fatigue_mentale;
-      const pourcentage = Math.round((total/25)*100);
+  const douleurZone = document.getElementById("douleurZone").value.trim();
+  const commentaire = document.getElementById("commentaire").value.trim();
 
-      const {zoneTexte, zoneClass} = computeZone(pourcentage);
+  const total = recuperation + sommeil + alimentation + fatigue_physique + fatigue_mentale;
+  const pourcentage = Math.round((total/25)*100);
 
-      const record = {
-        date, joueur, seance,
-        recuperation, sommeil, alimentation,
-        fatigue_physique, fatigue_mentale,
-        total, pourcentage,
-        zone: zoneTexte, zoneClass,
-        douleurZone, commentaire,
-        envoye:false
-      };
+  const {zoneTexte, zoneClass} = computeZone(pourcentage);
 
-      enregistrementsLocal.push(record);
-      sauvegarderLocal();
-      if (navigator.onLine) envoyerVersGoogleSheets(record);
+  const record = {
+    date, joueur, seance,
+    recuperation, sommeil, alimentation,
+    fatigue_physique, fatigue_mentale,
+    total, pourcentage,
+    zone: zoneTexte, zoneClass,
+    douleurZone, commentaire,
+    tempsJeuCode,      // 👈 nouveau
+    tempsJeuTexte,     // 👈 nouveau
+    envoye:false
+  };
 
-      const resultatDiv = document.getElementById("resultat");
-      resultatDiv.textContent =
-        `Enregistré : ${joueur} | Séance : ${seance || "non précisé"} | Score : ${total}/25 (${pourcentage}%) - Zone : ${zoneTexte} | Total formulaires tablette : ${enregistrementsLocal.length}`;
-      resultatDiv.className = "result " + zoneClass;
+  enregistrementsLocal.push(record);
+  sauvegarderLocal();
+  if (navigator.onLine) envoyerVersGoogleSheets(record);
 
-      majListeJoueursLocal();
-      resetForm(false);
-    }
+  const resultatDiv = document.getElementById("resultat");
+  resultatDiv.textContent =
+    `Enregistré : ${joueur} | Séance : ${seance || "non précisé"} | ` +
+    `Score : ${total}/25 (${pourcentage}%) - Zone : ${zoneTexte} | ` +
+    `Temps de jeu : ${tempsJeuTexte} | ` +
+    `Total formulaires tablette : ${enregistrementsLocal.length}`;
+  resultatDiv.className = "result " + zoneClass;
+
+  majListeJoueursLocal();
+  resetForm(false);
+}
 
     function majListeJoueursLocal() {
       const ul = document.getElementById("listeJoueursUl");
@@ -941,105 +973,148 @@ async function syncGoogleSheets() {
     // =======================
     // STATS (Sheets ONLY)
     // =======================
-    function majStats() {
-      const data = getVizData();
+    
+function majStats() {
+  const data = getVizData();
 
-      const elNb=document.getElementById("statsNbJoueurs");
-      const elMoy=document.getElementById("statsMoyenneScore");
-      const elDom=document.getElementById("statsZoneDom");
-      const indiceBox=document.getElementById("statsIndiceBox");
-      const indiceLabel=document.getElementById("statsIndiceLabel");
-      const recoEl=document.getElementById("statsRecoSeance");
-      const alertesEl=document.getElementById("statsAlertesListe");
+  const elNb      = document.getElementById("statsNbJoueurs");
+  const elMoy     = document.getElementById("statsMoyenneScore");
+  const elDom     = document.getElementById("statsZoneDom");
+  const elNbMatch = document.getElementById("statsNbMatch");
+  const elNonMatch= document.getElementById("statsNonMatch");
+  const indiceBox = document.getElementById("statsIndiceBox");
+  const indiceLabel = document.getElementById("statsIndiceLabel");
+  const recoEl    = document.getElementById("statsRecoSeance");
+  const alertesEl = document.getElementById("statsAlertesListe");
 
-      const dernierParJoueur={};
-      data.forEach(r=>{ dernierParJoueur[r.joueur]=r; });
-      const liste=Object.values(dernierParJoueur);
-      const nb=liste.length;
+  const dernierParJoueur = {};
+  data.forEach(r => { dernierParJoueur[r.joueur] = r; });
+  const liste = Object.values(dernierParJoueur);
+  const nb = liste.length;
 
-      if (elNb) elNb.textContent="Joueurs (dernière mesure) : "+nb;
+  if (elNb) elNb.textContent = "Joueurs (dernière mesure) : " + nb;
 
-      if (nb===0){
-        if(elMoy) elMoy.textContent="Score moyen : -";
-        if(elDom) elDom.textContent="Zone dominante : -";
-        if(indiceBox&&indiceLabel){ indiceBox.className="stats-indice-box"; indiceLabel.textContent="Indice bien-être équipe : -"; }
-        if(recoEl) recoEl.textContent="Recommandation séance : -";
-        if(alertesEl) alertesEl.textContent="-";
-        ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
-          const bar=document.getElementById("bar"+z);
-          const txt=document.getElementById("text"+z);
-          if(bar) bar.style.width="0%";
-          if(txt) txt.textContent="0";
-        });
-        return;
-      }
-
-      let somme=0;
-      const compte={vf:0,vc:0,j:0,o:0,r:0};
-
-      liste.forEach(rec=>{
-        somme+=rec.total;
-        if(rec.zoneClass==="zone-vert-fonce") compte.vf++;
-        else if(rec.zoneClass==="zone-vert-clair") compte.vc++;
-        else if(rec.zoneClass==="zone-jaune") compte.j++;
-        else if(rec.zoneClass==="zone-orange") compte.o++;
-        else compte.r++;
-      });
-
-      const moy=(somme/nb).toFixed(1);
-      if(elMoy) elMoy.textContent="Score moyen : "+moy+" / 25";
-
-      const ordre=[
-        {code:"vf",nom:"VERT FONCÉ"},
-        {code:"vc",nom:"VERT CLAIR"},
-        {code:"j",nom:"JAUNE"},
-        {code:"o",nom:"ORANGE"},
-        {code:"r",nom:"ROUGE"}
-      ];
-      let maxNom="",maxVal=-1;
-      ordre.forEach(z=>{ if(compte[z.code]>maxVal){maxVal=compte[z.code];maxNom=z.nom;} });
-      if(elDom) elDom.textContent=`Zone dominante : ${maxNom} (${maxVal} joueurs)`;
-
-      const pct=c=>Math.round((compte[c]/nb)*100);
-      const setBar=(id,code,count)=>{
-        const bar=document.getElementById("bar"+id);
-        const txt=document.getElementById("text"+id);
-        if(bar) bar.style.width=pct(code)+"%";
-        if(txt) txt.textContent=count;
-      };
-      setBar("VFonce","vf",compte.vf);
-      setBar("VClair","vc",compte.vc);
-      setBar("Jaune","j",compte.j);
-      setBar("Orange","o",compte.o);
-      setBar("Rouge","r",compte.r);
-
-      const pctEquipe=Math.round((parseFloat(moy)/25)*100);
-      let classe="",texte="";
-      if(pctEquipe>=88){classe="indice-vert";texte="Très bon état général";}
-      else if(pctEquipe>=76){classe="indice-vert";texte="Bon état général";}
-      else if(pctEquipe>=64){classe="indice-jaune";texte="Fatigue légère";}
-      else if(pctEquipe>=52){classe="indice-orange";texte="Fatigue notable";}
-      else {classe="indice-rouge";texte="Fatigue importante";}
-
-      if(indiceBox&&indiceLabel){
-        indiceBox.className="stats-indice-box "+classe;
-        indiceLabel.textContent=`Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
-      }
-
-      const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>r.joueur);
-      if(alertesEl){
-        alertesEl.textContent=alertes.length?alertes.join(", "):"Aucun joueur en alerte.";
-      }
-
-      const pctRO=Math.round(((compte.o+compte.r)/nb)*100);
-      let reco="";
-      if(pctEquipe>=80 && pctRO<=10) reco="Équipe en forme : charge normale ou légèrement haute.";
-      else if(pctEquipe>=70 && pctRO<=25) reco="Fatigue modérée : charge normale + surveillance.";
-      else if(pctEquipe>=60 || pctRO>30) reco="Plusieurs joueurs fatigués : réduis intensité/volume, individualise.";
-      else reco="Fatigue élevée : séance récupération / charge très réduite.";
-      if(recoEl) recoEl.textContent="Recommandation séance : "+reco;
+  if (nb === 0) {
+    if (elMoy) elMoy.textContent = "Score moyen : -";
+    if (elDom) elDom.textContent = "Zone dominante : -";
+    if (elNbMatch) elNbMatch.textContent = "Joueurs ayant joué le match : 0";
+    if (elNonMatch) elNonMatch.textContent = "N’ont pas joué : -";
+    if (indiceBox && indiceLabel) {
+      indiceBox.className = "stats-indice-box";
+      indiceLabel.textContent = "Indice bien-être équipe : -";
     }
-function computeAlertesDuJour(selectedKey){
+    if (recoEl) recoEl.textContent = "Recommandation séance : -";
+    if (alertesEl) alertesEl.textContent = "-";
+    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
+      const bar=document.getElementById("bar"+z);
+      const txt=document.getElementById("text"+z);
+      if(bar) bar.style.width="0%";
+      if(txt) txt.textContent="0";
+    });
+    return;
+  }
+
+  // 📊 Séparation joueurs match / joueurs non-match
+  const listeMatch   = liste.filter(r => (r.tempsJeuCode || 0) > 0);
+  const listeNonMatch= liste.filter(r => !r.tempsJeuCode || r.tempsJeuCode === 0);
+
+  // Moyenne globale (tout le groupe) = comme avant
+  let somme = 0;
+  const compte = { vf:0, vc:0, j:0, o:0, r:0 };
+
+  liste.forEach(rec => {
+    somme += rec.total;
+    if (rec.zoneClass === "zone-vert-fonce")      compte.vf++;
+    else if (rec.zoneClass === "zone-vert-clair") compte.vc++;
+    else if (rec.zoneClass === "zone-jaune")      compte.j++;
+    else if (rec.zoneClass === "zone-orange")     compte.o++;
+    else                                          compte.r++;
+  });
+
+  const moy = (somme/nb).toFixed(1);
+  if (elMoy) elMoy.textContent = "Score moyen (tout groupe) : " + moy + " / 25";
+
+  // Moyenne spécifique joueurs ayant joué
+  let moyMatch = "-";
+  if (listeMatch.length) {
+    let sommeMatch = 0;
+    listeMatch.forEach(r => { sommeMatch += r.total; });
+    moyMatch = (sommeMatch / listeMatch.length).toFixed(1);
+  }
+
+  if (elNbMatch) {
+    elNbMatch.textContent = listeMatch.length
+      ? `Joueurs ayant joué le match : ${listeMatch.length} (moyenne : ${moyMatch} / 25)`
+      : "Joueurs ayant joué le match : 0";
+  }
+
+  if (elNonMatch) {
+    const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
+    elNonMatch.textContent = listeNonMatch.length
+      ? `N’ont pas joué : ${listeNonMatch.length} (${nomsNoMatch})`
+      : "Tous les joueurs ont participé au match.";
+  }
+
+  // Zone dominante (tout groupe)
+  const ordre = [
+    {code:"vf",nom:"VERT FONCÉ"},
+    {code:"vc",nom:"VERT CLAIR"},
+    {code:"j",nom:"JAUNE"},
+    {code:"o",nom:"ORANGE"},
+    {code:"r",nom:"ROUGE"}
+  ];
+  let maxNom = "", maxVal = -1;
+  ordre.forEach(z => {
+    if (compte[z.code] > maxVal) {
+      maxVal = compte[z.code];
+      maxNom = z.nom;
+    }
+  });
+  if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
+
+  const pct = c => Math.round((compte[c]/nb)*100);
+  const setBar = (id,code,count)=>{
+    const bar = document.getElementById("bar"+id);
+    const txt = document.getElementById("text"+id);
+    if(bar) bar.style.width = pct(code) + "%";
+    if(txt) txt.textContent = count;
+  };
+  setBar("VFonce","vf",compte.vf);
+  setBar("VClair","vc",compte.vc);
+  setBar("Jaune","j",compte.j);
+  setBar("Orange","o",compte.o);
+  setBar("Rouge","r",compte.r);
+
+  const pctEquipe = Math.round((parseFloat(moy)/25)*100);
+  let classe="",texte="";
+  if(pctEquipe>=88){classe="indice-vert";texte="Très bon état général";}
+  else if(pctEquipe>=76){classe="indice-vert";texte="Bon état général";}
+  else if(pctEquipe>=64){classe="indice-jaune";texte="Fatigue légère";}
+  else if(pctEquipe>=52){classe="indice-orange";texte="Fatigue notable";}
+  else {classe="indice-rouge";texte="Fatigue importante";}
+
+  if(indiceBox && indiceLabel){
+    indiceBox.className = "stats-indice-box " + classe;
+    indiceLabel.textContent = `Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
+  }
+
+  const alertes = liste
+    .filter(r => r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge")
+    .map(r => r.joueur);
+  if (alertesEl){
+    alertesEl.textContent = alertes.length ? alertes.join(", ") : "Aucun joueur en alerte.";
+  }
+
+  const pctRO = Math.round(((compte.o+compte.r)/nb)*100);
+  let reco = "";
+  if (pctEquipe>=80 && pctRO<=10) reco="Équipe en forme : charge normale ou légèrement haute.";
+  else if (pctEquipe>=70 && pctRO<=25) reco="Fatigue modérée : charge normale + surveillance.";
+  else if (pctEquipe>=60 || pctRO>30) reco="Plusieurs joueurs fatigués : réduis intensité/volume, individualise.";
+  else reco="Fatigue élevée : séance récupération / charge très réduite.";
+  if(recoEl) recoEl.textContent = "Recommandation séance : " + reco;
+}
+
+  function computeAlertesDuJour(selectedKey){
   const data = getVizData();
   if (!data.length) return { dateKey:null, alertes:[] };
 
@@ -1240,32 +1315,37 @@ function chargerDepuisGoogleSheetsJSONP(){
       try {
         const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
 
-        const data = rows.map(r => {
-          const c = r.c || [];
+const data = rows.map(r => {
+  const c = r.c || [];
 
-          const rawPct = c[10]?.v;
-          const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
+  const rawPct = c[10]?.v;
+  const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
-          const { zoneTexte, zoneClass } = computeZone(pourcentage);
+  const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-          return {
-            date: c[1]?.v || "",
-            joueur: c[2]?.v || "",
-            seance: c[3]?.v || "",
-            recuperation: Number(c[4]?.v) || "",
-            sommeil: Number(c[5]?.v) || "",
-            alimentation: Number(c[6]?.v) || "",
-            fatigue_physique: Number(c[7]?.v) || "",
-            fatigue_mentale: Number(c[8]?.v) || "",
-            total: Number(c[9]?.v) || "",
-            pourcentage,
-            zone: c[11]?.v || zoneTexte,
-            zoneClass,
-            douleurZone: c[12]?.v || "",
-            commentaire: c[13]?.v || "",
-            envoye: true
-          };
-        }).filter(x => x.joueur);
+  const tempsJeuCode = Number(c[14]?.v) || 0;  // 👈 nouvelle colonne (TempsJeuCode)
+  const tempsJeuTexte = TEMPS_JEU_LABELS[tempsJeuCode] || "N’a pas joué";
+
+  return {
+    date: c[1]?.v || "",
+    joueur: c[2]?.v || "",
+    seance: c[3]?.v || "",
+    recuperation: Number(c[4]?.v) || "",
+    sommeil: Number(c[5]?.v) || "",
+    alimentation: Number(c[6]?.v) || "",
+    fatigue_physique: Number(c[7]?.v) || "",
+    fatigue_mentale: Number(c[8]?.v) || "",
+    total: Number(c[9]?.v) || "",
+    pourcentage,
+    zone: c[11]?.v || zoneTexte,
+    zoneClass,
+    douleurZone: c[12]?.v || "",
+    commentaire: c[13]?.v || "",
+    tempsJeuCode,       // 👈 nouveau
+    tempsJeuTexte,      // 👈 nouveau
+    envoye: true
+  };
+}).filter(x => x.joueur);
 
         console.log("GVIZ rows =", rows.length, "data filtrée =", data.length);
         resolve(data);
