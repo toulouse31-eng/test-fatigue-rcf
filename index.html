@@ -1350,34 +1350,40 @@ function chargerDepuisGoogleSheetsJSONP(){
 const data = rows.map(r => {
   const c = r.c || [];
 
-  const rawPct = c[10]?.v;
+  // L = pourcentage (index 11 maintenant)
+  const rawPct = c[11]?.v;
   const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
 
   const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-const tempsJeuCode = Number(c[4]?.v) || 0;
-const tempsJeuTexte = TEMPS_JEU_LABELS[tempsJeuCode] || "N’a pas joué";
+  const tempsJeuCode  = Number(c[4]?.v) || 0;  // col E
+  const tempsJeuTexte = TEMPS_JEU_LABELS[tempsJeuCode] || "N’a pas joué";
 
-return {
-  date: c[1]?.v || "",
-  joueur: c[2]?.v || "",
-  seance: c[3]?.v || "",
-  tempsJeuCode,            // 👈 nouveau emplacement
-  tempsJeuTexte,           // 👈 conversion textuelle
-  recuperation: Number(c[5]?.v) || "",
-  sommeil: Number(c[6]?.v) || "",
-  alimentation: Number(c[7]?.v) || "",
-  fatigue_physique: Number(c[8]?.v) || "",
-  fatigue_mentale: Number(c[9]?.v) || "",
-  total: Number(c[10]?.v) || "",
-  pourcentage: Number(c[11]?.v) || 0,
-  zone: c[12]?.v || "",
-  douleurZone: c[13]?.v || "",
-  commentaire: c[14]?.v || "",
-  zoneClass,
-  envoye: true
-};
+  return {
+    date: c[1]?.v || "",                  // B dateApp
+    joueur: c[2]?.v || "",                // C joueur
+    seance: c[3]?.v || "",                // D seance
+
+    // 👉 nouvelle info temps de jeu
+    tempsJeuCode,
+    tempsJeuTexte,
+
+    recuperation:     Number(c[5]?.v) || "", // F
+    sommeil:          Number(c[6]?.v) || "", // G
+    alimentation:     Number(c[7]?.v) || "", // H
+    fatigue_physique: Number(c[8]?.v) || "", // I
+    fatigue_mentale:  Number(c[9]?.v) || "", // J
+    total:            Number(c[10]?.v) || "",// K
+
+    pourcentage,                             // L
+    zone:        c[12]?.v || zoneTexte,      // M
+    zoneClass,
+    douleurZone: c[13]?.v || "",             // N
+    commentaire: c[14]?.v || "",             // O
+    envoye: true
+  };
 }).filter(x => x.joueur);
+
 
         console.log("GVIZ rows =", rows.length, "data filtrée =", data.length);
         resolve(data);
