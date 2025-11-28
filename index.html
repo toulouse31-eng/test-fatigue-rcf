@@ -271,74 +271,52 @@
     .iframe-container{ aspect-ratio:3/4; }
   }
 
-  /* Impression */
-  @media print {
-
-    /* cacher ce qui a la classe no-print (bouton export, etc.) */
-    .no-print,
-    .export-btn {
-      display: none !important;
-    }
-
-    body {
-      background: #ffffff !important;
-      margin: 0;
-      padding: 0;
-    }
-
-    .card,
-    .stats-card,
-    #stats-equipe {
-      box-shadow: none;
-    }
-
-    .stats-card,
-    #stats-equipe {
-      page-break-inside: avoid;
-    }
-
-    /* Graphiques un peu plus compacts sur le PDF */
-    .stats-grid{
-      gap:8px;
-    }
-    .iframe-container{
-      aspect-ratio:auto !important;
-      height:145px !important;
-      margin-top:6px;
-    }
-
-    .stats-bar-row{
-      margin-bottom:3px;
-    }
-    .stats-bar-label{
-      font-size:10px;
-      width:95px;
-    }
-
-    /* Montrer la petite ligne “NB : X joueurs…” si textContent rempli */
-    .alert-more-print{
-      display:block;
-    }
-
-    /* Forcer l’impression des couleurs de fond importantes */
-    .stats-indice-box,
-    .stats-bar-fill,
-    .zone-vert-fonce,
-    .zone-vert-clair,
-    .zone-jaune,
-    .zone-orange,
-    .zone-rouge {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
+/* ======================================= */
+/*          RÈGLE POUR L’IMPRESSION        */
+/* ======================================= */
+@media print {
+  /* Fond blanc, pas de marges navigateur */
+  body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
   }
 
-  /* Cacher à l'impression uniquement : */
-  @media print {
-    .no-print {
-      display: none !important;
-    }
+  /* ❌ On cache le top-bar et le questionnaire (formulaire) */
+  .top-bar,
+  .layout .card,          /* le gros bloc avec le formulaire */
+  .liste-joueurs,
+  .sparkline-card {       /* bloc "Évolution joueur" si tu veux le garder seulement à l’écran */
+    display: none !important;
   }
+
+  /* ✅ On garde la synthèse rapide et les stats équipe */
+  .stats-card,
+  #stats-equipe {
+    display: block !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin: 0 0 12px 0;
+  }
+
+  /* ❌ On ne veut PAS imprimer le bouton d’export */
+  .export-btn {
+    display: none !important;
+  }
+
+  /* Couleurs fiables à l’impression pour les zones / barres */
+  .stats-indice-box,
+  .stats-bar-fill,
+  .zone-vert-fonce,
+  .zone-vert-clair,
+  .zone-jaune,
+  .zone-orange,
+  .zone-rouge {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
 </style>
 </head>
 
@@ -554,8 +532,9 @@
       </div>
 
       <div class="stats-line" id="statsNonMatch">
-        N’ont pas joué : -
+        Joueurs n'ayant pas joué le dernier match : -
       </div>
+
       <!-- 🔼 -->
 
       <div class="stats-indice-box" id="statsIndiceBox">
@@ -1076,7 +1055,7 @@ function majStats() {
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
     if (elDom)      elDom.textContent      = "Zone dominante : -";
     if (elNbMatch)  elNbMatch.textContent  = "Joueurs ayant joué le match : 0";
-    if (elNonMatch) elNonMatch.textContent = "N’ont pas joué : -";
+    if (elNonMatch) elNonMatch.textContent = "Joueurs n'ayant pas joué le dernier match : -";
 
     if (indiceBox && indiceLabel) {
       indiceBox.className     = "stats-indice-box";
@@ -1127,14 +1106,17 @@ function majStats() {
     moyMatchTxt = (sommeMatch / listeMatch.length).toFixed(1);
   }
 
-  if (elNbMatch) {
-    if (listeMatch.length) {
-      elNbMatch.textContent =
-        `Joueurs ayant joué le match : ${listeMatch.length} (moyenne brute : ${moyMatchTxt})`;
-    } else {
-      elNbMatch.textContent = "Joueurs ayant joué le match : 0";
-    }
+  // Liste des joueurs qui n’ont pas joué
+if (elNonMatch) {
+  if (listeNonMatch.length) {
+    const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
+    elNonMatch.textContent =
+      `Joueurs n'ayant pas joué le dernier match : ${nomsNoMatch}`;
+  } else {
+    elNonMatch.textContent =
+      "Joueurs n'ayant pas joué le dernier match : -";
   }
+}
 
   // Liste des joueurs qui n’ont pas joué
   if (elNonMatch) {
