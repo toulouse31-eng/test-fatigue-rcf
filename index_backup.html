@@ -141,19 +141,28 @@
       position:absolute; top:0; left:0; width:100%; height:100%;
       border:0;
     }
-    @media (max-width:700px){
-      .stats-grid{ flex-direction:column; }
-      .iframe-container{ aspect-ratio:3/4; }
-    }
+@media (max-width:700px){
+  .stats-grid{ flex-direction:column; }
+  .iframe-container{ aspect-ratio:3/4; }
+}
 
-    /* 📈 Sparkline */
-    .sparkline-card{
-      margin-top: 14px;
-      padding: 12px;
-      border: 1px solid #c7ddff;
-      border-radius: 12px;
-      background: #f5f9ff;
-    }
+/* ======================================= */
+/*          RÈGLE POUR L’IMPRESSION        */
+/* ======================================= */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* 📈 Sparkline */
+.sparkline-card{
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #c7ddff;
+  border-radius: 12px;
+  background: #f5f9ff;
+}
     .sparkline-wrap{
       width:100%;
       height:240px;
@@ -336,15 +345,50 @@
     </div>
 
     <!-- SYNTHÈSE RAPIDE COACH (Sheets ONLY) -->
-    <div class="stats-card coach-only">
-      <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
-      <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
-      <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
-      <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
+<!-- SYNTHÈSE RAPIDE COACH (Sheets ONLY) -->
+<div class="stats-card coach-only">
 
-      <div class="stats-indice-box" id="statsIndiceBox">
-        <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
-      </div>
+  <div class="stats-header-row">
+    <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
+
+    <!-- Bouton export PDF (disparaît à l'impression grâce à .no-print) -->
+    <button 
+      type="button" 
+      class="export-btn no-print"
+      onclick="exportPDF()"
+    >
+      Exporter le dashboard en PDF
+    </button>
+  </div>
+
+  <div class="stats-line" id="statsNbJoueurs">
+    Joueurs (dernière mesure) : 0
+  </div>
+
+  <div class="stats-line" id="statsMoyenneScore">
+    Score moyen : -
+  </div>
+
+  <div class="stats-line" id="statsZoneDom">
+    Zone dominante : -
+  </div>
+
+  <!-- 🔽 Groupe Match / Non-Match -->
+  <div class="stats-line" id="statsNbMatch">
+    Joueurs ayant joué le match : 0
+  </div>
+
+  <div class="stats-line" id="statsNonMatch">
+    N’ont pas joué : -
+  </div>
+  <!-- 🔼 FIN AJOUT -->
+
+  <div class="stats-indice-box" id="statsIndiceBox">
+    <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
+  </div>
+
+</div>
+
 
       <div class="stats-line stats-reco" id="statsRecoSeance">Recommandation séance : -</div>
 
@@ -864,22 +908,28 @@ function chargerDepuisGoogleSheetsJSONP(){
           const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
           return {
-            date: c[1]?.v || "",                 // B dateApp
-            joueur: c[2]?.v || "",               // C joueur
-            seance: c[3]?.v || "",               // D seance
-            recuperation: Number(c[4]?.v) || "", // E
-            sommeil: Number(c[5]?.v) || "",      // F
-            alimentation: Number(c[6]?.v) || "", // G
-            fatigue_physique: Number(c[7]?.v) || "", // H
-            fatigue_mentale: Number(c[8]?.v) || "",  // I
-            total: Number(c[9]?.v) || "",        // J
-            pourcentage,                          // K
-            zone: c[11]?.v || zoneTexte,         // L
-            zoneClass,
-            douleurZone: c[12]?.v || "",         // M
-            commentaire: c[13]?.v || "",         // N
-            envoye: true
-          };
+  date: c[1]?.v || "",                 // B
+  joueur: c[2]?.v || "",               // C
+  seance: c[3]?.v || "",               // D
+  tempsJeuCode: Number(c[4]?.v) || 0,  // E
+  tempsJeuTexte: TEMPS_JEU_LABELS[ Number(c[4]?.v) || 0 ],
+  recuperation: Number(c[5]?.v) || "", // F
+  sommeil: Number(c[6]?.v) || "",      // G
+  alimentation: Number(c[7]?.v) || "", // H
+  fatigue_physique: Number(c[8]?.v) || "",  // I
+  fatigue_mentale: Number(c[9]?.v) || "",   // J
+  total: Number(c[10]?.v) || "",       // K
+  pourcentage: Number(String(c[11]?.v || "0").replace("%","").trim()) || 0,
+  zone: c[12]?.v || "",                // M
+  douleurZone: c[13]?.v || "",         // N
+  commentaire: c[14]?.v || "",         // O
+
+  // cette classe est recalculée localement
+  zoneClass: computeZone(
+    Number(String(c[11]?.v || "0").replace("%","").trim()) || 0
+  ).zoneClass,
+  envoye: true
+};
         }).filter(x => x.joueur);
 
         resolve(data);
