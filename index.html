@@ -274,6 +274,9 @@
 /* ======================================= */
 /*          RÈGLE POUR L’IMPRESSION        */
 /* ======================================= */
+/* ======================================= */
+/*          RÈGLE POUR L’IMPRESSION        */
+/* ======================================= */
 @media print {
   /* Fond blanc, pas de marges navigateur */
   body {
@@ -282,15 +285,15 @@
     padding: 0;
   }
 
-  /* ❌ On cache le top-bar et le questionnaire (formulaire) */
+  /* ❌ On cache le top-bar, le formulaire, l'historique, le sparkline */
   .top-bar,
-  .layout .card,          /* le gros bloc avec le formulaire */
+  .layout .card,          /* gros bloc avec le questionnaire */
   .liste-joueurs,
-  .sparkline-card {       /* bloc "Évolution joueur" si tu veux le garder seulement à l’écran */
+  .sparkline-card {
     display: none !important;
   }
 
-  /* ✅ On garde la synthèse rapide et les stats équipe */
+  /* ✅ On garde la synthèse rapide + stats équipe */
   .stats-card,
   #stats-equipe {
     display: block !important;
@@ -299,12 +302,13 @@
     margin: 0 0 12px 0;
   }
 
-  /* ❌ On ne veut PAS imprimer le bouton d’export */
-  .export-btn {
+  /* ❌ On ne veut PAS imprimer le bouton d’export ni tout ce qui est .no-print */
+  .export-btn,
+  .no-print {
     display: none !important;
   }
 
-  /* Couleurs fiables à l’impression pour les zones / barres */
+  /* Couleurs fiables à l’impression pour les zones / barres / indice */
   .stats-indice-box,
   .stats-bar-fill,
   .zone-vert-fonce,
@@ -1035,6 +1039,9 @@ function enregistrerJoueur() {
     // STATS (Sheets ONLY)
     // =======================
     
+// =======================
+// STATS (Sheets ONLY)
+// =======================
 function majStats() {
   const data = getVizData();
 
@@ -1047,13 +1054,13 @@ function majStats() {
   const indiceLabel= document.getElementById("statsIndiceLabel");
   const recoEl     = document.getElementById("statsRecoSeance");
   const alertesEl  = document.getElementById("statsAlertesListe");
-
   const selectSeance = document.getElementById("statsSeanceSelect");
 
-  // 👉 Récupérer toutes les dates de séance
-  const allKeys = getSessionKeysSorted(); // tu l'as déjà pour les autres stats
+  // 👉 toutes les dates de séance (clé = yyyy-mm-dd)
+  const allKeys = getSessionKeysSorted();
 
-  if (!allKeys.length) {
+  // Aucune donnée du tout
+  if (!allKeys.length || !data.length) {
     if (elNb)       elNb.textContent       = "Joueurs (dernière mesure) : 0";
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
     if (elDom)      elDom.textContent      = "Zone dominante : -";
@@ -1067,28 +1074,27 @@ function majStats() {
     if (recoEl)    recoEl.textContent    = "Recommandation séance : -";
     if (alertesEl) alertesEl.textContent = "-";
 
-    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
-      const bar=document.getElementById("bar"+z);
-      const txt=document.getElementById("text"+z);
-      if(bar) bar.style.width="0%";
-      if(txt) txt.textContent="0";
+    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
+      const bar = document.getElementById("bar"+z);
+      const txt = document.getElementById("text"+z);
+      if (bar) bar.style.width = "0%";
+      if (txt) txt.textContent = "0";
     });
     return;
   }
 
-  // 👉 Clé de séance choisie (ou dernière si rien sélectionné)
-  let dateKey = allKeys[allKeys.length - 1]; // par défaut : dernière séance
-
+  // 👉 Séance sélectionnée (ou dernière par défaut)
+  let dateKey = allKeys[allKeys.length - 1];
   if (selectSeance && selectSeance.value) {
     dateKey = selectSeance.value;
   }
 
-  // 🔎 On ne garde QUE les lignes de cette séance
+  // 🔎 On ne garde que les lignes de CETTE séance
   const rowsSameDay = data.filter(r => getSeanceKey(r) === dateKey);
 
+  // Dernière saisie par joueur pour cette séance
   const dernierParJoueur = {};
   rowsSameDay.forEach(r => {
-    // si plusieurs saisies dans la même journée, on garde la plus récente
     const k = r.joueur;
     const d = getDateFromSeance(r.seance) || new Date(r.date);
     if (!dernierParJoueur[k]) {
@@ -1104,7 +1110,7 @@ function majStats() {
 
   if (elNb) elNb.textContent = "Joueurs (dernière mesure) : " + nb;
 
-  // Si personne pour cette séance → reset
+  // Personne pour cette séance → reset
   if (nb === 0) {
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
     if (elDom)      elDom.textContent      = "Zone dominante : -";
@@ -1118,21 +1124,20 @@ function majStats() {
     if (recoEl)    recoEl.textContent    = "Recommandation séance : -";
     if (alertesEl) alertesEl.textContent = "-";
 
-    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
-      const bar=document.getElementById("bar"+z);
-      const txt=document.getElementById("text"+z);
-      if(bar) bar.style.width="0%";
-      if(txt) txt.textContent="0";
+    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
+      const bar = document.getElementById("bar"+z);
+      const txt = document.getElementById("text"+z);
+      if (bar) bar.style.width = "0%";
+      if (txt) txt.textContent = "0";
     });
     return;
   }
 
-  // ⚽ Séparation joueurs ayant joué / non joué via naMatch (toujours sur CETTE séance)
-  const listeMatch    = liste.filter(r => !r.naMatch); // a joué
-  const listeNonMatch = liste.filter(r =>  r.naMatch); // N’a pas joué (Q1 = N/A)
+  // ⚽ Séparation joueurs ayant joué / non joué via naMatch (sur CETTE séance)
+  const listeMatch    = liste.filter(r => !r.naMatch);
+  const listeNonMatch = liste.filter(r =>  r.naMatch);
 
-  // Ensuite tu gardes ton code de calcul somme, zones, indice, reco, etc.
-  // en remplaçant juste la partie elNonMatch comme on a vu :
+  // Somme des totaux + comptage par zone
   let somme = 0;
   const compte = { vf:0, vc:0, j:0, o:0, r:0 };
 
@@ -1151,9 +1156,53 @@ function majStats() {
   const moy = (somme / nb).toFixed(1);
   if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
 
-  // ... calcul zone dominante, indice bien-être, recoEl, barres, etc.
+  let maxNom = "", maxVal = -1;
+  ordre.forEach(z => {
+    if (compte[z.code] > maxVal) {
+      maxVal = compte[z.code];
+      maxNom = z.nom;
+    }
+  });
+  if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
 
-  // Infos joueurs ayant joué (optionnel)
+  const pct = c => Math.round((compte[c] / nb) * 100);
+  const setBar = (id, code, count) => {
+    const bar = document.getElementById("bar"+id);
+    const txt = document.getElementById("text"+id);
+    if (bar) bar.style.width = pct(code) + "%";
+    if (txt) txt.textContent = count;
+  };
+  setBar("VFonce", "vf", compte.vf);
+  setBar("VClair", "vc", compte.vc);
+  setBar("Jaune",  "j",  compte.j);
+  setBar("Orange", "o",  compte.o);
+  setBar("Rouge",  "r",  compte.r);
+
+  // Indice global équipe (base 25 → %)
+  const pctEquipe = Math.round((parseFloat(moy) / 25) * 100);
+  let classe = "", texte = "";
+  if      (pctEquipe >= 88){ classe="indice-vert";   texte="Très bon état général"; }
+  else if (pctEquipe >= 76){ classe="indice-vert";   texte="Bon état général"; }
+  else if (pctEquipe >= 64){ classe="indice-jaune";  texte="Fatigue légère"; }
+  else if (pctEquipe >= 52){ classe="indice-orange"; texte="Fatigue notable"; }
+  else                     { classe="indice-rouge";  texte="Fatigue importante"; }
+
+  if (indiceBox && indiceLabel) {
+    indiceBox.className = "stats-indice-box " + classe;
+    indiceLabel.textContent = `Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
+  }
+
+  // Joueurs en alerte (orange / rouge) sur cette séance
+  const alertes = liste
+    .filter(r => r.zoneClass === "zone-orange" || r.zoneClass === "zone-rouge")
+    .map(r => r.joueur);
+  if (alertesEl) {
+    alertesEl.textContent = alertes.length
+      ? alertes.join(", ")
+      : "Aucun joueur en alerte.";
+  }
+
+  // Infos joueurs ayant joué
   if (elNbMatch) {
     if (listeMatch.length) {
       let sommeMatch = 0;
@@ -1177,15 +1226,24 @@ function majStats() {
         "Joueurs n'ayant pas joué le dernier match : -";
     }
   }
+
+  // Recommandation séance (toujours basée sur cette séance uniquement)
+  const pctRO = Math.round(((compte.o + compte.r) / nb) * 100);
+  let reco = "";
+  if      (pctEquipe >= 80 && pctRO <= 10) reco = "Équipe en forme : charge normale ou légèrement haute.";
+  else if (pctEquipe >= 70 && pctRO <= 25) reco = "Fatigue modérée : charge normale + surveillance.";
+  else if (pctEquipe >= 60 || pctRO > 30) reco = "Plusieurs joueurs fatigués : réduis intensité/volume, individualise.";
+  else                                    reco = "Fatigue élevée : séance récupération / charge très réduite.";
+  if (recoEl) recoEl.textContent = "Recommandation séance : " + reco;
 }
-    
-let statsSeanceHandlersBound = false;
+
+    let statsSeanceHandlersBound = false;
 
 function buildStatsSeanceSelect(){
   const select = document.getElementById("statsSeanceSelect");
   if (!select) return;
 
-  const keys = getSessionKeysSorted(); // même helper que pour les autres
+  const keys = getSessionKeysSorted();
   select.innerHTML = "";
 
   if (!keys.length) {
@@ -1214,70 +1272,6 @@ function buildStatsSeanceSelect(){
 
   // On calcule la synthèse pour cette séance
   majStats();
-}
-    
-  // Zone dominante + barres
-  const ordre = [
-    { code:"vf", nom:"VERT FONCÉ" },
-    { code:"vc", nom:"VERT CLAIR" },
-    { code:"j",  nom:"JAUNE" },
-    { code:"o",  nom:"ORANGE" },
-    { code:"r",  nom:"ROUGE" }
-  ];
-  let maxNom = "", maxVal = -1;
-  ordre.forEach(z => {
-    if (compte[z.code] > maxVal) {
-      maxVal = compte[z.code];
-      maxNom = z.nom;
-    }
-  });
-  if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
-
-  const pct = c => Math.round((compte[c] / nb) * 100);
-  const setBar = (id, code, count) => {
-    const bar = document.getElementById("bar"+id);
-    const txt = document.getElementById("text"+id);
-    if (bar) bar.style.width = pct(code) + "%";
-    if (txt) txt.textContent = count;
-  };
-  setBar("VFonce", "vf", compte.vf);
-  setBar("VClair", "vc", compte.vc);
-  setBar("Jaune",  "j",  compte.j);
-  setBar("Orange", "o",  compte.o);
-  setBar("Rouge",  "r",  compte.r);
-
-  // Indice global équipe (toujours base 25 pour l’échelle de zones)
-  const pctEquipe = Math.round((parseFloat(moy) / 25) * 100);
-  let classe = "", texte = "";
-  if      (pctEquipe >= 88){ classe="indice-vert";   texte="Très bon état général"; }
-  else if (pctEquipe >= 76){ classe="indice-vert";   texte="Bon état général"; }
-  else if (pctEquipe >= 64){ classe="indice-jaune";  texte="Fatigue légère"; }
-  else if (pctEquipe >= 52){ classe="indice-orange"; texte="Fatigue notable"; }
-  else                     { classe="indice-rouge";  texte="Fatigue importante"; }
-
-  if (indiceBox && indiceLabel) {
-    indiceBox.className = "stats-indice-box " + classe;
-    indiceLabel.textContent = `Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
-  }
-
-  // Joueurs en alerte (orange / rouge)
-  const alertes = liste
-    .filter(r => r.zoneClass === "zone-orange" || r.zoneClass === "zone-rouge")
-    .map(r => r.joueur);
-  if (alertesEl) {
-    alertesEl.textContent = alertes.length
-      ? alertes.join(", ")
-      : "Aucun joueur en alerte.";
-  }
-
-  // Recommandation séance
-  const pctRO = Math.round(((compte.o + compte.r) / nb) * 100);
-  let reco = "";
-  if      (pctEquipe >= 80 && pctRO <= 10) reco = "Équipe en forme : charge normale ou légèrement haute.";
-  else if (pctEquipe >= 70 && pctRO <= 25) reco = "Fatigue modérée : charge normale + surveillance.";
-  else if (pctEquipe >= 60 || pctRO > 30) reco = "Plusieurs joueurs fatigués : réduis intensité/volume, individualise.";
-  else                                    reco = "Fatigue élevée : séance récupération / charge très réduite.";
-  if (recoEl) recoEl.textContent = "Recommandation séance : " + reco;
 }
 
   function computeAlertesDuJour(selectedKey){
