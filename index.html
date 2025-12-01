@@ -1046,18 +1046,9 @@ function majStats() {
   const alertesEl  = document.getElementById("statsAlertesListe");
   const selectSeance = document.getElementById("statsSeanceSelect");
 
-  // ordre zones pour "Zone dominante"
-  const ordre = [
-    { code:"vf", nom:"VERT FONCÉ" },
-    { code:"vc", nom:"VERT CLAIR" },
-    { code:"j",  nom:"JAUNE" },
-    { code:"o",  nom:"ORANGE" },
-    { code:"r",  nom:"ROUGE" }
-  ];
-
   const allKeys = getSessionKeysSorted();
 
-  // Aucune donnée du tout
+  // Aucune donnée
   if (!allKeys.length || !data.length) {
     if (elNb)       elNb.textContent       = "Joueurs (dernière mesure) : 0";
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
@@ -1080,16 +1071,15 @@ function majStats() {
     return;
   }
 
-  // Séance sélectionnée (ou dernière par défaut)
+  // Séance choisie ou dernière
   let dateKey = allKeys[allKeys.length - 1];
   if (selectSeance && selectSeance.value) {
     dateKey = selectSeance.value;
   }
 
-  // On ne garde que les lignes de CETTE séance
   const rowsSameDay = data.filter(r => getSeanceKey(r) === dateKey);
 
-  // Dernière saisie par joueur pour cette séance
+  // Dernière saisie par joueur ce jour-là
   const dernierParJoueur = {};
   rowsSameDay.forEach(r => {
     const k = r.joueur;
@@ -1107,7 +1097,6 @@ function majStats() {
 
   if (elNb) elNb.textContent = "Joueurs (dernière mesure) : " + nb;
 
-  // Personne pour cette séance
   if (nb === 0) {
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
     if (elDom)      elDom.textContent      = "Zone dominante : -";
@@ -1129,8 +1118,17 @@ function majStats() {
     return;
   }
 
-  // ⚽ Joueurs n’ayant pas joué (Q1 = N/A) pour CETTE séance
-  const listeNonMatch = liste.filter(r => r.naMatch);
+  // 🔎 Fonction locale pour savoir si un joueur est N/A sur cette séance
+  function estNonMatch(rec) {
+    const raw =
+      (rec.recuperationBrut != null && rec.recuperationBrut !== "")
+        ? String(rec.recuperationBrut)
+        : String(rec.recuperation || "");
+    const up = raw.toUpperCase();
+    return up === "N/A" || up === "#N/A" || up.includes("N/A");
+  }
+
+  const listeNonMatch = liste.filter(estNonMatch);
 
   // Somme des totaux + comptage par zone
   let somme = 0;
@@ -1152,6 +1150,13 @@ function majStats() {
   if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
 
   // Zone dominante
+  const ordre = [
+    { code:"vf", nom:"VERT FONCE (très bon état)" },
+    { code:"vc", nom:"VERT CLAIR (bon état général)" },
+    { code:"j",  nom:"JAUNE (fatigue légère)" },
+    { code:"o",  nom:"ORANGE (fatigue notable)" },
+    { code:"r",  nom:"ROUGE (fatigue importante)" }
+  ];
   let maxNom = "", maxVal = -1;
   ordre.forEach(z => {
     if (compte[z.code] > maxVal) {
@@ -1161,7 +1166,6 @@ function majStats() {
   });
   if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
 
-  // Barres de répartition
   const pct = c => Math.round((compte[c] / nb) * 100);
   const setBar = (id, code, count) => {
     const bar = document.getElementById("bar"+id);
@@ -1189,7 +1193,7 @@ function majStats() {
     indiceLabel.textContent = `Indice bien-être équipe : ${pctEquipe}% – ${texte}`;
   }
 
-  // Joueurs en alerte (orange / rouge) sur cette séance
+  // Joueurs en alerte ORANGE / ROUGE
   const alertes = liste
     .filter(r => r.zoneClass === "zone-orange" || r.zoneClass === "zone-rouge")
     .map(r => r.joueur);
@@ -1471,7 +1475,7 @@ const data = rows.map((r) => {
   const cellRecup = c[4] || {};
   let recupBrutRaw = "";
 
-  // certains cas : valeur dans v, d'autres dans f, d'autres encore #N/A
+  // parfois GViz met la valeur dans v, parfois dans f
   if (cellRecup.v !== undefined && cellRecup.v !== null) {
     recupBrutRaw = cellRecup.v;
   } else if (cellRecup.f !== undefined && cellRecup.f !== null) {
@@ -1481,7 +1485,7 @@ const data = rows.map((r) => {
   const recupStr   = String(recupBrutRaw).trim();
   const recupUpper = recupStr.toUpperCase();
 
-  // on considère non-match si on voit "N/A" ou "#N/A" quelque part
+  // ▶ on considère "n’a pas joué" si on voit N/A ou #N/A
   const naMatch =
     recupUpper === "N/A" ||
     recupUpper === "#N/A" ||
@@ -1490,35 +1494,35 @@ const data = rows.map((r) => {
   const recupNum = naMatch ? "" : (Number(recupStr) || "");
 
   const rec = {
-    date:   c[1]?.v || "",   // B
-    joueur: c[2]?.v || "",   // C
-    seance: c[3]?.v || "",   // D
+    date:   c[1]?.v || "",   // B dateApp
+    joueur: c[2]?.v || "",   // C joueur
+    seance: c[3]?.v || "",   // D seance
 
-    recuperation:     recupNum,   // numérique (pour stats)
-    recuperationBrut: recupStr,   // "N/A" ou 1..5
-    naMatch,                      // 👈 flag joueur non-match
+    recuperation:     recupNum,
+    recuperationBrut: recupStr,
+    naMatch,                    // 👈 flag non-match
 
-    sommeil:          Number(c[5]?.v) || "",  // F
-    alimentation:     Number(c[6]?.v) || "",  // G
-    fatigue_physique: Number(c[7]?.v) || "",  // H
-    fatigue_mentale:  Number(c[8]?.v) || "",  // I
-    total:            Number(c[9]?.v) || "",  // J
+    sommeil:          Number(c[5]?.v) || "",
+    alimentation:     Number(c[6]?.v) || "",
+    fatigue_physique: Number(c[7]?.v) || "",
+    fatigue_mentale:  Number(c[8]?.v) || "",
+    total:            Number(c[9]?.v) || "",
 
-    pourcentage,                         // K
-    zone:        c[11]?.v || zoneTexte,  // L
+    pourcentage,
+    zone:        c[11]?.v || zoneTexte,
     zoneClass,
-    douleurZone: c[12]?.v || "",         // M
-    commentaire: c[13]?.v || "",         // N
+    douleurZone: c[12]?.v || "",
+    commentaire: c[13]?.v || "",
     envoye: true
   };
 
   return rec;
 }).filter(x => x.joueur);
 
-// petit debug pour vérifier ce que GViz renvoie pour les N/A
+// Debug pour voir les N/A récupérés
 console.log(
   "DEBUG N/A Sheets :",
-  data.filter(d => d.recuperationBrut && d.recuperationBrut.toUpperCase().includes("N/A"))
+  data.filter(d => (d.recuperationBrut || "").toUpperCase().includes("N/A"))
 );
 
         console.log("GVIZ rows =", rows.length, "data filtrée =", data.length);
