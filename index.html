@@ -1032,10 +1032,7 @@ function enregistrerJoueur() {
     // =======================
     // STATS (Sheets ONLY)
     // =======================
-    
-// =======================
-// STATS (Sheets ONLY)
-// =======================
+
 function majStats() {
   const data = getVizData();
 
@@ -1430,8 +1427,6 @@ function resetForm(clearResult){
       alert("Historique tablette effacé. Les données Google Sheets restent affichées.");
     }
 
-    // =======================
-// =======================
 // =======================
 // GOOGLE SHEETS (GVIZ JSONP + Backup Offline) ✅ anti-CORS
 // =======================
@@ -1474,9 +1469,14 @@ const data = rows.map(r => {
   const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
   // E = recuperation_depuis_match (1..5 ou "N/A")
-  const recupBrut = (c[4]?.v ?? "");
-  const naMatch   = (recupBrut === "N/A");
-  const recupNum  = naMatch ? "" : (Number(recupBrut) || "");
+const cellRecup = c[4] || {};
+const recupBrutRaw = (cellRecup.v !== undefined && cellRecup.v !== null)
+  ? cellRecup.v
+  : (cellRecup.f !== undefined && cellRecup.f !== null ? cellRecup.f : "");
+
+const recupBrut = String(recupBrutRaw).trim();
+const naMatch   = recupBrut.toUpperCase() === "N/A";
+const recupNum  = naMatch ? "" : (Number(recupBrut) || "");
 
   return {
     date: c[1]?.v || "",                 // B dateApp
