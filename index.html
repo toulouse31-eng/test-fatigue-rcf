@@ -513,7 +513,16 @@
           Exporter le dashboard en PDF
         </button>
       </div>
-
+      
+    <div class="row" style="margin-bottom:6px;">
+        <label for="statsSeanceSelect" style="flex:0 0 auto; font-size:13px;">
+          Séance :
+        </label>
+        <select id="statsSeanceSelect" style="flex:1 1 auto; min-width:140px; font-size:13px;">
+          <!-- Rempli en JS -->
+        </select>
+      </div>
+      
       <div class="stats-line" id="statsNbJoueurs">
         Joueurs (dernière mesure) : 0
       </div>
@@ -1039,18 +1048,63 @@ function majStats() {
   const recoEl     = document.getElementById("statsRecoSeance");
   const alertesEl  = document.getElementById("statsAlertesListe");
 
-  // Dernière mesure par joueur
+  const selectSeance = document.getElementById("statsSeanceSelect");
+
+  // 👉 Récupérer toutes les dates de séance
+  const allKeys = getSessionKeysSorted(); // tu l'as déjà pour les autres stats
+
+  if (!allKeys.length) {
+    if (elNb)       elNb.textContent       = "Joueurs (dernière mesure) : 0";
+    if (elMoy)      elMoy.textContent      = "Score moyen : -";
+    if (elDom)      elDom.textContent      = "Zone dominante : -";
+    if (elNbMatch)  elNbMatch.textContent  = "Joueurs ayant joué le match : 0";
+    if (elNonMatch) elNonMatch.textContent = "Joueurs n'ayant pas joué le dernier match : -";
+
+    if (indiceBox && indiceLabel) {
+      indiceBox.className     = "stats-indice-box";
+      indiceLabel.textContent = "Indice bien-être équipe : -";
+    }
+    if (recoEl)    recoEl.textContent    = "Recommandation séance : -";
+    if (alertesEl) alertesEl.textContent = "-";
+
+    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
+      const bar=document.getElementById("bar"+z);
+      const txt=document.getElementById("text"+z);
+      if(bar) bar.style.width="0%";
+      if(txt) txt.textContent="0";
+    });
+    return;
+  }
+
+  // 👉 Clé de séance choisie (ou dernière si rien sélectionné)
+  let dateKey = allKeys[allKeys.length - 1]; // par défaut : dernière séance
+
+  if (selectSeance && selectSeance.value) {
+    dateKey = selectSeance.value;
+  }
+
+  // 🔎 On ne garde QUE les lignes de cette séance
+  const rowsSameDay = data.filter(r => getSeanceKey(r) === dateKey);
+
   const dernierParJoueur = {};
-  data.forEach(r => {
-    if (!r.joueur) return;
-    dernierParJoueur[r.joueur] = r;
+  rowsSameDay.forEach(r => {
+    // si plusieurs saisies dans la même journée, on garde la plus récente
+    const k = r.joueur;
+    const d = getDateFromSeance(r.seance) || new Date(r.date);
+    if (!dernierParJoueur[k]) {
+      dernierParJoueur[k] = r;
+    } else {
+      const d0 = getDateFromSeance(dernierParJoueur[k].seance) || new Date(dernierParJoueur[k].date);
+      if (d > d0) dernierParJoueur[k] = r;
+    }
   });
+
   const liste = Object.values(dernierParJoueur);
   const nb = liste.length;
 
   if (elNb) elNb.textContent = "Joueurs (dernière mesure) : " + nb;
 
-  // Si aucune donnée → reset affichage
+  // Si personne pour cette séance → reset
   if (nb === 0) {
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
     if (elDom)      elDom.textContent      = "Zone dominante : -";
@@ -1064,20 +1118,21 @@ function majStats() {
     if (recoEl)    recoEl.textContent    = "Recommandation séance : -";
     if (alertesEl) alertesEl.textContent = "-";
 
-    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z => {
-      const bar = document.getElementById("bar"+z);
-      const txt = document.getElementById("text"+z);
-      if (bar) bar.style.width = "0%";
-      if (txt) txt.textContent = "0";
+    ["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{
+      const bar=document.getElementById("bar"+z);
+      const txt=document.getElementById("text"+z);
+      if(bar) bar.style.width="0%";
+      if(txt) txt.textContent="0";
     });
     return;
   }
 
-  // ⚽ Séparation joueurs ayant joué / non joué via naMatch
+  // ⚽ Séparation joueurs ayant joué / non joué via naMatch (toujours sur CETTE séance)
   const listeMatch    = liste.filter(r => !r.naMatch); // a joué
   const listeNonMatch = liste.filter(r =>  r.naMatch); // N’a pas joué (Q1 = N/A)
 
-  // Moyenne globale (tout le groupe) sur la base du total (J)
+  // Ensuite tu gardes ton code de calcul somme, zones, indice, reco, etc.
+  // en remplaçant juste la partie elNonMatch comme on a vu :
   let somme = 0;
   const compte = { vf:0, vc:0, j:0, o:0, r:0 };
 
@@ -1096,39 +1151,71 @@ function majStats() {
   const moy = (somme / nb).toFixed(1);
   if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
 
-  // Infos joueurs ayant joué
-  let moyMatchTxt = "-";
-  if (listeMatch.length) {
-    let sommeMatch = 0;
-    listeMatch.forEach(r => {
-      sommeMatch += (Number(r.total) || 0);
-    });
-    moyMatchTxt = (sommeMatch / listeMatch.length).toFixed(1);
+  // ... calcul zone dominante, indice bien-être, recoEl, barres, etc.
+
+  // Infos joueurs ayant joué (optionnel)
+  if (elNbMatch) {
+    if (listeMatch.length) {
+      let sommeMatch = 0;
+      listeMatch.forEach(r => { sommeMatch += (Number(r.total) || 0); });
+      const moyMatchTxt = (sommeMatch / listeMatch.length).toFixed(1);
+      elNbMatch.textContent =
+        `Joueurs ayant joué le match : ${listeMatch.length} (moyenne brute : ${moyMatchTxt})`;
+    } else {
+      elNbMatch.textContent = "Joueurs ayant joué le match : 0";
+    }
   }
 
-  // Liste des joueurs qui n’ont pas joué
-if (elNonMatch) {
-  if (listeNonMatch.length) {
-    const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
-    elNonMatch.textContent =
-      `Joueurs n'ayant pas joué le dernier match : ${nomsNoMatch}`;
-  } else {
-    elNonMatch.textContent =
-      "Joueurs n'ayant pas joué le dernier match : -";
-  }
-}
-
-  // Liste des joueurs qui n’ont pas joué
+  // 📝 Liste des joueurs qui n’ont pas joué sur CETTE séance
   if (elNonMatch) {
     if (listeNonMatch.length) {
       const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
       elNonMatch.textContent =
-        `N’ont pas joué : ${listeNonMatch.length} (${nomsNoMatch})`;
+        `Joueurs n'ayant pas joué le dernier match : ${nomsNoMatch}`;
     } else {
-      elNonMatch.textContent = "Tous les joueurs ont participé au match.";
+      elNonMatch.textContent =
+        "Joueurs n'ayant pas joué le dernier match : -";
     }
   }
+}
+    
+let statsSeanceHandlersBound = false;
 
+function buildStatsSeanceSelect(){
+  const select = document.getElementById("statsSeanceSelect");
+  if (!select) return;
+
+  const keys = getSessionKeysSorted(); // même helper que pour les autres
+  select.innerHTML = "";
+
+  if (!keys.length) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Aucune séance";
+    select.appendChild(opt);
+    majStats();
+    return;
+  }
+
+  keys.forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = formatDateKey(k); // ex : 12/11/2025
+    select.appendChild(opt);
+  });
+
+  // Par défaut : dernière séance
+  select.value = keys[keys.length - 1];
+
+  if (!statsSeanceHandlersBound) {
+    select.addEventListener("change", majStats);
+    statsSeanceHandlersBound = true;
+  }
+
+  // On calcule la synthèse pour cette séance
+  majStats();
+}
+    
   // Zone dominante + barres
   const ordre = [
     { code:"vf", nom:"VERT FONCÉ" },
@@ -1496,22 +1583,22 @@ const data = rows.map(r => {
     }
 
     async function refreshSheetsData(){
-      enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
+  enregistrementsSheets = await chargerDepuisGoogleSheetsAvecBackup();
 
-      const statusEl = document.getElementById("sheetsStatus");
-      if(statusEl){
-        statusEl.textContent =
-          "Sheets rows = " + enregistrementsSheets.length +
-          (navigator.onLine ? " (en ligne)" : " (backup hors-ligne)");
-      }
+  const statusEl = document.getElementById("sheetsStatus");
+  if(statusEl){
+    statusEl.textContent =
+      "Sheets rows = " + enregistrementsSheets.length +
+      (navigator.onLine ? " (en ligne)" : " (backup hors-ligne)");
+  }
 
-      console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
+  console.log("Sheets rows =", enregistrementsSheets.length, enregistrementsSheets.slice(0,3));
 
-      majStats();
-      buildAlertSeanceSelect();
-      buildSparklineSelect();
-      buildTop5Charts();
-    }
+  buildStatsSeanceSelect();   // 🔁 remplit le select + appelle majStats()
+  buildAlertSeanceSelect();
+  buildSparklineSelect();
+  buildTop5Charts();
+}
 
     // =======================
     // SPARKLINE (Sheets ONLY)
