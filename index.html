@@ -274,15 +274,14 @@
 /* ======================================= */
 /*          RÈGLE POUR L’IMPRESSION        */
 /* ======================================= */
-/* ======================================= */
-/*          RÈGLE POUR L’IMPRESSION        */
-/* ======================================= */
+
 @media print {
   /* Fond blanc, pas de marges navigateur */
   body {
     background: #ffffff !important;
     margin: 0;
     padding: 0;
+    font-size: 14px
   }
 
   /* ❌ On cache le top-bar, le formulaire, l'historique, le sparkline */
@@ -1154,16 +1153,24 @@ function majStats() {
   });
 
   const moy = (somme / nb).toFixed(1);
-  if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
+if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
 
-  let maxNom = "", maxVal = -1;
-  ordre.forEach(z => {
-    if (compte[z.code] > maxVal) {
-      maxVal = compte[z.code];
-      maxNom = z.nom;
-    }
-  });
-  if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
+const ordre = [
+  { code:"vf", nom:"VERT FONCÉ" },
+  { code:"vc", nom:"VERT CLAIR" },
+  { code:"j",  nom:"JAUNE" },
+  { code:"o",  nom:"ORANGE" },
+  { code:"r",  nom:"ROUGE" }
+];
+
+let maxNom = "", maxVal = -1;
+ordre.forEach(z => {
+  if (compte[z.code] > maxVal) {
+    maxVal = compte[z.code];
+    maxNom = z.nom;
+  }
+});
+if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
 
   const pct = c => Math.round((compte[c] / nb) * 100);
   const setBar = (id, code, count) => {
@@ -1217,14 +1224,14 @@ function majStats() {
 
   // 📝 Liste des joueurs qui n’ont pas joué sur CETTE séance
   if (elNonMatch) {
-    if (listeNonMatch.length) {
-      const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
-      elNonMatch.textContent =
-        `Joueurs n'ayant pas joué le dernier match : ${nomsNoMatch}`;
-    } else {
-      elNonMatch.textContent =
-        "Joueurs n'ayant pas joué le dernier match : -";
-    }
+  if (listeNonMatch.length) {
+  const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
+  elNonMatch.textContent =
+    `Joueurs n'ayant pas joué le dernier match : ${nomsNoMatch}`;
+} else {
+  elNonMatch.textContent =
+    "Joueurs n'ayant pas joué le dernier match : -";
+}
   }
 
   // Recommandation séance (toujours basée sur cette séance uniquement)
