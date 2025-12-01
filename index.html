@@ -1680,6 +1680,38 @@ function chargerDepuisGoogleSheetsJSONP(){
       return last.reduce((s,r)=>s + (Number(r.pourcentage)||0), 0) / last.length;
     }
 
+    // Dernières N séances d'un joueur (1 ligne par séance : dernière saisie du jour)
+function getLastNRecordsForPlayer(joueur, n = 5){
+  const data = getVizData();
+  const rows = data.filter(r => r.joueur === joueur);
+  if (!rows.length) return [];
+
+  const byKey = {};
+  rows.forEach(r => {
+    const key = getSeanceKey(r);
+    if (!key) return;
+    const d = getDateFromSeance(r.seance) || new Date(r.date);
+
+    if (!byKey[key]) {
+      byKey[key] = r;
+    } else {
+      const d0 = getDateFromSeance(byKey[key].seance) || new Date(byKey[key].date);
+      if (d > d0) byKey[key] = r;
+    }
+  });
+
+  let list = Object.entries(byKey).map(([key, rec]) => ({
+    ...rec,
+    _dateKey: key    // on garde la date "yyyy-mm-dd" pour l'affichage
+  }));
+
+  // tri chronologique
+  list.sort((a, b) => new Date(a._dateKey) - new Date(b._dateKey));
+
+  // on garde les N dernières séances
+  return list.slice(-n);
+}
+
     function resizeSparklineCanvas(){
       const canvas = document.getElementById("sparklineCanvas");
       const wrap = document.querySelector(".sparkline-wrap");
@@ -1979,7 +2011,10 @@ function exportFicheIndivPDF(){
     imgData = canvas.toDataURL("image/png");
   }
 
-  // Formatage réponses
+  // 🔢 Historique des 5 dernières séances de ce joueur
+  const historique = getLastNRecordsForPlayer(joueur, 5);
+
+  // Helpers d’affichage
   const fmtNote = (v) => (v !== "" && v != null) ? (v + "/5") : "-";
 
   const q1 = rec.naMatch
@@ -2005,7 +2040,7 @@ function exportFicheIndivPDF(){
       background:#ffffff;
     }
     h1{ font-size:24px; margin-bottom:4px; color:#111827; }
-    h2{ font-size:18px; margin-top:0; color:#4b5563; }
+    h2{ font-size:18px; margin-top:18px; margin-bottom:6px; color:#4b5563; }
     .header{
       display:flex;
       align-items:center;
@@ -2031,7 +2066,7 @@ function exportFicheIndivPDF(){
     table{
       width:100%;
       border-collapse:collapse;
-      margin-top:16px;
+      margin-top:12px;
       font-size:14px;
     }
     th, td{
@@ -2085,6 +2120,7 @@ function exportFicheIndivPDF(){
     </div>
   </div>
 
+  <h2>Détail de la séance sélectionnée</h2>
   <table>
     <thead>
       <tr>
@@ -2131,6 +2167,52 @@ function exportFicheIndivPDF(){
   </div>
 `;
 
+  // 🕓 Historique 5 dernières séances
+  if (historique.length){
+    html += `
+  <h2>Historique des 5 dernières séances</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Q1</th>
+        <th>Q2</th>
+        <th>Q3</th>
+        <th>Q4</th>
+        <th>Q5</th>
+        <th>Total</th>
+        <th>%</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+    historique.forEach(h => {
+      const dLabel = formatDateKey(h._dateKey || getSeanceKey(h));
+      const q1h = h.naMatch
+        ? "N/A"
+        : (h.recuperation !== "" ? h.recuperation + "/5" : "-");
+
+      html += `
+      <tr>
+        <td>${dLabel}</td>
+        <td>${q1h}</td>
+        <td>${fmtNote(h.sommeil)}</td>
+        <td>${fmtNote(h.alimentation)}</td>
+        <td>${fmtNote(h.fatigue_physique)}</td>
+        <td>${fmtNote(h.fatigue_mentale)}</td>
+        <td>${h.total || "-"}</td>
+        <td>${h.pourcentage || 0}%</td>
+      </tr>
+`;
+    });
+
+    html += `
+    </tbody>
+  </table>
+`;
+  }
+
+  // 📈 Bloc courbe d’évolution
   if (imgData) {
     html += `
   <div class="chart-wrapper">
