@@ -682,6 +682,21 @@
       <div id="sparklineEmpty" class="legend" style="text-align:center; display:none;">
         Pas encore de données pour ce joueur.
       </div>
+            <!-- Fiche individuelle PDF -->
+      <div class="row" style="margin-top:10px;">
+        <label for="ficheSeanceSelect" style="flex:0 0 auto;">Séance fiche :</label>
+        <select id="ficheSeanceSelect" style="flex:1 1 auto; min-width:140px;">
+          <!-- Rempli en JS -->
+        </select>
+      </div>
+      <button
+        type="button"
+        class="secondary no-print"
+        style="margin-top:4px;"
+        onclick="exportFicheIndivPDF()"
+      >
+        Fiche individuelle PDF (joueur)
+      </button>
     </div>
   </section>
 
@@ -1841,32 +1856,310 @@ function chargerDepuisGoogleSheetsJSONP(){
         drawSparkline([], null);
       }
     }
+// Retourne toutes les séances (yyyy-mm-dd) pour un joueur donné
+function getSessionKeysForPlayer(joueur){
+  const data = getVizData();
+  const rows = data.filter(r => r.joueur === joueur);
+  const keys = rows.map(getSeanceKey).filter(Boolean);
+  const unique = [...new Set(keys)];
+  unique.sort((a,b) => new Date(a) - new Date(b));
+  return unique;
+}
 
-    function buildSparklineSelect(){
-      const data = getVizData();
-      const sel = document.getElementById("sparklineSelect");
-      const rangeSel = document.getElementById("sparklineRange");
-      if(!sel || !rangeSel) return;
+// Met à jour la liste des séances pour la fiche individuelle
+function updateFicheSeanceSelect(){
+  const selPlayer = document.getElementById("sparklineSelect");
+  const selSeance = document.getElementById("ficheSeanceSelect");
+  if (!selPlayer || !selSeance) return;
 
-      const joueurs = [...new Set(data.map(r=>r.joueur))].sort();
-      sel.innerHTML =
-        `<option value="">Choisir un joueur...</option>` +
-        joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
+  const joueur = selPlayer.value;
+  selSeance.innerHTML = "";
 
-      if(joueurs.length && !sel.value){
-        sel.value = joueurs[0];
-      }
+  if (!joueur) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Choisir un joueur d'abord";
+    selSeance.appendChild(opt);
+    return;
+  }
 
-      if(!sparklineHandlersBound){
-        sel.addEventListener("change", () => { resizeSparklineCanvas(); drawSparklineNow(); });
-        rangeSel.addEventListener("change", () => { resizeSparklineCanvas(); drawSparklineNow(); });
-        sparklineHandlersBound = true;
-      }
+  const keys = getSessionKeysForPlayer(joueur);
+  if (!keys.length) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Aucune séance";
+    selSeance.appendChild(opt);
+    return;
+  }
 
+  keys.forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = formatDateKey(k);   // ex : 01/12/2025
+    selSeance.appendChild(opt);
+  });
+
+  // Par défaut : dernière séance du joueur
+  selSeance.value = keys[keys.length - 1];
+}
+
+function buildSparklineSelect(){
+  const data = getVizData();
+  const sel = document.getElementById("sparklineSelect");
+  const rangeSel = document.getElementById("sparklineRange");
+  if(!sel || !rangeSel) return;
+
+  const joueurs = [...new Set(data.map(r=>r.joueur))].sort();
+  sel.innerHTML =
+    `<option value="">Choisir un joueur...</option>` +
+    joueurs.map(j => `<option value="${j}">${j}</option>`).join("");
+
+  if(joueurs.length && !sel.value){
+    sel.value = joueurs[0];
+  }
+
+  if(!sparklineHandlersBound){
+    sel.addEventListener("change", () => {
       resizeSparklineCanvas();
       drawSparklineNow();
+      updateFicheSeanceSelect();     // 🔁 met à jour les séances de la fiche
+    });
+    rangeSel.addEventListener("change", () => {
+      resizeSparklineCanvas();
+      drawSparklineNow();
+    });
+    sparklineHandlersBound = true;
+  }
+
+  resizeSparklineCanvas();
+  drawSparklineNow();
+  updateFicheSeanceSelect();         // 🔁 init au chargement
+}
+function exportFicheIndivPDF(){
+  const joueurSel  = document.getElementById("sparklineSelect");
+  const seanceSel  = document.getElementById("ficheSeanceSelect");
+
+  if (!joueurSel)  return alert("Sélecteur de joueur introuvable.");
+  if (!seanceSel)  return alert("Sélecteur de séance introuvable.");
+
+  const joueur  = joueurSel.value;
+  const dateKey = seanceSel.value;
+
+  if (!joueur)  return alert("Choisis un joueur pour la fiche.");
+  if (!dateKey) return alert("Choisis une séance pour la fiche.");
+
+  const data = getVizData();
+
+  // ➜ On prend uniquement ce joueur + cette séance (yyyy-mm-dd)
+  const rowsSame = data.filter(r => r.joueur === joueur && getSeanceKey(r) === dateKey);
+  if (!rowsSame.length){
+    alert("Aucune donnée pour ce joueur sur cette séance.");
+    return;
+  }
+
+  // Dernière saisie de la journée pour ce joueur
+  let rec = rowsSame[0];
+  rowsSame.forEach(r => {
+    const d  = getDateFromSeance(r.seance) || new Date(r.date);
+    const d0 = getDateFromSeance(rec.seance) || new Date(rec.date);
+    if (d > d0) rec = r;
+  });
+
+  // 🔁 On force la courbe sparkline sur ce joueur (range actuel)
+  if (joueurSel.value !== joueur) {
+    joueurSel.value = joueur;
+  }
+  resizeSparklineCanvas();
+  drawSparklineNow();
+
+  // 📈 On récupère l'image PNG de la courbe
+  const canvas = document.getElementById("sparklineCanvas");
+  let imgData = "";
+  if (canvas) {
+    imgData = canvas.toDataURL("image/png");
+  }
+
+  // Formatage réponses
+  const fmtNote = (v) => (v !== "" && v != null) ? (v + "/5") : "-";
+
+  const q1 = rec.naMatch
+    ? "N/A – n’a pas joué le dernier match"
+    : (rec.recuperation !== "" ? rec.recuperation + "/5" : "-");
+
+  const dateLabel = formatDateKey(dateKey);
+
+  // 🧾 Construction de la page HTML de la fiche
+  let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fiche ${joueur} - ${dateLabel}</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      padding: 24px;
+      max-width: 800px;
+      margin: auto;
+      color:#111827;
+      background:#ffffff;
+    }
+    h1{ font-size:24px; margin-bottom:4px; color:#111827; }
+    h2{ font-size:18px; margin-top:0; color:#4b5563; }
+    .header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .header img{
+      height:56px;
+    }
+    .badge{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      margin-top:6px;
+    }
+    .zone-vert-fonce{ background:#b7f0c4; color:#145c2e; }
+    .zone-vert-clair{ background:#d5f7dd; color:#1f7f3f; }
+    .zone-jaune{      background:#fff8c2; color:#8a7400; }
+    .zone-orange{     background:#ffe0b8; color:#8a4b06; }
+    .zone-rouge{      background:#f8d7da; color:#721c24; }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:16px;
+      font-size:14px;
+    }
+    th, td{
+      border:1px solid #e5e7eb;
+      padding:8px 10px;
+      text-align:left;
+    }
+    th{
+      background:#f3f4f6;
+      font-weight:600;
     }
 
+    .bloc{
+      margin-top:18px;
+      font-size:14px;
+    }
+    .label{
+      font-weight:bold;
+      margin-bottom:2px;
+    }
+
+    .chart-wrapper{
+      margin-top:20px;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:12px;
+    }
+    .chart-wrapper img{
+      max-width:100%;
+      height:auto;
+      display:block;
+    }
+
+    @media print {
+      body{
+        margin:0;
+        padding:20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="logo_rcf.png" alt="RCF">
+    <div>
+      <h1>Fiche individuelle – ${joueur}</h1>
+      <h2>Séance du ${dateLabel}</h2>
+      <div class="badge ${rec.zoneClass || ""}">
+        ${rec.pourcentage || 0}% – ${rec.zone || ""}
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>Réponse</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Q1 – Récupération depuis le dernier match</td>
+        <td>${q1}</td>
+      </tr>
+      <tr>
+        <td>Q2 – Qualité du sommeil</td>
+        <td>${fmtNote(rec.sommeil)}</td>
+      </tr>
+      <tr>
+        <td>Q3 – Alimentation / hydratation</td>
+        <td>${fmtNote(rec.alimentation)}</td>
+      </tr>
+      <tr>
+        <td>Q4 – Fatigue physique / douleurs</td>
+        <td>${fmtNote(rec.fatigue_physique)}</td>
+      </tr>
+      <tr>
+        <td>Q5 – Fatigue mentale</td>
+        <td>${fmtNote(rec.fatigue_mentale)}</td>
+      </tr>
+      <tr>
+        <td>Total & pourcentage</td>
+        <td>${rec.total || "-"} points – ${rec.pourcentage || 0}%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="bloc">
+    <div class="label">Douleurs signalées :</div>
+    <div>${rec.douleurZone ? rec.douleurZone : "Aucune douleur précisée."}</div>
+  </div>
+
+  <div class="bloc">
+    <div class="label">Commentaire joueur :</div>
+    <div>${rec.commentaire ? rec.commentaire : "Aucun commentaire."}</div>
+  </div>
+`;
+
+  if (imgData) {
+    html += `
+  <div class="chart-wrapper">
+    <div class="label">Évolution récente du bien-être</div>
+    <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">
+      Courbe des dernières séances (même graphique que dans le mode coach).
+    </div>
+    <img src="${imgData}" alt="Évolution joueur">
+  </div>
+`;
+  }
+
+  html += `
+</body>
+</html>
+`;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Impossible d'ouvrir la fenêtre d’impression (popup bloquée ?)");
+    return;
+  }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+    
     // =======================
     // TOP 5 (Sheets ONLY)
     // =======================
