@@ -538,11 +538,6 @@
         Zone dominante : -
       </div>
 
-      <!-- 🔽 Groupe Match / Non-Match -->
-      <div class="stats-line" id="statsNbMatch">
-        Joueurs ayant joué le match : 0
-      </div>
-
       <div class="stats-line" id="statsNonMatch">
         Joueurs n'ayant pas joué le dernier match : -
       </div>
@@ -1047,7 +1042,6 @@ function majStats() {
   const elNb       = document.getElementById("statsNbJoueurs");
   const elMoy      = document.getElementById("statsMoyenneScore");
   const elDom      = document.getElementById("statsZoneDom");
-  const elNbMatch  = document.getElementById("statsNbMatch");
   const elNonMatch = document.getElementById("statsNonMatch");
   const indiceBox  = document.getElementById("statsIndiceBox");
   const indiceLabel= document.getElementById("statsIndiceLabel");
@@ -1055,7 +1049,15 @@ function majStats() {
   const alertesEl  = document.getElementById("statsAlertesListe");
   const selectSeance = document.getElementById("statsSeanceSelect");
 
-  // 👉 toutes les dates de séance (clé = yyyy-mm-dd)
+  // ordre zones pour "Zone dominante"
+  const ordre = [
+    { code:"vf", nom:"VERT FONCÉ" },
+    { code:"vc", nom:"VERT CLAIR" },
+    { code:"j",  nom:"JAUNE" },
+    { code:"o",  nom:"ORANGE" },
+    { code:"r",  nom:"ROUGE" }
+  ];
+
   const allKeys = getSessionKeysSorted();
 
   // Aucune donnée du tout
@@ -1063,7 +1065,6 @@ function majStats() {
     if (elNb)       elNb.textContent       = "Joueurs (dernière mesure) : 0";
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
     if (elDom)      elDom.textContent      = "Zone dominante : -";
-    if (elNbMatch)  elNbMatch.textContent  = "Joueurs ayant joué le match : 0";
     if (elNonMatch) elNonMatch.textContent = "Joueurs n'ayant pas joué le dernier match : -";
 
     if (indiceBox && indiceLabel) {
@@ -1082,13 +1083,13 @@ function majStats() {
     return;
   }
 
-  // 👉 Séance sélectionnée (ou dernière par défaut)
+  // Séance sélectionnée (ou dernière par défaut)
   let dateKey = allKeys[allKeys.length - 1];
   if (selectSeance && selectSeance.value) {
     dateKey = selectSeance.value;
   }
 
-  // 🔎 On ne garde que les lignes de CETTE séance
+  // On ne garde que les lignes de CETTE séance
   const rowsSameDay = data.filter(r => getSeanceKey(r) === dateKey);
 
   // Dernière saisie par joueur pour cette séance
@@ -1109,11 +1110,10 @@ function majStats() {
 
   if (elNb) elNb.textContent = "Joueurs (dernière mesure) : " + nb;
 
-  // Personne pour cette séance → reset
+  // Personne pour cette séance
   if (nb === 0) {
     if (elMoy)      elMoy.textContent      = "Score moyen : -";
     if (elDom)      elDom.textContent      = "Zone dominante : -";
-    if (elNbMatch)  elNbMatch.textContent  = "Joueurs ayant joué le match : 0";
     if (elNonMatch) elNonMatch.textContent = "Joueurs n'ayant pas joué le dernier match : -";
 
     if (indiceBox && indiceLabel) {
@@ -1132,9 +1132,8 @@ function majStats() {
     return;
   }
 
-  // ⚽ Séparation joueurs ayant joué / non joué via naMatch (sur CETTE séance)
-  const listeMatch    = liste.filter(r => !r.naMatch);
-  const listeNonMatch = liste.filter(r =>  r.naMatch);
+  // ⚽ Joueurs n’ayant pas joué (Q1 = N/A) pour CETTE séance
+  const listeNonMatch = liste.filter(r => r.naMatch);
 
   // Somme des totaux + comptage par zone
   let somme = 0;
@@ -1153,25 +1152,19 @@ function majStats() {
   });
 
   const moy = (somme / nb).toFixed(1);
-if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
+  if (elMoy) elMoy.textContent = "Score moyen : " + moy + " (base 20/25)";
 
-const ordre = [
-  { code:"vf", nom:"VERT FONCÉ" },
-  { code:"vc", nom:"VERT CLAIR" },
-  { code:"j",  nom:"JAUNE" },
-  { code:"o",  nom:"ORANGE" },
-  { code:"r",  nom:"ROUGE" }
-];
+  // Zone dominante
+  let maxNom = "", maxVal = -1;
+  ordre.forEach(z => {
+    if (compte[z.code] > maxVal) {
+      maxVal = compte[z.code];
+      maxNom = z.nom;
+    }
+  });
+  if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
 
-let maxNom = "", maxVal = -1;
-ordre.forEach(z => {
-  if (compte[z.code] > maxVal) {
-    maxVal = compte[z.code];
-    maxNom = z.nom;
-  }
-});
-if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
-
+  // Barres de répartition
   const pct = c => Math.round((compte[c] / nb) * 100);
   const setBar = (id, code, count) => {
     const bar = document.getElementById("bar"+id);
@@ -1185,7 +1178,7 @@ if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
   setBar("Orange", "o",  compte.o);
   setBar("Rouge",  "r",  compte.r);
 
-  // Indice global équipe (base 25 → %)
+  // Indice global équipe
   const pctEquipe = Math.round((parseFloat(moy) / 25) * 100);
   let classe = "", texte = "";
   if      (pctEquipe >= 88){ classe="indice-vert";   texte="Très bon état général"; }
@@ -1209,32 +1202,19 @@ if (elDom) elDom.textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
       : "Aucun joueur en alerte.";
   }
 
-  // Infos joueurs ayant joué
-  if (elNbMatch) {
-    if (listeMatch.length) {
-      let sommeMatch = 0;
-      listeMatch.forEach(r => { sommeMatch += (Number(r.total) || 0); });
-      const moyMatchTxt = (sommeMatch / listeMatch.length).toFixed(1);
-      elNbMatch.textContent =
-        `Joueurs ayant joué le match : ${listeMatch.length} (moyenne brute : ${moyMatchTxt})`;
+  // 📝 Liste des joueurs qui n’ont pas joué sur CETTE séance
+  if (elNonMatch) {
+    if (listeNonMatch.length) {
+      const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
+      elNonMatch.textContent =
+        `Joueurs n'ayant pas joué le dernier match : ${nomsNoMatch}`;
     } else {
-      elNbMatch.textContent = "Joueurs ayant joué le match : 0";
+      elNonMatch.textContent =
+        "Joueurs n'ayant pas joué le dernier match : -";
     }
   }
 
-  // 📝 Liste des joueurs qui n’ont pas joué sur CETTE séance
-  if (elNonMatch) {
-  if (listeNonMatch.length) {
-  const nomsNoMatch = listeNonMatch.map(r => r.joueur).join(", ");
-  elNonMatch.textContent =
-    `Joueurs n'ayant pas joué le dernier match : ${nomsNoMatch}`;
-} else {
-  elNonMatch.textContent =
-    "Joueurs n'ayant pas joué le dernier match : -";
-}
-  }
-
-  // Recommandation séance (toujours basée sur cette séance uniquement)
+  // Recommandation séance
   const pctRO = Math.round(((compte.o + compte.r) / nb) * 100);
   let reco = "";
   if      (pctEquipe >= 80 && pctRO <= 10) reco = "Équipe en forme : charge normale ou légèrement haute.";
