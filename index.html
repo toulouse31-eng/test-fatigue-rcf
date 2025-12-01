@@ -1459,34 +1459,44 @@ function chargerDepuisGoogleSheetsJSONP(){
       try {
         const rows = resp && resp.table && resp.table.rows ? resp.table.rows : [];
 
-const data = rows.map(r => {
+const data = rows.map((r) => {
   const c = r.c || [];
 
-  // Colonne K = pourcentage (index 10)
+  // K = pourcentage
   const rawPct = c[10]?.v;
   const pourcentage = Number(String(rawPct).replace("%","").trim()) || 0;
-
   const { zoneTexte, zoneClass } = computeZone(pourcentage);
 
-  // E = recuperation_depuis_match (1..5 ou "N/A")
-const cellRecup = c[4] || {};
-const recupBrutRaw = (cellRecup.v !== undefined && cellRecup.v !== null)
-  ? cellRecup.v
-  : (cellRecup.f !== undefined && cellRecup.f !== null ? cellRecup.f : "");
+  // 🔎 E = recuperation_depuis_match (1..5 ou N/A)
+  const cellRecup = c[4] || {};
+  let recupBrutRaw = "";
 
-const recupBrut = String(recupBrutRaw).trim();
-const naMatch   = recupBrut.toUpperCase() === "N/A";
-const recupNum  = naMatch ? "" : (Number(recupBrut) || "");
+  // certains cas : valeur dans v, d'autres dans f, d'autres encore #N/A
+  if (cellRecup.v !== undefined && cellRecup.v !== null) {
+    recupBrutRaw = cellRecup.v;
+  } else if (cellRecup.f !== undefined && cellRecup.f !== null) {
+    recupBrutRaw = cellRecup.f;
+  }
 
-  return {
-    date: c[1]?.v || "",                 // B dateApp
-    joueur: c[2]?.v || "",               // C joueur
-    seance: c[3]?.v || "",               // D seance
+  const recupStr   = String(recupBrutRaw).trim();
+  const recupUpper = recupStr.toUpperCase();
 
-    // récupération
-    recuperation: recupNum,              // pour éventuels calculs numériques
-    recuperationBrut: recupBrut,         // pour affichage ("N/A" ou 1..5)
-    naMatch,                             // 👈 n’a pas joué le match ?
+  // on considère non-match si on voit "N/A" ou "#N/A" quelque part
+  const naMatch =
+    recupUpper === "N/A" ||
+    recupUpper === "#N/A" ||
+    recupUpper.includes("N/A");
+
+  const recupNum = naMatch ? "" : (Number(recupStr) || "");
+
+  const rec = {
+    date:   c[1]?.v || "",   // B
+    joueur: c[2]?.v || "",   // C
+    seance: c[3]?.v || "",   // D
+
+    recuperation:     recupNum,   // numérique (pour stats)
+    recuperationBrut: recupStr,   // "N/A" ou 1..5
+    naMatch,                      // 👈 flag joueur non-match
 
     sommeil:          Number(c[5]?.v) || "",  // F
     alimentation:     Number(c[6]?.v) || "",  // G
@@ -1494,14 +1504,22 @@ const recupNum  = naMatch ? "" : (Number(recupBrut) || "");
     fatigue_mentale:  Number(c[8]?.v) || "",  // I
     total:            Number(c[9]?.v) || "",  // J
 
-    pourcentage,                          // K
-    zone:        c[11]?.v || zoneTexte,   // L
+    pourcentage,                         // K
+    zone:        c[11]?.v || zoneTexte,  // L
     zoneClass,
-    douleurZone: c[12]?.v || "",          // M
-    commentaire: c[13]?.v || "",          // N
+    douleurZone: c[12]?.v || "",         // M
+    commentaire: c[13]?.v || "",         // N
     envoye: true
   };
+
+  return rec;
 }).filter(x => x.joueur);
+
+// petit debug pour vérifier ce que GViz renvoie pour les N/A
+console.log(
+  "DEBUG N/A Sheets :",
+  data.filter(d => d.recuperationBrut && d.recuperationBrut.toUpperCase().includes("N/A"))
+);
 
         console.log("GVIZ rows =", rows.length, "data filtrée =", data.length);
         resolve(data);
