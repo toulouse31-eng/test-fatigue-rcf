@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TEAM RPE — Démo</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0F1A">
+
+<style>
+  :root {
+    --green: #A8D520;
+    --dark:  #0A0F1A;
+    --blue:  #2f7ccc;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 960px;
+    margin: auto;
+    background: #eef2f8;
+    font-size: 18px;
+  }
+
+  /* ── BANDEAU DÉMO ── */
+  .demo-banner {
+    background: var(--dark);
+    color: var(--green);
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    padding: 7px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .demo-banner span { flex: 1; }
+  .demo-reset-btn {
+    background: var(--green);
+    color: var(--dark);
+    border: none;
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .demo-reset-btn:hover { opacity: 0.85; }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .logo-container { display: flex; align-items: center; }
+  .logo-teamrpe {
+    max-width: 64px;
+    height: auto;
+  }
+  .top-title { text-align: center; }
+  h1 { margin: 0; color: var(--dark); font-size: 26px; }
+  h2 { margin: 0; font-size: 15px; color: #4a6580; }
+
+  .mode-toggle-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    background: var(--dark);
+    color: #fff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    opacity: 0.85;
+    transition: transform .1s ease, opacity .2s ease;
+    white-space: nowrap;
+  }
+  .mode-toggle-btn:hover { opacity: 1; transform: translateY(-1px); }
+  .mode-toggle-btn.coach-on { background: #0f6e56; }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; flex-wrap: wrap; gap: 16px; }
+  .card, .stats-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 2px solid #c8d8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    min-width: 0;
+  }
+  .card { padding: 20px; flex: 2 1 540px; }
+  .stats-card { padding: 16px; flex: 1 1 260px; }
+
+  .row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 15px; align-items: center;
+  }
+  .row label { font-weight: bold; flex: 1 0 140px; font-size: 16px; }
+  .row input[type="text"],
+  .row input[type="date"],
+  .row select,
+  .row textarea {
+    flex: 2 1 200px; padding: 12px; font-size: 18px;
+    border-radius: 10px; border: 1px solid #ccc; min-height: 46px;
+  }
+  textarea { min-height: 60px; resize: vertical; }
+
+  .question { margin-bottom: 22px; }
+  .question > label { font-weight: bold; display: block; margin-bottom: 6px; }
+  .qnum { font-weight: 900; color: var(--green); margin-right: 6px; }
+
+  .scale { display: flex; gap: 10px; flex-wrap: nowrap; margin-top: 8px; }
+  .scale button {
+    flex: 1 0 18%; padding: 16px 0; border-radius: 999px;
+    border: 1px solid #ccc; font-size: 22px; cursor: pointer;
+    background: #f5f5f5;
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .scale button[data-value="1"] { background: #ffb3b3; }
+  .scale button[data-value="2"] { background: #ffd5a6; }
+  .scale button[data-value="3"] { background: #fff6a3; }
+  .scale button[data-value="4"] { background: #c9f7b5; }
+  .scale button[data-value="5"] { background: #9ae69c; }
+  .scale button.active {
+    border: 2px solid #000;
+    transform: scale(1.07);
+    box-shadow: 0 0 6px rgba(0,0,0,0.25);
+  }
+  .legend { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .na-option { margin-top: 4px; font-size: 13px; color: #475569; }
+  .na-option input { margin-right: 4px; }
+
+  .actions { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .actions button {
+    padding: 16px; font-size: 18px;
+    border-radius: 10px; border: none; cursor: pointer;
+  }
+  .primary { background: var(--dark); color: #fff; }
+  .secondary { background: #ddd; }
+
+  .result {
+    margin-top: 15px; font-size: 16px; font-weight: bold;
+    padding: 12px; border-radius: 10px;
+  }
+
+  .zone-vert-fonce { background: #b7f0c4; color: #145c2e; }
+  .zone-vert-clair { background: #d5f7dd; color: #1f7f3f; }
+  .zone-jaune      { background: #fff8c2; color: #8a7400; }
+  .zone-orange     { background: #ffe0b8; color: #8a4b06; }
+  .zone-rouge      { background: #f8d7da; color: #721c24; }
+
+  .coach-only { display: none; }
+  body.coach-mode .coach-only { display: block; }
+
+  .stats-title { font-weight: bold; margin: 0; color: #2f4f6f; }
+  .stats-line { font-size: 13px; margin-bottom: 4px; }
+
+  .stats-bar-container { margin-top: 10px; font-size: 12px; }
+  .stats-bar-row {
+    display: flex; align-items: center;
+    margin-bottom: 4px; gap: 6px;
+  }
+  .stats-bar-label { width: 110px; white-space: nowrap; }
+  .stats-bar-bg {
+    flex: 1; background: #eee;
+    border-radius: 999px; overflow: hidden; height: 10px;
+  }
+  .stats-bar-fill { height: 10px; }
+
+  .stats-indice-box {
+    margin-top: 10px; padding: 10px; border-radius: 12px;
+    text-align: center; font-weight: bold; font-size: 14px;
+    background: #f0f4ff; color: #2f4f6f;
+  }
+  .stats-indice-box.indice-vert   { background: #b7f0c4; color: #145c2e; }
+  .stats-indice-box.indice-jaune  { background: #fff8c2; color: #8a7400; }
+  .stats-indice-box.indice-orange { background: #ffe0b8; color: #8a4b06; }
+  .stats-indice-box.indice-rouge  { background: #f8d7da; color: #721c24; }
+
+  .stats-reco   { margin-top: 8px; font-size: 13px; color: #2f4f6f; }
+  .stats-alertes { margin-top: 8px; font-size: 13px; color: #333; }
+
+  .stats-grid { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .stats-chart-card { flex: 1 1 280px; min-width: 260px; }
+  .stats-chart-card h3 {
+    font-size: 15px; margin-bottom: 8px;
+    color: #2f4f6f; text-align: center;
+  }
+  .iframe-container {
+    position: relative; width: 100%; aspect-ratio: 4/3;
+    overflow: hidden; border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15); background: #fff;
+  }
+  .iframe-container canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%; border: 0;
+  }
+
+  .stats-header-row {
+    display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: space-between; gap: 10px;
+  }
+
+  .alert-card {
+    margin-top: 14px; padding: 12px 16px;
+    border-radius: 12px; border: 1px solid #facc15; background: #fef9c3;
+  }
+  .alert-card h3 { margin: 0 0 6px; font-size: 15px; color: #854d0e; }
+  .alert-list { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
+  .alert-list li { margin-bottom: 4px; }
+  .alert-tag {
+    font-weight: bold; padding: 2px 6px; border-radius: 999px;
+    margin-right: 4px; font-size: 11px;
+  }
+  .alert-tag-orange { background: #fed7aa; color: #9a3412; }
+  .alert-tag-rouge  { background: #fecaca; color: #b91c1c; }
+  .alert-card .row  { margin-bottom: 4px; }
+  .alert-card .row label { font-size: 13px; font-weight: normal; color: #854d0e; flex: 0 0 auto; }
+  .alert-card select {
+    font-size: 13px; padding: 4px 10px;
+    border-radius: 999px; border: 1px solid #facc15;
+    background: #fef3c7; min-height: auto;
+  }
+
+  .sparkline-card {
+    margin-top: 14px; padding: 12px;
+    border: 1px solid #c7ddff; border-radius: 12px; background: #f5f9ff;
+  }
+  .sparkline-wrap { width: 100%; height: 240px; position: relative; }
+  #sparklineCanvas {
+    width: 100%; height: 100%; display: block;
+    border-radius: 10px; background: #ffffff;
+    box-shadow: inset 0 0 0 1px #e6eefc;
+  }
+
+  /* Logo SVG inline si pas d'image */
+  .logo-svg { width: 56px; height: 56px; }
+
+  @media (max-width: 700px) {
+    .stats-grid { flex-direction: column; }
+    .iframe-container { aspect-ratio: 3/4; }
+  }
+</style>
+</head>
+
+<body>
+
+  <!-- ── BANDEAU DÉMO ── -->
+  <div class="demo-banner">
+    <span>⚽ VERSION DÉMO — Données fictives — Aucune donnée réelle</span>
+    <button class="demo-reset-btn" onclick="resetDemo()">↺ Réinitialiser la démo</button>
+  </div>
+
+  <!-- ── TOP BAR ── -->
+  <div class="top-bar">
+    <div class="logo-container">
+      <!-- Logo SVG inline TEAM RPE (pas besoin de fichier externe) -->
+      <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="42" r="30" fill="none" stroke="#A8D520" stroke-width="5"/>
+        <circle cx="50" cy="38" r="14" fill="#ffffff" stroke="#0A0F1A" stroke-width="1.5"/>
+        <polygon points="50,28 56,38 44,38" fill="#0A0F1A"/>
+        <polygon points="50,38 56,38 56,44 50,44" fill="#0A0F1A"/>
+        <polygon points="44,38 50,38 50,44 44,44" fill="#cccccc"/>
+        <rect x="42" y="52" width="5" height="8" rx="1" fill="#A8D520"/>
+        <rect x="49" y="49" width="5" height="11" rx="1" fill="#A8D520"/>
+        <rect x="56" y="46" width="5" height="14" rx="1" fill="#A8D520"/>
+        <text x="50" y="84" text-anchor="middle" font-family="Arial Black" font-size="11" font-weight="900" fill="#0A0F1A">TEAM</text>
+        <text x="50" y="95" text-anchor="middle" font-family="Arial Black" font-size="10" font-weight="900" fill="#A8D520">RPE</text>
+      </svg>
+    </div>
+    <div class="top-title">
+      <h1>TEAM RPE</h1>
+      <h2>Suivi de la fatigue et de l'état de forme — Démo</h2>
+    </div>
+    <button
+      type="button"
+      id="modeCoachBtn"
+      class="mode-toggle-btn"
+      onclick="toggleModeCoach()"
+      aria-pressed="false"
+    >
+      Mode coach OFF
+    </button>
+  </div>
+
+  <!-- ── FORMULAIRE ── -->
+  <div class="layout">
+    <div class="card">
+      <form id="fatigueForm">
+
+        <div class="row">
+          <label for="joueurSelect">Joueur :</label>
+          <select id="joueurSelect" name="joueurSelect" required>
+            <option value="">Choisir un joueur...</option>
+            <option>Martin</option><option>Dupont</option><option>Bernard</option>
+            <option>Thomas</option><option>Robert</option><option>Petit</option>
+            <option>Durand</option><option>Lefevre</option><option>Moreau</option>
+            <option>Simon</option><option>Laurent</option><option>Michel</option>
+            <option>Garcia</option><option>David</option><option>Roux</option>
+            <option value="Autre">Autre (saisir le nom)</option>
+          </select>
+        </div>
+
+        <div class="row" id="rowAutre" style="display:none;">
+          <label for="joueurAutre">Nom joueur :</label>
+          <input type="text" id="joueurAutre" name="joueurAutre" placeholder="Nom et prénom" />
+        </div>
+
+        <div class="row">
+          <label for="seanceDate">Date de la séance :</label>
+          <input type="date" id="seanceDate" name="seanceDate">
+        </div>
+
+        <!-- Q1 -->
+        <div class="question">
+          <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
+          <div class="scale" data-name="recuperation">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très mauvaise récupération &nbsp;&nbsp; 5 = Très bonne récupération</div>
+          <div class="na-option">
+            <label><input type="checkbox" id="recupNA"> Je n'ai pas joué le dernier match (N/A)</label>
+          </div>
+          <input type="hidden" name="recuperation" />
+        </div>
+
+        <!-- Q2 -->
+        <div class="question">
+          <label><span class="qnum">2.</span>Qualité du sommeil 😴</label>
+          <div class="scale" data-name="sommeil">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très mauvais sommeil &nbsp;&nbsp; 5 = Très bon sommeil</div>
+          <input type="hidden" name="sommeil" />
+        </div>
+
+        <!-- Q3 -->
+        <div class="question">
+          <label><span class="qnum">3.</span>Qualité de l'alimentation/hydratation 🍽️💧</label>
+          <div class="scale" data-name="alimentation">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très mauvaise &nbsp;&nbsp; 5 = Très bonne</div>
+          <input type="hidden" name="alimentation" />
+        </div>
+
+        <!-- Q4 -->
+        <div class="question">
+          <label><span class="qnum">4.</span>Fatigue physique / douleurs musculaires 💢</label>
+          <div class="scale" data-name="fatigue_physique">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très fatigué / douleurs fortes &nbsp;&nbsp; 5 = Très en forme</div>
+          <input type="hidden" name="fatigue_physique" />
+        </div>
+
+        <!-- Q5 -->
+        <div class="question">
+          <label><span class="qnum">5.</span>Fatigue mentale 🧠</label>
+          <div class="scale" data-name="fatigue_mentale">
+            <button type="button" data-value="1">1</button>
+            <button type="button" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend">1 = Très fatigué mentalement &nbsp;&nbsp; 5 = Très frais</div>
+          <input type="hidden" name="fatigue_mentale" />
+        </div>
+
+        <div class="row">
+          <label for="douleurZone">Douleurs spécifiques :</label>
+          <input type="text" id="douleurZone" name="douleurZone"
+            placeholder="Ex : ischios droit, adducteurs, cheville gauche..." />
+        </div>
+
+        <div class="row">
+          <label for="commentaire">Commentaire :</label>
+          <textarea id="commentaire" name="commentaire"
+            placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer le joueur</button>
+          <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
+        </div>
+
+        <div class="result" id="resultat"></div>
+      </form>
+    </div>
+
+    <!-- ── SYNTHÈSE COACH ── -->
+    <div class="stats-card coach-only">
+      <div class="stats-header-row">
+        <div class="stats-title">Synthèse rapide (dernière saisie par joueur)</div>
+      </div>
+
+      <div class="row" style="margin-bottom:6px;">
+        <label for="statsSeanceSelect" style="flex:0 0 auto; font-size:13px;">Séance :</label>
+        <select id="statsSeanceSelect" style="flex:1 1 auto; min-width:140px; font-size:13px;"></select>
+      </div>
+
+      <div class="stats-line" id="statsNbJoueurs">Joueurs (dernière mesure) : 0</div>
+      <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
+      <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
+      <div class="stats-line" id="statsNonMatch">Joueurs n'ayant pas joué : -</div>
+
+      <div class="stats-indice-box" id="statsIndiceBox">
+        <div id="statsIndiceLabel">Indice bien-être équipe : -</div>
+      </div>
+
+      <div class="stats-line stats-reco" id="statsRecoSeance">Recommandation séance : -</div>
+
+      <div class="stats-alertes">
+        <div class="stats-line"><strong>Joueurs en alerte (orange/rouge) :</strong></div>
+        <div class="stats-line" id="statsAlertesListe">-</div>
+      </div>
+
+      <div class="stats-bar-container">
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Très bon état</div>
+          <div class="stats-bar-bg"><div id="barVFonce" class="stats-bar-fill zone-vert-fonce" style="width:0%"></div></div>
+          <div id="textVFonce">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Bon état</div>
+          <div class="stats-bar-bg"><div id="barVClair" class="stats-bar-fill zone-vert-clair" style="width:0%"></div></div>
+          <div id="textVClair">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Fatigue légère</div>
+          <div class="stats-bar-bg"><div id="barJaune" class="stats-bar-fill zone-jaune" style="width:0%"></div></div>
+          <div id="textJaune">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Fatigue notable</div>
+          <div class="stats-bar-bg"><div id="barOrange" class="stats-bar-fill zone-orange" style="width:0%"></div></div>
+          <div id="textOrange">0</div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-label">Fatigue importante</div>
+          <div class="stats-bar-bg"><div id="barRouge" class="stats-bar-fill zone-rouge" style="width:0%"></div></div>
+          <div id="textRouge">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STATS ÉQUIPE ── -->
+  <section id="stats-equipe" class="card coach-only" style="margin-top:20px; padding:20px;">
+    <h2 style="color:var(--dark); margin-top:0;">Statistiques équipe — Démo</h2>
+
+    <!-- Alertes séance -->
+    <div class="alert-card" id="alertesDuJourCard">
+      <h3>Alertes séance</h3>
+      <div class="row" style="margin-bottom:6px;">
+        <label for="alertSeanceSelect" style="flex:0 0 auto;">Séance :</label>
+        <select id="alertSeanceSelect" style="flex:1 1 auto; min-width:140px;"></select>
+      </div>
+      <div id="alertDateLabel" class="legend">Chargement...</div>
+      <ul id="alertList" class="alert-list"></ul>
+    </div>
+
+    <div class="stats-grid" style="margin-top:16px;">
+      <!-- Top 5 fatigués -->
+      <div class="stats-chart-card">
+        <h3>Top 5 joueurs les plus fatigués</h3>
+        <div class="row" style="margin-bottom:8px; justify-content:center;">
+          <label for="topFatigueRange" style="flex:0 0 auto;">Dernières séances :</label>
+          <select id="topFatigueRange" style="flex:0 0 auto; min-width:90px;">
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+          </select>
+        </div>
+        <div class="iframe-container">
+          <canvas id="topFatigueCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Top 5 en forme -->
+      <div class="stats-chart-card">
+        <h3>Top 5 joueurs les plus en forme</h3>
+        <div class="row" style="margin-bottom:8px; justify-content:center;">
+          <label for="topFormeRange" style="flex:0 0 auto;">Dernières séances :</label>
+          <select id="topFormeRange" style="flex:0 0 auto; min-width:90px;">
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+          </select>
+        </div>
+        <div class="iframe-container">
+          <canvas id="topFormeCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sparkline -->
+    <div class="sparkline-card">
+      <h3>Évolution joueur</h3>
+      <div class="row" style="margin-bottom:8px;">
+        <label for="sparklineSelect" style="flex:0 0 auto;">Joueur :</label>
+        <select id="sparklineSelect" style="flex:1 1 auto; min-width:160px;"></select>
+        <label for="sparklineRange" style="flex:0 0 auto;">Derniers :</label>
+        <select id="sparklineRange" style="flex:0 0 auto; min-width:90px;">
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+        </select>
+      </div>
+      <div class="sparkline-wrap">
+        <canvas id="sparklineCanvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+<script>
+// =============================================
+// DONNÉES DÉMO (pré-chargées, aucune connexion)
+// =============================================
+
+const DEMO_DATA_ORIGINAL = [{"date":"25/11/2025 à 10:00:00","joueur":"Martin","seance":"2025-11-25 (Mardi)","recuperation":"N/A","recuperationBrut":"N/A","naMatch":false,"sommeil":3,"alimentation":4,"fatigue_physique":2,"fatigue_mentale":3,"total":12,"pourcentage":60,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Dupont","seance":"2025-11-25 (Mardi)","recuperation":2,"recuperationBrut":"2","naMatch":false,"sommeil":2,"alimentation":3,"fatigue_physique":1,"fatigue_mentale":2,"total":10,"pourcentage":40,"zone":"ROUGE fatigue importante (5-12)","zoneClass":"zone-rouge","douleurZone":"Ischios droit","commentaire":"Manque de sommeil","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Bernard","seance":"2025-11-25 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":4,"total":18,"pourcentage":72,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Thomas","seance":"2025-11-25 (Mardi)","recuperation":"N/A","recuperationBrut":"N/A","naMatch":true,"sommeil":4,"alimentation":4,"fatigue_physique":3,"fatigue_mentale":4,"total":15,"pourcentage":75,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Robert","seance":"2025-11-25 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"Adducteurs","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Petit","seance":"2025-11-25 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":4,"fatigue_physique":3,"fatigue_mentale":2,"total":15,"pourcentage":60,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"Un peu fatigué","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Durand","seance":"2025-11-25 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":3,"fatigue_physique":4,"fatigue_mentale":3,"total":18,"pourcentage":72,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Lefevre","seance":"2025-11-25 (Mardi)","recuperation":"N/A","recuperationBrut":"N/A","naMatch":true,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":11,"pourcentage":55,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"","commentaire":"Match difficile hier","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Moreau","seance":"2025-11-25 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":3,"fatigue_mentale":4,"total":19,"pourcentage":76,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Simon","seance":"2025-11-25 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":2,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Laurent","seance":"2025-11-25 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":4,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":16,"pourcentage":64,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Michel","seance":"2025-11-25 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"Genou gauche","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Garcia","seance":"2025-11-25 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":5,"fatigue_mentale":4,"total":21,"pourcentage":84,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"Bonne semaine","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"David","seance":"2025-11-25 (Mardi)","recuperation":5,"recuperationBrut":"5","naMatch":false,"sommeil":5,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":5,"total":23,"pourcentage":92,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"","envoye":true},{"date":"25/11/2025 à 10:00:00","joueur":"Roux","seance":"2025-11-25 (Mardi)","recuperation":5,"recuperationBrut":"5","naMatch":false,"sommeil":4,"alimentation":5,"fatigue_physique":4,"fatigue_mentale":4,"total":22,"pourcentage":88,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Martin","seance":"2025-12-02 (Mardi)","recuperation":2,"recuperationBrut":"2","naMatch":false,"sommeil":2,"alimentation":3,"fatigue_physique":1,"fatigue_mentale":2,"total":10,"pourcentage":40,"zone":"ROUGE fatigue importante (5-12)","zoneClass":"zone-rouge","douleurZone":"Ischios droit","commentaire":"Manque de sommeil","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Bernard","seance":"2025-12-02 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":3,"fatigue_mentale":4,"total":19,"pourcentage":76,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Thomas","seance":"2025-12-02 (Mardi)","recuperation":"N/A","recuperationBrut":"N/A","naMatch":true,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":12,"pourcentage":60,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Robert","seance":"2025-12-02 (Mardi)","recuperation":2,"recuperationBrut":"2","naMatch":false,"sommeil":2,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":2,"total":11,"pourcentage":44,"zone":"ROUGE fatigue importante (5-12)","zoneClass":"zone-rouge","douleurZone":"Adducteurs","commentaire":"Très fatigué","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Petit","seance":"2025-12-02 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":15,"pourcentage":60,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Durand","seance":"2025-12-02 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":3,"total":19,"pourcentage":76,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Lefevre","seance":"2025-12-02 (Mardi)","recuperation":"N/A","recuperationBrut":"N/A","naMatch":true,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":2,"total":11,"pourcentage":55,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Moreau","seance":"2025-12-02 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"Bonne semaine","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Simon","seance":"2025-12-02 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"Cheville droite","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Laurent","seance":"2025-12-02 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":15,"pourcentage":60,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Michel","seance":"2025-12-02 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":2,"total":13,"pourcentage":52,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"Genou gauche","commentaire":"Douleur persistante","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Garcia","seance":"2025-12-02 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":5,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":5,"total":22,"pourcentage":88,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"David","seance":"2025-12-02 (Mardi)","recuperation":5,"recuperationBrut":"5","naMatch":false,"sommeil":4,"alimentation":5,"fatigue_physique":4,"fatigue_mentale":4,"total":22,"pourcentage":88,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"","envoye":true},{"date":"02/12/2025 à 10:00:00","joueur":"Roux","seance":"2025-12-02 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Martin","seance":"2025-12-09 (Mardi)","recuperation":2,"recuperationBrut":"2","naMatch":false,"sommeil":2,"alimentation":2,"fatigue_physique":1,"fatigue_mentale":2,"total":9,"pourcentage":36,"zone":"ROUGE fatigue importante (5-12)","zoneClass":"zone-rouge","douleurZone":"Dos lombaire","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Dupont","seance":"2025-12-09 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Bernard","seance":"2025-12-09 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":3,"alimentation":4,"fatigue_physique":3,"fatigue_mentale":3,"total":17,"pourcentage":68,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Robert","seance":"2025-12-09 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Petit","seance":"2025-12-09 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":4,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":16,"pourcentage":64,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Durand","seance":"2025-12-09 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Moreau","seance":"2025-12-09 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Simon","seance":"2025-12-09 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":15,"pourcentage":60,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Laurent","seance":"2025-12-09 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":4,"total":18,"pourcentage":72,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Michel","seance":"2025-12-09 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"Genou gauche","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Garcia","seance":"2025-12-09 (Mardi)","recuperation":5,"recuperationBrut":"5","naMatch":false,"sommeil":4,"alimentation":5,"fatigue_physique":5,"fatigue_mentale":4,"total":23,"pourcentage":92,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"David","seance":"2025-12-09 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"09/12/2025 à 10:00:00","joueur":"Roux","seance":"2025-12-09 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":5,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":5,"total":22,"pourcentage":88,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Dupont","seance":"2025-12-16 (Mardi)","recuperation":2,"recuperationBrut":"2","naMatch":false,"sommeil":2,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":2,"total":11,"pourcentage":44,"zone":"ROUGE fatigue importante (5-12)","zoneClass":"zone-rouge","douleurZone":"Ischios droit","commentaire":"Toujours fatigué","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Bernard","seance":"2025-12-16 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":3,"total":19,"pourcentage":76,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Thomas","seance":"2025-12-16 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":4,"total":16,"pourcentage":64,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Robert","seance":"2025-12-16 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":15,"pourcentage":60,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Petit","seance":"2025-12-16 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":4,"alimentation":3,"fatigue_physique":3,"fatigue_mentale":3,"total":16,"pourcentage":64,"zone":"JAUNE fatigue legere (16-18)","zoneClass":"zone-jaune","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Durand","seance":"2025-12-16 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Moreau","seance":"2025-12-16 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Simon","seance":"2025-12-16 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"Cheville droite","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Laurent","seance":"2025-12-16 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":3,"fatigue_mentale":4,"total":19,"pourcentage":76,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Michel","seance":"2025-12-16 (Mardi)","recuperation":3,"recuperationBrut":"3","naMatch":false,"sommeil":3,"alimentation":3,"fatigue_physique":2,"fatigue_mentale":3,"total":14,"pourcentage":56,"zone":"ORANGE fatigue notable (13-15)","zoneClass":"zone-orange","douleurZone":"Genou gauche","commentaire":"Douleur persistante","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Garcia","seance":"2025-12-16 (Mardi)","recuperation":5,"recuperationBrut":"5","naMatch":false,"sommeil":5,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":5,"total":23,"pourcentage":92,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"Top forme","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"David","seance":"2025-12-16 (Mardi)","recuperation":5,"recuperationBrut":"5","naMatch":false,"sommeil":4,"alimentation":5,"fatigue_physique":4,"fatigue_mentale":5,"total":23,"pourcentage":92,"zone":"VERT FONCE tres bon etat (22-25)","zoneClass":"zone-vert-fonce","douleurZone":"","commentaire":"","envoye":true},{"date":"16/12/2025 à 10:00:00","joueur":"Roux","seance":"2025-12-16 (Mardi)","recuperation":4,"recuperationBrut":"4","naMatch":false,"sommeil":4,"alimentation":4,"fatigue_physique":4,"fatigue_mentale":4,"total":20,"pourcentage":80,"zone":"VERT CLAIR bon etat general (19-21)","zoneClass":"zone-vert-clair","douleurZone":"","commentaire":"","envoye":true}];
+
+let enregistrementsDemo = JSON.parse(JSON.stringify(DEMO_DATA_ORIGINAL));
+
+function getVizData() { return enregistrementsDemo; }
+
+function resetDemo() {
+  enregistrementsDemo = JSON.parse(JSON.stringify(DEMO_DATA_ORIGINAL));
+  buildStatsSeanceSelect();
+  buildAlertSeanceSelect();
+  buildSparklineSelect();
+  buildTop5Charts();
+  resetForm(true);
+  alert("Démo réinitialisée — données fictives rechargées.");
+}
+
+// =============================================
+// HELPERS
+// =============================================
+function computeZone(pct) {
+  if (pct >= 88) return { zoneTexte:"VERT FONCE tres bon etat (22-25)", zoneClass:"zone-vert-fonce" };
+  if (pct >= 76) return { zoneTexte:"VERT CLAIR bon etat general (19-21)", zoneClass:"zone-vert-clair" };
+  if (pct >= 64) return { zoneTexte:"JAUNE fatigue legere (16-18)", zoneClass:"zone-jaune" };
+  if (pct >= 52) return { zoneTexte:"ORANGE fatigue notable (13-15)", zoneClass:"zone-orange" };
+  return { zoneTexte:"ROUGE fatigue importante (5-12)", zoneClass:"zone-rouge" };
+}
+
+function getDateFromSeance(s) {
+  if (!s) return null;
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (!m) return null;
+  const d = new Date(m[1]+"T00:00:00");
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function getSeanceKey(r) {
+  const d = getDateFromSeance(r.seance) || new Date(r.date);
+  if (isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function getSessionKeysSorted() {
+  const keys = getVizData().map(getSeanceKey).filter(Boolean);
+  return [...new Set(keys)].sort((a,b)=>new Date(a)-new Date(b));
+}
+
+function formatDateKey(key) {
+  const d = new Date(key+"T00:00:00");
+  if (isNaN(d.getTime())) return key;
+  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+}
+
+function getDateLabelFromRecord(r) {
+  const d = getDateFromSeance(r.seance) || new Date(r.date);
+  if (isNaN(d.getTime())) return "";
+  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+
+// =============================================
+// FORMULAIRE
+// =============================================
+const selectJoueur = document.getElementById("joueurSelect");
+const rowAutre     = document.getElementById("rowAutre");
+const inputAutre   = document.getElementById("joueurAutre");
+const recupNACheckbox = document.getElementById("recupNA");
+
+selectJoueur.addEventListener("change", () => {
+  rowAutre.style.display = selectJoueur.value === "Autre" ? "flex" : "none";
+  if (selectJoueur.value !== "Autre") inputAutre.value = "";
+});
+
+recupNACheckbox.addEventListener("change", () => {
+  const h = document.querySelector('input[name="recuperation"]');
+  const sc = document.querySelector('.scale[data-name="recuperation"]');
+  if (recupNACheckbox.checked) {
+    sc.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+    if (h) h.value = "N/A";
+  } else {
+    if (h) h.value = "";
+  }
+});
+
+document.querySelectorAll(".scale").forEach(scale => {
+  const name = scale.getAttribute("data-name");
+  const hidden = document.querySelector(`input[name="${name}"]`);
+  scale.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      scale.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      if (hidden) hidden.value = btn.getAttribute("data-value");
+      if (name === "recuperation" && recupNACheckbox) recupNACheckbox.checked = false;
+    });
+  });
+});
+
+function getNomJoueur() {
+  return selectJoueur.value === "Autre" ? inputAutre.value.trim() : selectJoueur.value;
+}
+
+function getSeance() {
+  const v = document.getElementById("seanceDate").value;
+  if (!v) return "";
+  const jours = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+  const d = new Date(v+"T00:00:00");
+  return `${v} (${jours[d.getDay()]})`;
+}
+
+function initDateSeance() {
+  const el = document.getElementById("seanceDate");
+  const today = new Date();
+  el.value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+}
+
+function enregistrerJoueur() {
+  const form = document.getElementById("fatigueForm");
+  const joueur = getNomJoueur();
+  if (!joueur) return alert("Choisis un joueur.");
+  const seance = getSeance();
+  const champs = ["recuperation","sommeil","alimentation","fatigue_physique","fatigue_mentale"];
+  const vals = {};
+  for (const c of champs) {
+    const v = form[c].value;
+    if (!v && c !== "recuperation") return alert(`Réponds à la question : ${c}`);
+    vals[c] = v;
+  }
+  const naMatch = vals.recuperation === "N/A";
+  const q1 = naMatch ? 0 : Number(vals.recuperation);
+  const q2 = Number(vals.sommeil), q3 = Number(vals.alimentation);
+  const q4 = Number(vals.fatigue_physique), q5 = Number(vals.fatigue_mentale);
+  const total = q1+q2+q3+q4+q5;
+  const denom = naMatch ? 20 : 25;
+  const pourcentage = Math.round((total/denom)*100);
+  const { zoneTexte, zoneClass } = computeZone(pourcentage);
+  const rec = {
+    date: new Date().toLocaleString("fr-FR"), joueur, seance,
+    recuperation: naMatch ? "N/A" : q1, recuperationBrut: naMatch ? "N/A" : String(q1),
+    naMatch, sommeil:q2, alimentation:q3, fatigue_physique:q4, fatigue_mentale:q5,
+    total, pourcentage, zone:zoneTexte, zoneClass,
+    douleurZone: document.getElementById("douleurZone").value.trim(),
+    commentaire: document.getElementById("commentaire").value.trim(),
+    envoye: true
+  };
+  enregistrementsDemo.push(rec);
+  const res = document.getElementById("resultat");
+  res.textContent = `Enregistré (démo) : ${joueur} | ${pourcentage}% - ${zoneTexte}`;
+  res.className = "result " + zoneClass;
+  buildStatsSeanceSelect();
+  buildAlertSeanceSelect();
+  buildSparklineSelect();
+  buildTop5Charts();
+  resetForm(false);
+}
+
+function resetForm(clearResult) {
+  document.getElementById("fatigueForm").reset();
+  rowAutre.style.display = "none";
+  inputAutre.value = "";
+  document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");
+  recupNACheckbox.checked = false;
+  if (!clearResult) initDateSeance();
+  if (clearResult) {
+    const r = document.getElementById("resultat");
+    r.textContent = ""; r.className = "result";
+  }
+}
+
+// =============================================
+// MODE COACH
+// =============================================
+function toggleModeCoach() {
+  const body = document.body;
+  const btn  = document.getElementById("modeCoachBtn");
+  body.classList.toggle("coach-mode");
+  if (body.classList.contains("coach-mode")) {
+    btn.classList.add("coach-on"); btn.setAttribute("aria-pressed","true");
+    btn.textContent = "Mode coach ON";
+    setTimeout(forceResizeAllCharts, 120);
+  } else {
+    btn.classList.remove("coach-on"); btn.setAttribute("aria-pressed","false");
+    btn.textContent = "Mode coach OFF";
+  }
+}
+
+function forceResizeAllCharts() {
+  resizeTopCanvas("topFatigueCanvas"); resizeTopCanvas("topFormeCanvas");
+  drawTop5Now(); resizeSparklineCanvas(); drawSparklineNow();
+}
+
+// =============================================
+// STATS / SYNTHÈSE
+// =============================================
+let statsSeanceHandlersBound = false;
+
+function majStats() {
+  const data = getVizData();
+  const allKeys = getSessionKeysSorted();
+  const select = document.getElementById("statsSeanceSelect");
+  let dateKey = allKeys[allKeys.length-1];
+  if (select && select.value) dateKey = select.value;
+
+  const rows = data.filter(r => getSeanceKey(r) === dateKey);
+  const last = {};
+  rows.forEach(r => {
+    const d = getDateFromSeance(r.seance)||new Date(r.date);
+    if (!last[r.joueur]) last[r.joueur] = r;
+    else { const d0=getDateFromSeance(last[r.joueur].seance)||new Date(last[r.joueur].date); if(d>d0) last[r.joueur]=r; }
+  });
+  const liste = Object.values(last);
+  const nb = liste.length;
+
+  document.getElementById("statsNbJoueurs").textContent = `Joueurs (dernière mesure) : ${nb}`;
+  if (!nb) return;
+
+  let somme=0; const compte={vf:0,vc:0,j:0,o:0,r:0};
+  liste.forEach(rec => {
+    somme += Number(rec.total)||0;
+    const zc = rec.zoneClass||"";
+    if(zc==="zone-vert-fonce")compte.vf++;
+    else if(zc==="zone-vert-clair")compte.vc++;
+    else if(zc==="zone-jaune")compte.j++;
+    else if(zc==="zone-orange")compte.o++;
+    else compte.r++;
+  });
+
+  const moy = (somme/nb).toFixed(1);
+  document.getElementById("statsMoyenneScore").textContent = `Score moyen : ${moy} (base 20/25)`;
+
+  const ordre=[{code:"vf",nom:"VERT FONCE (très bon état)"},{code:"vc",nom:"VERT CLAIR (bon état général)"},{code:"j",nom:"JAUNE (fatigue légère)"},{code:"o",nom:"ORANGE (fatigue notable)"},{code:"r",nom:"ROUGE (fatigue importante)"}];
+  let maxNom="",maxVal=-1;
+  ordre.forEach(z=>{ if(compte[z.code]>maxVal){maxVal=compte[z.code];maxNom=z.nom;} });
+  document.getElementById("statsZoneDom").textContent = `Zone dominante : ${maxNom} (${maxVal} joueurs)`;
+
+  const pct = c => Math.round((compte[c]/nb)*100);
+  [["VFonce","vf",compte.vf],["VClair","vc",compte.vc],["Jaune","j",compte.j],["Orange","o",compte.o],["Rouge","r",compte.r]]
+    .forEach(([id,code,count]) => {
+      const bar=document.getElementById("bar"+id), txt=document.getElementById("text"+id);
+      if(bar) bar.style.width=pct(code)+"%"; if(txt) txt.textContent=count;
+    });
+
+  const pctEq = Math.round((parseFloat(moy)/25)*100);
+  let cls="",texte="";
+  if(pctEq>=88){cls="indice-vert";texte="Très bon état général";}
+  else if(pctEq>=76){cls="indice-vert";texte="Bon état général";}
+  else if(pctEq>=64){cls="indice-jaune";texte="Fatigue légère";}
+  else if(pctEq>=52){cls="indice-orange";texte="Fatigue notable";}
+  else{cls="indice-rouge";texte="Fatigue importante";}
+  const box=document.getElementById("statsIndiceBox"), lbl=document.getElementById("statsIndiceLabel");
+  if(box) box.className="stats-indice-box "+cls;
+  if(lbl) lbl.textContent=`Indice bien-être équipe : ${pctEq}% – ${texte}`;
+
+  const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>r.joueur);
+  document.getElementById("statsAlertesListe").textContent = alertes.length ? alertes.join(", ") : "Aucun joueur en alerte.";
+
+  const nonMatch=liste.filter(r=>r.naMatch||String(r.recuperationBrut).toUpperCase().includes("N/A")).map(r=>r.joueur);
+  document.getElementById("statsNonMatch").textContent = nonMatch.length ? `Joueurs n'ayant pas joué : ${nonMatch.join(", ")}` : "Joueurs n'ayant pas joué : -";
+
+  const pctRO=Math.round(((compte.o+compte.r)/nb)*100);
+  let reco="";
+  if(pctEq>=80&&pctRO<=10) reco="Équipe en forme : charge normale ou légèrement haute.";
+  else if(pctEq>=70&&pctRO<=25) reco="Fatigue modérée : charge normale + surveillance.";
+  else if(pctEq>=60||pctRO>30) reco="Plusieurs joueurs fatigués : réduis intensité/volume, individualise.";
+  else reco="Fatigue élevée : séance récupération / charge très réduite.";
+  document.getElementById("statsRecoSeance").textContent = "Recommandation séance : "+reco;
+}
+
+function buildStatsSeanceSelect() {
+  const select = document.getElementById("statsSeanceSelect");
+  if (!select) return;
+  const keys = getSessionKeysSorted();
+  select.innerHTML = "";
+  keys.forEach(k => {
+    const opt = document.createElement("option");
+    opt.value=k; opt.textContent=formatDateKey(k); select.appendChild(opt);
+  });
+  if (keys.length) select.value = keys[keys.length-1];
+  if (!statsSeanceHandlersBound) {
+    select.addEventListener("change", majStats);
+    statsSeanceHandlersBound = true;
+  }
+  majStats();
+}
+
+// =============================================
+// ALERTES
+// =============================================
+let alertSeanceHandlersBound = false;
+
+function majAlertesDuJour() {
+  const select = document.getElementById("alertSeanceSelect");
+  const dateLabel = document.getElementById("alertDateLabel");
+  const listEl = document.getElementById("alertList");
+  const selectedKey = select ? select.value : null;
+  const allKeys = getSessionKeysSorted();
+  const dateKey = selectedKey || (allKeys.length ? allKeys[allKeys.length-1] : null);
+  listEl.innerHTML = "";
+  if (!dateKey) { dateLabel.textContent="Pas de séance enregistrée."; return; }
+  dateLabel.textContent = `Séance : ${formatDateKey(dateKey)}`;
+  const data = getVizData();
+  const rows = data.filter(r=>getSeanceKey(r)===dateKey);
+  const last = {};
+  rows.forEach(r => { if(!last[r.joueur]) last[r.joueur]=r; });
+  const alertes = Object.values(last).filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge");
+  if (!alertes.length) {
+    const li=document.createElement("li"); li.textContent="Aucun joueur en alerte."; listEl.appendChild(li); return;
+  }
+  alertes.forEach(a => {
+    const li=document.createElement("li");
+    const tag=document.createElement("span");
+    tag.className="alert-tag "+(a.zoneClass==="zone-orange"?"alert-tag-orange":"alert-tag-rouge");
+    tag.textContent=a.zoneClass==="zone-orange"?"ORANGE":"ROUGE";
+    li.appendChild(tag);
+    let txt=`${a.joueur} – ${a.pourcentage}% (${a.zone})`;
+    if(a.douleurZone) txt+=` – Douleurs : ${a.douleurZone}`;
+    if(a.commentaire) txt+=` – Note : ${a.commentaire}`;
+    const sp=document.createElement("span"); sp.textContent=" "+txt; li.appendChild(sp);
+    listEl.appendChild(li);
+  });
+}
+
+function buildAlertSeanceSelect() {
+  const select=document.getElementById("alertSeanceSelect");
+  if (!select) return;
+  const keys=getSessionKeysSorted();
+  select.innerHTML="";
+  keys.forEach(k => { const opt=document.createElement("option"); opt.value=k; opt.textContent=formatDateKey(k); select.appendChild(opt); });
+  if (keys.length) select.value=keys[keys.length-1];
+  if (!alertSeanceHandlersBound) { select.addEventListener("change",majAlertesDuJour); alertSeanceHandlersBound=true; }
+  majAlertesDuJour();
+}
+
+// =============================================
+// TOP 5 CHARTS
+// =============================================
+function getLastSessionKeys(n) {
+  return getSessionKeysSorted().slice(-n);
+}
+
+function computeTop5(n, mode="fatigue") {
+  const data=getVizData(); const lastKeys=getLastSessionKeys(n);
+  if(!lastKeys.length) return [];
+  const window=data.filter(r=>lastKeys.includes(getSeanceKey(r)));
+  const last={};
+  window.forEach(r => { const d=getDateFromSeance(r.seance)||new Date(r.date); if(!last[r.joueur]) last[r.joueur]=r; else { const d0=getDateFromSeance(last[r.joueur].seance)||new Date(last[r.joueur].date); if(d>d0) last[r.joueur]=r; } });
+  const list=Object.values(last).filter(r=>r.joueur&&r.pourcentage!=""&&r.pourcentage!=null).map(r=>({joueur:r.joueur,val:Number(r.pourcentage)||0}));
+  list.sort((a,b)=>mode==="fatigue"?a.val-b.val:b.val-a.val);
+  return list.slice(0,5);
+}
+
+function resizeTopCanvas(id) {
+  const canvas=document.getElementById(id); if(!canvas) return;
+  const ratio=window.devicePixelRatio||1; const rect=canvas.parentElement.getBoundingClientRect();
+  const w=rect.width>10?rect.width:320, h=rect.height>10?rect.height:240;
+  canvas.width=w*ratio; canvas.height=h*ratio;
+  canvas.getContext("2d").setTransform(ratio,0,0,ratio,0,0);
+}
+
+function drawTop5Vertical(canvasId, data, mode) {
+  const canvas=document.getElementById(canvasId); if(!canvas) return;
+  const ctx=canvas.getContext("2d"); const ratio=window.devicePixelRatio||1;
+  const w=canvas.width/ratio, h=canvas.height/ratio;
+  ctx.clearRect(0,0,w,h);
+  if(!data.length){ ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("Aucune donnée",w/2,h/2); return; }
+  const padL=36,padR=16,padT=18,padB=60,plotW=w-padL-padR,plotH=h-padT-padB;
+  ctx.font="12px Arial"; ctx.fillStyle="#64748b"; ctx.strokeStyle="#e2e8f0"; ctx.textAlign="right"; ctx.textBaseline="middle";
+  [0,25,50,75,100].forEach(g=>{ const y=padT+plotH*(1-g/100); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke(); ctx.fillText(g+"%",padL-6,y); });
+  const gap=10, barW=(plotW-gap*(data.length-1))/data.length;
+  data.forEach((d,i)=>{ const val=Math.max(0,Math.min(100,d.val)),x=padL+i*(barW+gap),barH=plotH*(val/100),y=padT+(plotH-barH);
+    ctx.fillStyle=mode==="fatigue"?"#f59e0b":"#22c55e"; ctx.fillRect(x,y,barW,barH);
+    ctx.fillStyle="#0f172a"; ctx.textAlign="center"; ctx.textBaseline="bottom"; ctx.font="13px Arial"; ctx.fillText(val.toFixed(0)+"%",x+barW/2,y-4);
+    ctx.textBaseline="top"; ctx.font="12px Arial"; const label=d.joueur.length>10?d.joueur.slice(0,10)+"…":d.joueur; ctx.fillText(label,x+barW/2,padT+plotH+8);
+  });
+}
+
+let top5HandlersBound=false;
+function drawTop5Now() {
+  const nF=Number(document.getElementById("topFatigueRange")?.value||5);
+  const nFo=Number(document.getElementById("topFormeRange")?.value||5);
+  resizeTopCanvas("topFatigueCanvas"); resizeTopCanvas("topFormeCanvas");
+  drawTop5Vertical("topFatigueCanvas",computeTop5(nF,"fatigue"),"fatigue");
+  drawTop5Vertical("topFormeCanvas",computeTop5(nFo,"forme"),"forme");
+}
+function buildTop5Charts() {
+  if(!top5HandlersBound){
+    document.getElementById("topFatigueRange")?.addEventListener("change",drawTop5Now);
+    document.getElementById("topFormeRange")?.addEventListener("change",drawTop5Now);
+    top5HandlersBound=true;
+  }
+  drawTop5Now();
+}
+
+// =============================================
+// SPARKLINE
+// =============================================
+function getLastResults(player, n=5) {
+  const data=getVizData(); const rows=data.filter(r=>r.joueur===player);
+  rows.sort((a,b)=>{ const da=getDateFromSeance(a.seance)||new Date(a.date),db=getDateFromSeance(b.seance)||new Date(b.date); return da-db; });
+  return rows.slice(-n).map(r=>({value:Number(r.pourcentage),label:getDateLabelFromRecord(r)}));
+}
+function getTeamAverageLastN(n) {
+  const data=getVizData(); const rows=[...data];
+  rows.sort((a,b)=>{ const da=getDateFromSeance(a.seance)||new Date(a.date),db=getDateFromSeance(b.seance)||new Date(b.date); return da-db; });
+  const last=rows.slice(-n); if(!last.length) return null;
+  return last.reduce((s,r)=>s+(Number(r.pourcentage)||0),0)/last.length;
+}
+function resizeSparklineCanvas() {
+  const canvas=document.getElementById("sparklineCanvas"); const wrap=document.querySelector(".sparkline-wrap");
+  if(!canvas||!wrap) return; const ratio=window.devicePixelRatio||1; const rect=wrap.getBoundingClientRect();
+  const w=rect.width>10?rect.width:320, h=rect.height>10?rect.height:240;
+  canvas.width=w*ratio; canvas.height=h*ratio; canvas.getContext("2d").setTransform(ratio,0,0,ratio,0,0);
+}
+function drawZones(ctx,padL,padT,plotW,plotH) {
+  const zones=[{from:0,to:52},{from:52,to:64},{from:64,to:76},{from:76,to:88},{from:88,to:100}];
+  const colors=["#f8d7da","#ffe0b8","#fff8c2","#d5f7dd","#b7f0c4"];
+  zones.forEach((z,i)=>{ const yTop=padT+plotH*(1-z.to/100),yBot=padT+plotH*(1-z.from/100); ctx.fillStyle=colors[i]; ctx.fillRect(padL,yTop,plotW,yBot-yTop); });
+}
+function drawSparkline(points, avgEquipe) {
+  const canvas=document.getElementById("sparklineCanvas"); if(!canvas) return;
+  const ctx=canvas.getContext("2d"); const ratio=window.devicePixelRatio||1;
+  const w=canvas.width/ratio, h=canvas.height/ratio;
+  ctx.clearRect(0,0,w,h);
+  if(!points||!points.length){ ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("Aucune donnée",w/2,h/2); return; }
+  const padL=52,padR=14,padT=28,padB=46,plotW=w-padL-padR,plotH=h-padT-padB;
+  drawZones(ctx,padL,padT,plotW,plotH);
+  const stepX=plotW/Math.max(points.length-1,1);
+  const pts=points.map((p,i)=>({x:padL+i*stepX,y:padT+plotH*(1-p.value/100)}));
+  if(avgEquipe!=null){ const yAvg=padT+plotH*(1-avgEquipe/100); ctx.save(); ctx.strokeStyle="#0f172a"; ctx.lineWidth=1.8; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(padL,yAvg); ctx.lineTo(w-padR,yAvg); ctx.stroke(); ctx.restore(); ctx.fillStyle="#0f172a"; ctx.font="12px Arial"; ctx.textAlign="right"; ctx.textBaseline="bottom"; ctx.fillText(`Moy. équipe ${avgEquipe.toFixed(0)}%`,w-padR-2,yAvg-4); }
+  ctx.lineWidth=1; ctx.strokeStyle="#e2e8f0"; ctx.fillStyle="#64748b"; ctx.font="12px Arial"; ctx.textAlign="right"; ctx.textBaseline="middle";
+  [0,25,50,75,100].forEach(g=>{ const y=padT+plotH*(1-g/100); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke(); ctx.fillText(g+"%",padL-6,y); });
+  ctx.strokeStyle="#94a3b8"; ctx.lineWidth=1.3; ctx.beginPath(); ctx.moveTo(padL,padT+plotH); ctx.lineTo(w-padR,padT+plotH); ctx.stroke();
+  ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillStyle="#334155";
+  points.forEach((p,i)=>{ const x=padL+i*stepX,yAxis=padT+plotH; ctx.beginPath(); ctx.moveTo(x,yAxis); ctx.lineTo(x,yAxis+5); ctx.stroke(); ctx.fillText(p.label||"",x,yAxis+8); });
+  ctx.strokeStyle="#A8D520"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y)); ctx.stroke();
+  pts.forEach((p,i)=>{ ctx.fillStyle="#A8D520"; ctx.beginPath(); ctx.arc(p.x,p.y,5,0,Math.PI*2); ctx.fill();
+    let lx=p.x,ly=p.y-10,align="center",baseline="bottom";
+    if(ly<padT+4){ly=p.y+12;baseline="top";} if(i===0)align="left"; if(i===pts.length-1)align="right";
+    lx=Math.max(padL+2,Math.min(lx,w-padR-2)); ctx.fillStyle="#0f172a"; ctx.font="12px Arial"; ctx.textAlign=align; ctx.textBaseline=baseline; ctx.fillText(points[i].value+"%",lx,ly);
+  });
+}
+let sparklineHandlersBound=false;
+function drawSparklineNow() {
+  const sel=document.getElementById("sparklineSelect"); const rng=document.getElementById("sparklineRange");
+  const n=Number(rng?.value||5);
+  if(sel&&sel.value) drawSparkline(getLastResults(sel.value,n),getTeamAverageLastN(n));
+  else drawSparkline([],null);
+}
+function buildSparklineSelect() {
+  const data=getVizData(); const sel=document.getElementById("sparklineSelect"); const rng=document.getElementById("sparklineRange");
+  if(!sel||!rng) return;
+  const joueurs=[...new Set(data.map(r=>r.joueur))].sort();
+  sel.innerHTML=`<option value="">Choisir un joueur...</option>`+joueurs.map(j=>`<option value="${j}">${j}</option>`).join("");
+  if(joueurs.length) sel.value=joueurs[0];
+  if(!sparklineHandlersBound){ sel.addEventListener("change",()=>{ resizeSparklineCanvas(); drawSparklineNow(); }); rng.addEventListener("change",()=>{ resizeSparklineCanvas(); drawSparklineNow(); }); sparklineHandlersBound=true; }
+  resizeSparklineCanvas(); drawSparklineNow();
+}
+
+window.addEventListener("resize",()=>{ if(document.body.classList.contains("coach-mode")) forceResizeAllCharts(); });
+
+document.addEventListener("DOMContentLoaded",()=>{
+  initDateSeance();
+  buildStatsSeanceSelect();
+  buildAlertSeanceSelect();
+  buildSparklineSelect();
+  buildTop5Charts();
+});
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(()=>console.log("SW enregistré")).catch(e=>console.log("SW erreur:",e));
+}
+</script>
+</body>
+</html>
