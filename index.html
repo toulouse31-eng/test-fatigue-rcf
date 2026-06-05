@@ -254,7 +254,7 @@ body.player-mode .app-body{justify-content:center;padding:0;}
 /* Mode coach ON : cacher le formulaire */
 body.coach-mode .form-card{display:none;}
 body.coach-mode .stats-card{flex:1 1 100%;max-width:100%;}
-body.coach-mode #appContent{background:#1a2a1a;}
+body.coach-mode #appContent{background:#1e2e1e !important;}
 
 /* RESPONSIVE */
 @media(max-width:700px){
@@ -900,7 +900,7 @@ async function doRegister(){
     await db.collection("clubs").doc(c.user.uid).set({nom:club,coachEmail:e,teams:[],players:{},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
-function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
+function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");sessionStorage.removeItem("rpe_coach");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
 function tErr(c){return{"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court.","auth/invalid-credential":"Email ou mot de passe incorrect."}[c]||"Erreur : "+c;}
 
 auth.onAuthStateChanged(async user=>{
@@ -908,11 +908,26 @@ auth.onAuthStateChanged(async user=>{
     currentUser=user;
     await chargerClub();
     const savedTeam=sessionStorage.getItem("rpe_team");
+    const savedCoach=sessionStorage.getItem("rpe_coach");
     if(savedTeam&&(currentClub.teams||[]).includes(savedTeam)){
       currentTeam={id:savedTeam,nom:savedTeam};
       await chargerJoueursEquipe(savedTeam);
       showScreen("appContent");
       initApp();
+      if(savedCoach){
+        // Restaurer le mode coach
+        setTimeout(async()=>{
+          document.body.classList.add("coach-mode");
+          const btn=document.getElementById("modeCoachBtn");
+          const txtEl=btn?.querySelector(".tbadge-coach-text");
+          if(btn)btn.classList.add("coach-on");
+          if(txtEl)txtEl.textContent="Mode coach ON";
+          const rp=document.getElementById("rowAddPlayer");
+          if(rp)rp.style.display="flex";
+          await refreshFirestoreData();
+          setTimeout(forceResizeAllCharts,200);
+        },100);
+      }
     } else {
       showScreen("teamScreen");
       renderTeamScreen();
@@ -1103,7 +1118,7 @@ function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl
 function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;resetDouleurs();if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
-async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp&&!playerMode)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
+async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp&&!playerMode)rp.style.display="flex";sessionStorage.setItem("rpe_coach","1");await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";sessionStorage.removeItem("rpe_coach");}}
 function exportPDF(){
   const data=getVizData(),keys=getKeysSorted();
   const dateKey=keys[keys.length-1]||null;
