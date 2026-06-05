@@ -71,6 +71,9 @@ body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:va
 .pin-inputs{display:flex;gap:10px;}
 .pin-inputs input{width:54px;height:62px;font-size:26px;font-weight:900;text-align:center;border-radius:10px;border:2px solid #2a3f2a;background:var(--noir2);color:var(--vert);}
 .pin-inputs input:focus{border-color:var(--vert);outline:none;}
+.pin-inputs input::-webkit-outer-spin-button,
+.pin-inputs input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.pin-inputs input[type=number]{-moz-appearance:textfield;}
 .pin-err{color:#ff6b6b;font-size:13px;display:none;text-align:center;}
 
 /* ===== CHOIX JOUEUR ===== */
@@ -433,10 +436,10 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <div class="pin-team-lbl" id="pinTeamLabel">— Équipe —</div>
     <div class="pin-hint" id="pinTeamHint">Entre le code PIN fourni par ton coach</div>
     <div class="pin-inputs">
-      <input type="number" min="0" max="9" id="pin1" oninput="pinNext(this,'pin2')"/>
-      <input type="number" min="0" max="9" id="pin2" oninput="pinNext(this,'pin3')"/>
-      <input type="number" min="0" max="9" id="pin3" oninput="pinNext(this,'pin4')"/>
-      <input type="number" min="0" max="9" id="pin4" oninput="pinNext(this,null)"/>
+      <input type="tel" maxlength="1" id="pin1" inputmode="numeric" pattern="[0-9]" oninput="pinNext(this,'pin2')"/>
+      <input type="tel" maxlength="1" id="pin2" inputmode="numeric" pattern="[0-9]" oninput="pinNext(this,'pin3')"/>
+      <input type="tel" maxlength="1" id="pin3" inputmode="numeric" pattern="[0-9]" oninput="pinNext(this,'pin4')"/>
+      <input type="tel" maxlength="1" id="pin4" inputmode="numeric" pattern="[0-9]" oninput="pinNext(this,null)"/>
     </div>
     <div class="pin-err" id="pinError">Code incorrect. Réessaie.</div>
     <button class="btn-primary-dark" onclick="verifierPin()">Valider →</button>
@@ -986,15 +989,38 @@ function copierLienJoueur(){const l=document.getElementById("coachPinLink");if(!
 // ===== ACCÈS JOUEUR =====
 function goToPlayerEntry(){const p=new URLSearchParams(location.search);const c=p.get("club"),t=p.get("team");if(c&&t)chargerClubJoueur(c,t);else{showScreen("pinScreen");document.getElementById("pinTeamLabel").textContent="Entre le code PIN";}}
 async function chargerClubJoueur(clubId,teamId){
-  try{const d=await db.collection("clubs").doc(clubId).get();if(!d.exists){alert("Club introuvable.");showScreen("loginScreen");return;}currentClub={id:clubId,...d.data()};currentTeam={id:teamId,nom:teamId};document.getElementById("pinTeamLabel").textContent=(currentClub.nom||"")+" — "+teamId;showScreen("pinScreen");}
-  catch(e){alert("Erreur de connexion.");showScreen("loginScreen");}
+  try{
+    const d=await db.collection("clubs").doc(clubId).get();
+    if(!d.exists){alert("Club introuvable.");showScreen("loginScreen");document.body.classList.add("rpe-ready");return;}
+    currentClub={id:clubId,...d.data()};
+    if(!currentClub.pins)currentClub.pins={};
+    currentTeam={id:teamId,nom:teamId};
+    document.getElementById("pinTeamLabel").textContent=(currentClub.nom||"")+" — "+teamId;
+    document.getElementById("pinTeamHint").textContent="Entre le code PIN fourni par ton coach";
+    showScreen("pinScreen");
+    // Cacher le splash
+    const splash=document.getElementById("splashScreen");
+    if(splash){splash.classList.add("hidden");setTimeout(()=>splash.style.display="none",350);}
+    document.body.classList.add("rpe-ready");
+  }
+  catch(e){console.error(e);alert("Erreur de connexion.");showScreen("loginScreen");document.body.classList.add("rpe-ready");}
 }
-function pinNext(input,nextId){if(input.value.length>1)input.value=input.value.slice(-1);if(nextId&&input.value.length>=1)document.getElementById(nextId)?.focus();}
+function pinNext(input,nextId){
+  // Garder uniquement les chiffres
+  input.value=input.value.replace(/[^0-9]/g,"").slice(-1);
+  if(nextId&&input.value.length>=1)document.getElementById(nextId)?.focus();
+}
 async function verifierPin(){
   const pin=[1,2,3,4].map(i=>document.getElementById("pin"+i).value).join("");
   const err=document.getElementById("pinError");err.style.display="none";
   if(pin.length<4){err.textContent="Entre les 4 chiffres.";err.style.display="block";return;}
-  if(!currentClub){err.textContent="Recharge la page.";err.style.display="block";return;}
+  // Si currentClub pas encore chargé, attendre
+  if(!currentClub){
+    err.textContent="Chargement en cours...";err.style.display="block";
+    // Retry après 1 seconde
+    setTimeout(()=>verifierPin(),1000);
+    return;
+  }
   const attendu=currentClub.pins&&currentClub.pins[currentTeam?.id];
   if(!attendu){err.textContent="Aucun PIN configuré. Contacte ton coach.";err.style.display="block";return;}
   if(pin!==attendu){err.textContent="Code incorrect. Réessaie.";err.style.display="block";return;}
