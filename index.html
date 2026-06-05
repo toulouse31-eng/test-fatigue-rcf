@@ -1218,7 +1218,7 @@ async function initApp(){
   }
   document.getElementById("rowAddPlayer").style.display="none";
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
-  if(!playerMode){chargerLogoClub();refreshFirestoreData();setTimeout(buildCoachInterface,300);}
+  if(!playerMode){chargerLogoClub();refreshFirestoreData();}
 }
 function majAvatar(){
   const nom=currentClub?.nom||"";const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
@@ -1281,7 +1281,9 @@ async function refreshFirestoreData(){
     enregistrementsSheets=snap.docs.map(d=>{const data=d.data();const{zoneTexte,zoneClass}=computeZone(Number(data.pourcentage)||0);return{...data,zoneClass:data.zoneClass||zoneClass,zone:data.zone||zoneTexte,envoye:true};});
     if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
   }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
-  buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();buildCoachInterface();
+  buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();
+  // Interface coach : toujours reconstruire après chargement des données
+  buildCoachInterface();
 }
 function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
 
@@ -1444,15 +1446,16 @@ function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelec
 
 // ===== INTERFACE COACH =====
 async function buildCoachInterface(){
+  if(!currentTeam||!currentClub) return; // Pas encore prêt
   const data = getVizData();
-  const team = currentTeam?.id||"";
+  const team = currentTeam.id;
   // Mettre à jour la preview logo
   chargerLogoClub();
-  const joueurs = (currentClub?.players&&currentClub.players[team])||[];
+  const joueurs = (currentClub.players&&currentClub.players[team])||[];
 
   // Titre
   const teamNameEl = document.getElementById("coachTeamName");
-  if(teamNameEl) teamNameEl.textContent = currentTeam?.nom||"—";
+  if(teamNameEl) teamNameEl.textContent = currentTeam.nom||"—";
 
   // Dernier état par joueur
   const lastByPlayer = {};
