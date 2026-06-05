@@ -15,7 +15,7 @@
 :root {
   --vert:#8dc63f; --vert2:#6aaa1e; --vert3:#3a6a1a;
   --noir:#0f1a0f; --noir2:#1a2a1a; --noir3:#243224;
-  --blanc:#f4f8f0; --gris:#8a9e8a; --gris2:#4a6a4a;
+  --blanc:#f4f8f0; --gris:#a0b8a0; --gris2:#6a8a6a;
   --card-light:#fff; --bg-light:#f0f5ea; --border-light:#c8ddb0;
   --rouge:#cc0000; --rouge-bg:#ffe0e0; --rouge-border:#ffaaaa;
   --orange:#cc6600; --orange-bg:#ffe8cc; --orange-border:#ffcc88;
@@ -185,7 +185,7 @@ body.coach-mode .local-list{display:block;}
 .local-list li{margin-bottom:4px;padding:3px 6px;border-radius:6px;font-size:13px;}
 
 /* ===== STATS CARD (coach) ===== */
-.stats-card{background:var(--noir2);border-radius:16px;border:1px solid #2a3f2a;padding:16px;flex:0 0 360px;max-width:380px;font-size:13px;align-self:flex-start;}
+.stats-card{background:#1e3020;border-radius:16px;border:1px solid #3a5a3a;padding:16px;flex:0 0 360px;max-width:380px;font-size:13px;align-self:flex-start;}
 .coach-only{display:none;}
 body.coach-mode .coach-only{display:block;}
 .stats-title{font-weight:700;color:var(--vert);font-size:14px;margin-bottom:8px;}
@@ -221,9 +221,9 @@ body.coach-mode .coach-only{display:block;}
 .seance-row select{background:var(--noir3);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);flex:1;}
 
 /* ===== SECTION STATS ÉQUIPE ===== */
-.stats-section{background:var(--noir2);border-radius:16px;border:1px solid #2a3f2a;padding:16px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 32px);display:none;}
+.stats-section{background:#1e3020;border-radius:16px;border:1px solid #3a5a3a;padding:20px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 48px);display:none;}
 body.coach-mode .stats-section{display:block;}
-body.coach-mode .app-body{align-items:flex-start;}
+body.coach-mode .app-body{align-items:flex-start;padding:20px 24px;}
 .stats-section h2{font-size:16px;color:var(--vert);margin-bottom:12px;}
 .sheets-status{font-size:11px;color:var(--gris);text-align:center;margin-bottom:8px;}
 .alert-card{background:var(--noir3);border-radius:10px;padding:12px;border:1px solid #3a3a00;margin-bottom:12px;}
@@ -236,9 +236,9 @@ body.coach-mode .app-body{align-items:flex-start;}
 .stats-grid{display:flex;flex-wrap:wrap;gap:16px;max-width:900px;}
 .chart-card{flex:1 1 260px;}
 .chart-card h3{font-size:13px;color:var(--gris);text-align:center;margin-bottom:6px;}
-.chart-wrap{position:relative;width:100%;height:220px;background:var(--noir3);border-radius:10px;overflow:hidden;}
+.chart-wrap{position:relative;width:100%;height:220px;background:#162516;border-radius:10px;overflow:hidden;border:1px solid #2a4a2a;}
 .chart-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
-.sparkline-card{margin-top:12px;background:var(--noir3);border-radius:10px;padding:12px;}
+.sparkline-card{margin-top:12px;background:#162516;border-radius:10px;padding:12px;border:1px solid #2a4a2a;}
 .sparkline-card h3{font-size:13px;color:var(--gris);margin-bottom:8px;}
 .sparkline-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
 .sparkline-row label{font-size:12px;color:var(--gris);}
@@ -254,6 +254,7 @@ body.player-mode .app-body{justify-content:center;padding:0;}
 /* Mode coach ON : cacher le formulaire */
 body.coach-mode .form-card{display:none;}
 body.coach-mode .stats-card{flex:1 1 100%;max-width:100%;}
+body.coach-mode #appContent{background:#1a2a1a;}
 
 /* RESPONSIVE */
 @media(max-width:700px){
@@ -363,7 +364,7 @@ body.coach-mode .stats-card{flex:1 1 100%;max-width:100%;}
 .zone-tag button{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;color:inherit;padding:0;}
 
 /* Dashboard douleurs */
-.douleur-dashboard{background:var(--noir3);border-radius:12px;padding:14px;margin-top:12px;}
+.douleur-dashboard{background:#162516;border-radius:12px;padding:14px;margin-top:12px;border:1px solid #2a4a2a;}
 .douleur-dashboard h3{font-size:13px;color:var(--vert);margin-bottom:10px;}
 .heatmap-corps{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
 .heatmap-vue{display:flex;flex-direction:column;align-items:center;gap:4px;}
