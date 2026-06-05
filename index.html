@@ -471,7 +471,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <input type="email" id="loginEmail" placeholder="Email" autocomplete="email"/>
     <input type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password"/>
     <div class="err-msg" id="loginError"></div>
-    <button class="btn-primary-dark" onclick="doLogin()">Se connecter</button>
+    <button type="button" class="btn-primary-dark" onclick="doLogin()">Se connecter</button>
     <div class="link-dark" onclick="showRegister()">Pas encore de compte ? <span>Créer un compte</span></div>
     <div class="player-access-link" onclick="goToPlayerEntry()">👟 Je suis un joueur → <span>Accès joueur</span></div>
   </div>
@@ -482,7 +482,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <input type="email" id="regEmail" placeholder="Email" autocomplete="email"/>
     <input type="password" id="regPassword" placeholder="Mot de passe (6 car. min)" autocomplete="new-password"/>
     <div class="err-msg" id="registerError"></div>
-    <button class="btn-primary-dark" onclick="doRegister()">Créer mon compte</button>
+    <button type="button" class="btn-primary-dark" onclick="doRegister()">Créer mon compte</button>
     <div class="link-dark" onclick="showLogin()">Déjà un compte ? <span>Se connecter</span></div>
   </div>
 </div>
@@ -501,7 +501,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <input type="tel" maxlength="1" id="pin4" inputmode="numeric" pattern="[0-9]" oninput="pinNext(this,null)"/>
     </div>
     <div class="pin-err" id="pinError">Code incorrect. Réessaie.</div>
-    <button class="btn-primary-dark" onclick="verifierPin()">Valider →</button>
+    <button type="button" class="btn-primary-dark" onclick="verifierPin()">Valider →</button>
     <div class="link-dark" onclick="showLogin()">Je suis coach → <span>Connexion coach</span></div>
   </div>
 </div>
@@ -518,7 +518,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <option value="">— Sélectionne ton nom —</option>
     </select>
     <div class="pick-err" id="playerPickError" style="display:none;">Sélectionne ton nom dans la liste.</div>
-    <button class="btn-primary-dark" onclick="confirmerJoueur()">Continuer →</button>
+    <button type="button" class="btn-primary-dark" onclick="confirmerJoueur()">Continuer →</button>
     <div style="margin-top:12px;font-size:12px;color:#6a8a6a;text-align:center;border-top:1px solid #2a3f2a;padding-top:10px;">
       Tu ne te trouves pas dans la liste ?<br>Contacte ton coach pour être ajouté.
     </div>
@@ -534,10 +534,10 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
   <div class="team-grid" id="teamGrid"></div>
   <div class="team-add-row" id="teamAddRow" style="display:none;">
     <input type="text" id="newTeamInput" placeholder="Ex : Seniors N1, Seniors R2, U19, U17..." maxlength="30"/>
-    <button onclick="addTeam()">+ Ajouter</button>
+    <button type="button" onclick="addTeam()">+ Ajouter</button>
   </div>
-  <button class="btn-ghost-dark" onclick="toggleAddTeam()">+ Gérer les équipes</button>
-  <button class="btn-ghost-dark" onclick="doLogout()">Se déconnecter</button>
+  <button type="button" class="btn-ghost-dark" onclick="toggleAddTeam()">+ Gérer les équipes</button>
+  <button type="button" class="btn-ghost-dark" onclick="doLogout()">Se déconnecter</button>
 </div>
 
 <!-- ============================================================ -->
@@ -548,7 +548,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
   <!-- Bannière joueur -->
   <div class="player-banner" id="playerBanner">
     <span>👋 <strong id="playerBannerName">—</strong> &nbsp;|&nbsp; <span id="playerBannerTeam"></span></span>
-    <button onclick="quitterModeJoueur()">Changer de joueur</button>
+    <button type="button" onclick="quitterModeJoueur()">Changer de joueur</button>
   </div>
 
   <!-- Top Bar -->
@@ -570,14 +570,14 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       </div>
     </div>
     <div class="topbar-right">
-      <button class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></button>
-      <button class="tbadge" id="modeCoachBtn" onclick="toggleModeCoach()" aria-pressed="false">
+      <button type="button" class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></button>
+      <button type="button" class="tbadge" id="modeCoachBtn" onclick="toggleModeCoach()" aria-pressed="false">
         <span class="tbadge-coach-icon">Coach</span>
         <span class="tbadge-coach-text">Mode coach OFF</span>
       </button>
       <!-- Avatar menu -->
       <div style="position:relative;" id="avatarWrapper">
-        <button class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
+        <button type="button" class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
         <div id="avatarMenu" style="display:none;position:absolute;right:0;top:40px;background:#1a2a1a;border-radius:12px;border:1px solid #2a3f2a;box-shadow:0 8px 24px rgba(0,0,0,0.4);min-width:200px;z-index:999;overflow:hidden;font-family:Arial,sans-serif;">
           <div style="padding:12px 14px;border-bottom:1px solid #2a3f2a;">
             <div id="menuClubNom" style="font-size:14px;font-weight:700;color:var(--vert);"></div>
@@ -607,7 +607,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <div class="coach-interface" id="coachInterface" style="display:none;">
       <h2>
         <span>👥 Joueurs — <span id="coachTeamName"></span></span>
-        <button class="btn-manage" id="btnManageJoueurs" onclick="toggleSelectMode()">🗑️ Gérer</button>
+        <button type="button" class="btn-manage" id="btnManageJoueurs" onclick="toggleSelectMode()">🗑️ Gérer</button>
       </h2>
       <!-- Stats rapides -->
       <div class="coach-stats-row" id="coachStatsRow"></div>
@@ -615,8 +615,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <div class="select-bar" id="selectBar">
         <span class="select-bar-text" id="selectBarText">0 joueur sélectionné</span>
         <div class="select-bar-actions">
-          <button class="btn-cancel-sel" onclick="toggleSelectMode()">Annuler</button>
-          <button class="btn-delete-sel" onclick="supprimerSelection()">🗑️ Supprimer</button>
+          <button type="button" class="btn-cancel-sel" onclick="toggleSelectMode()">Annuler</button>
+          <button type="button" class="btn-delete-sel" onclick="supprimerSelection()">🗑️ Supprimer</button>
         </div>
       </div>
       <!-- Upload logo club -->
@@ -629,14 +629,14 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
           <div class="logo-upload-title">Logo du club</div>
           <div class="logo-upload-sub">JPG, PNG — recommandé 200×200px</div>
         </div>
-        <button class="logo-upload-btn" onclick="document.getElementById('logoFileInput').click()">📷 Changer</button>
+        <button type="button" class="logo-upload-btn" onclick="document.getElementById('logoFileInput').click()">📷 Changer</button>
         <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/gif" onchange="uploadLogoClub(this)"/>
       </div>
 
       <!-- Ajouter joueur -->
       <div class="coach-add-row">
         <input type="text" id="coachNewPlayer" placeholder="Prénom du joueur à ajouter..." maxlength="40"/>
-        <button onclick="coachAddPlayer()">+ Ajouter</button>
+        <button type="button" onclick="coachAddPlayer()">+ Ajouter</button>
       </div>
       <!-- Liste joueurs -->
       <div class="joueurs-grid" id="joueursGrid">
@@ -871,7 +871,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <div class="stats-card coach-only">
       <div class="stats-header-row">
         <div class="stats-title">Synthèse rapide</div>
-        <button class="export-btn no-print" onclick="exportPDF()">PDF</button>
+        <button type="button" class="export-btn no-print" onclick="exportPDF()">PDF</button>
       </div>
 
       <!-- PIN PARTAGE -->
@@ -880,8 +880,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
         <div class="pin-code-display" id="coachPinDisplay">——</div>
         <div class="pin-link-hidden" id="coachPinLink">—</div>
         <div class="pin-actions">
-          <button class="pin-btn" onclick="copierLienJoueur()">📋 Copier le lien</button>
-          <button class="pin-btn" onclick="regenererPin()">🔄 Nouveau PIN</button>
+          <button type="button" class="pin-btn" onclick="copierLienJoueur()">📋 Copier le lien</button>
+          <button type="button" class="pin-btn" onclick="regenererPin()">🔄 Nouveau PIN</button>
         </div>
       </div>
 
@@ -1464,6 +1464,7 @@ async function buildCoachInterface(){
   const team = currentTeam.id;
   // Mettre à jour la preview logo
   chargerLogoClub();
+  console.log("buildCoachInterface team:", team, "joueurs:", currentClub.players?.[team]);
   const joueurs = (currentClub.players&&currentClub.players[team])||[];
 
   // Titre
@@ -1740,7 +1741,7 @@ function majZonesSelectionnees() {
     const icons = {gene:"🟡", douleur:"🟠", vive:"🔴"};
     const tag = document.createElement("span");
     tag.className = "zone-tag " + intensite;
-    tag.innerHTML = `${icons[intensite]} ${zone} <button onclick="supprimerZone('${zone}')" title="Supprimer">×</button>`;
+    tag.innerHTML = `${icons[intensite]} ${zone} <button type="button" onclick="supprimerZone('${zone}')" title="Supprimer">×</button>`;
     container.appendChild(tag);
   });
 }
