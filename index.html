@@ -1553,7 +1553,7 @@ async function toggleModeCoach(){
     if(ci){ci.style.display="flex";ci.style.flexDirection="column";}
     sessionStorage.removeItem("rpe_coach");
   }
-}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";sessionStorage.removeItem("rpe_coach");}}
+}
 function exportPDF(){
   const data=getVizData(),keys=getKeysSorted();
   const dateKey=keys[keys.length-1]||null;
