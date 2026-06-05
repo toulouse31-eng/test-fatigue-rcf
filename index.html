@@ -907,6 +907,19 @@ function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam
 function tErr(c){return{"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court.","auth/invalid-credential":"Email ou mot de passe incorrect."}[c]||"Erreur : "+c;}
 
 auth.onAuthStateChanged(async user=>{
+  // Vérifier d'abord si c'est un accès joueur via URL
+  const params=new URLSearchParams(location.search);
+  const urlClub=params.get("club");
+  const urlTeam=params.get("team");
+
+  if(urlClub&&urlTeam&&!playerMode){
+    // Mode joueur via lien : charger le club maintenant que Firebase est prêt
+    if(!currentClub){
+      await chargerClubJoueur(urlClub,urlTeam);
+    }
+    return; // Ne pas continuer vers le flow coach
+  }
+
   if(user){
     currentUser=user;
     await chargerClub();
@@ -918,7 +931,6 @@ auth.onAuthStateChanged(async user=>{
       showScreen("appContent");
       initApp();
       if(savedCoach){
-        // Restaurer le mode coach
         setTimeout(async()=>{
           document.body.classList.add("coach-mode");
           const btn=document.getElementById("modeCoachBtn");
@@ -935,12 +947,13 @@ auth.onAuthStateChanged(async user=>{
       showScreen("teamScreen");
       renderTeamScreen();
     }
-  } else if(!playerMode){showScreen("loginScreen");}
-  // Ne cacher le splash qu'après restauration complète du mode coach
+  } else if(!playerMode&&!urlClub){
+    showScreen("loginScreen");
+  }
+
   const splashEl=document.getElementById("splashScreen");
   const savedCoachCheck=sessionStorage.getItem("rpe_coach");
   if(savedCoachCheck){
-    // Attendre que le mode coach soit restauré avant de cacher le splash
     setTimeout(()=>{if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}},600);
   } else {
     if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}
@@ -1014,14 +1027,9 @@ async function verifierPin(){
   const pin=[1,2,3,4].map(i=>document.getElementById("pin"+i).value).join("");
   const err=document.getElementById("pinError");err.style.display="none";
   if(pin.length<4){err.textContent="Entre les 4 chiffres.";err.style.display="block";return;}
-  // Si currentClub pas encore chargé, attendre
-  if(!currentClub){
-    err.textContent="Chargement en cours...";err.style.display="block";
-    // Retry après 1 seconde
-    setTimeout(()=>verifierPin(),1000);
-    return;
-  }
-  const attendu=currentClub.pins&&currentClub.pins[currentTeam?.id];
+  // Si currentClub pas encore chargé, essayer de le recharger
+  if(!currentClub||!currentTeam){err.textContent="Erreur : recharge le lien envoyé par ton coach.";err.style.display="block";return;}
+  const attendu=currentClub.pins&&currentClub.pins[currentTeam.id];
   if(!attendu){err.textContent="Aucun PIN configuré. Contacte ton coach.";err.style.display="block";return;}
   if(pin!==attendu){err.textContent="Code incorrect. Réessaie.";err.style.display="block";return;}
   await chargerJoueursEquipe(currentTeam.id);showPlayerPick();
@@ -1529,7 +1537,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.addEventListener("resize",()=>{if(document.body.classList.contains("coach-mode"))forceResizeAllCharts();});
-window.addEventListener("DOMContentLoaded",()=>{const p=new URLSearchParams(location.search),c=p.get("club"),t=p.get("team");if(c&&t){chargerClubJoueur(c,t);}});
+window.addEventListener("DOMContentLoaded",()=>{
+  // Le chargement joueur est géré dans onAuthStateChanged
+  // qui se déclenche une fois Firebase initialisé
+});
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(e=>console.log("SW err:",e));}</script>
 </body>
