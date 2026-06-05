@@ -426,6 +426,17 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
 @media(max-width:600px){.joueur-row{grid-template-columns:0px 10px 1fr 110px 36px;}.joueur-row.select-mode{grid-template-columns:22px 10px 1fr 110px 36px;}.joueur-score{display:none;}}
 
+
+/* ===== UPLOAD LOGO CLUB ===== */
+.logo-upload-wrap{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 14px;background:#f8fbf4;border-radius:10px;border:1.5px dashed #c8ddb0;}
+.logo-preview-sm{width:44px;height:44px;border-radius:8px;object-fit:contain;background:#fff;border:1px solid #c8ddb0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.logo-preview-sm img{width:100%;height:100%;object-fit:contain;}
+.logo-upload-info{flex:1;min-width:0;}
+.logo-upload-title{font-size:13px;font-weight:700;color:#3a6a1a;}
+.logo-upload-sub{font-size:11px;color:#8aaa7a;margin-top:2px;}
+.logo-upload-btn{padding:8px 14px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid #8dc63f;background:#fff;color:#3a6a1a;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.logo-upload-btn:hover{background:#f0f8e8;}
+#logoFileInput{display:none;}
 </style>
 </head>
 <body>
@@ -608,6 +619,20 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
           <button class="btn-delete-sel" onclick="supprimerSelection()">🗑️ Supprimer</button>
         </div>
       </div>
+      <!-- Upload logo club -->
+      <div class="logo-upload-wrap">
+        <div class="logo-preview-sm" id="logoPreviewSm">
+          <img id="logoPreviewImg" src="" alt="Logo" style="display:none;" onerror="this.style.display='none'"/>
+          <span id="logoPreviewIcon" style="font-size:20px;">🏟️</span>
+        </div>
+        <div class="logo-upload-info">
+          <div class="logo-upload-title">Logo du club</div>
+          <div class="logo-upload-sub">JPG, PNG — recommandé 200×200px</div>
+        </div>
+        <button class="logo-upload-btn" onclick="document.getElementById('logoFileInput').click()">📷 Changer</button>
+        <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/gif" onchange="uploadLogoClub(this)"/>
+      </div>
+
       <!-- Ajouter joueur -->
       <div class="coach-add-row">
         <input type="text" id="coachNewPlayer" placeholder="Prénom du joueur à ajouter..." maxlength="40"/>
@@ -1100,6 +1125,8 @@ async function chargerClubJoueur(clubId,teamId){
     console.log("currentClub chargé:", currentClub.nom, "pins:", currentClub.pins);
     document.getElementById("pinTeamLabel").textContent=(currentClub.nom||"")+" — "+teamId;
     document.getElementById("pinTeamHint").textContent="Entre le code PIN fourni par ton coach";
+    // Charger le logo dès maintenant
+    if(currentClub.logoBase64) majLogoPartout(currentClub.logoBase64);
     showScreen("pinScreen");
     const splash=document.getElementById("splashScreen");
     if(splash){splash.classList.add("hidden");setTimeout(()=>splash.style.display="none",350);}
@@ -1156,6 +1183,7 @@ function lancerModeJoueur(){
   showScreen("appContent");
   document.getElementById("currentTeamLabel").textContent=currentTeam?.nom||"—";
   document.getElementById("appSubtitle").textContent=(currentClub?.nom||"")+" — "+(currentTeam?.nom||"");
+  if(currentClub?.logoBase64) majLogoPartout(currentClub.logoBase64);
   enregistrementsLocal=chargerLocal();initDateSeance();
 }
 function quitterModeJoueur(){playerMode=false;currentPlayer=null;document.body.classList.remove("player-mode");document.getElementById("rowJoueurSelect").style.display="flex";document.getElementById("rowJoueurDisplay").style.display="none";showPlayerPick();}
@@ -1190,7 +1218,7 @@ async function initApp(){
   }
   document.getElementById("rowAddPlayer").style.display="none";
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
-  if(!playerMode){refreshFirestoreData();setTimeout(buildCoachInterface,300);}
+  if(!playerMode){chargerLogoClub();refreshFirestoreData();setTimeout(buildCoachInterface,300);}
 }
 function majAvatar(){
   const nom=currentClub?.nom||"";const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
@@ -1418,6 +1446,8 @@ function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelec
 async function buildCoachInterface(){
   const data = getVizData();
   const team = currentTeam?.id||"";
+  // Mettre à jour la preview logo
+  chargerLogoClub();
   const joueurs = (currentClub?.players&&currentClub.players[team])||[];
 
   // Titre
