@@ -1,548 +1,663 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Team RPE v1.2</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#2f7ccc">
+  <meta name="theme-color" content="#8dc63f">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
-body{font-family:Arial,sans-serif;padding:20px;max-width:900px;margin:auto;background:#e3f1ff;font-size:18px;}
-.screen-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:16px;}
-.screen-center h1{color:#2f7ccc;margin-bottom:4px;}
-.screen-center p{color:#4a6580;font-size:14px;margin:0;text-align:center;}
-.auth-card{background:#fff;border-radius:16px;border:2px solid #6bb4ff;box-shadow:0 4px 12px rgba(0,0,0,0.08);padding:28px 24px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px;}
-.auth-card input[type="email"],.auth-card input[type="password"],.auth-card input[type="text"]{padding:12px;font-size:16px;border-radius:10px;border:1px solid #ccc;width:100%;box-sizing:border-box;}
-.btn-primary{padding:14px;font-size:16px;border-radius:10px;border:none;cursor:pointer;background:#2f7ccc;color:#fff;font-weight:bold;}
-.btn-primary:hover{background:#1f5ba8;}
-.link-text{text-align:center;font-size:13px;color:#4a6580;cursor:pointer;}
-.link-text span{color:#2f7ccc;text-decoration:underline;}
-.err-msg{color:#b30000;font-size:14px;text-align:center;display:none;}
-.auth-card .subtitle{color:#4a6580;font-size:14px;text-align:center;}
-.pin-card{background:#fff;border-radius:16px;border:2px solid #6bb4ff;padding:32px 28px;width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:16px;}
-.pin-team-label{font-size:20px;font-weight:bold;color:#2f7ccc;}
-.pin-inputs{display:flex;gap:12px;}
-.pin-inputs input{width:56px;height:64px;font-size:28px;font-weight:bold;text-align:center;border-radius:12px;border:2px solid #ccc;background:#f5f9ff;}
-.pin-inputs input:focus{border-color:#2f7ccc;outline:none;}
-.pick-card{background:#fff;border-radius:16px;border:2px solid #6bb4ff;padding:24px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;}
-.player-grid{display:flex;flex-wrap:wrap;gap:10px;}
-.player-btn{padding:12px 18px;font-size:16px;border-radius:10px;border:1px solid #6bb4ff;cursor:pointer;background:#f5f9ff;color:#2f4f6f;transition:background .15s;}
-.player-btn:hover{background:#daeeff;}
-.player-btn.selected{background:#2f7ccc;color:#fff;border-color:#2f7ccc;}
-.team-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:8px;}
-.team-btn{padding:18px 28px;font-size:18px;font-weight:bold;border-radius:14px;border:2px solid #6bb4ff;cursor:pointer;background:#fff;color:#2f4f6f;min-width:160px;text-align:center;transition:background .15s,transform .1s;}
-.team-btn:hover{background:#e3f1ff;transform:translateY(-2px);}
-.team-add-row{display:flex;gap:8px;margin-top:8px;width:100%;max-width:400px;}
-.team-add-row input{flex:1;padding:10px;font-size:15px;border-radius:10px;border:1px solid #ccc;}
-.team-add-row button{padding:10px 18px;font-size:15px;border-radius:10px;border:none;background:#2f7ccc;color:#fff;cursor:pointer;}
-.pin-share-box{background:#f0f9ff;border:1px solid #6bb4ff;border-radius:12px;padding:14px 18px;margin-top:6px;font-size:14px;color:#2f4f6f;display:flex;flex-direction:column;gap:6px;}
-.pin-display{font-size:32px;font-weight:bold;color:#2f7ccc;letter-spacing:8px;}
-.pin-link{font-size:12px;color:#4a6580;word-break:break-all;}
-.pin-copy-btn{align-self:flex-start;padding:6px 14px;font-size:13px;border-radius:8px;border:none;background:#2f7ccc;color:#fff;cursor:pointer;}
-#appContent{display:none;}
-.top-bar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin-bottom:10px;}
-.logo-rcf{max-width:60px;height:auto;}
-.top-title{text-align:center;}
-h1{margin:0;color:#2f7ccc;font-size:26px;}
-h2{margin:0;font-size:16px;color:#4a6580;}
-.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
-.team-badge{display:inline-flex;align-items:center;gap:6px;background:#2f7ccc;color:#fff;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:bold;cursor:pointer;}
-.team-badge:hover{background:#1f5ba8;}
-.mode-toggle-btn{padding:8px 14px;font-size:12px;border-radius:999px;border:none;cursor:pointer;background:linear-gradient(145deg,#3f82cf,#1f5ba8);color:#fff;box-shadow:0 3px 6px rgba(0,0,0,0.25);opacity:0.85;transition:transform .1s,box-shadow .1s,opacity .2s;white-space:nowrap;}
-.mode-toggle-btn:hover{opacity:1;transform:translateY(-1px);}
-.mode-toggle-btn.coach-on{background:linear-gradient(145deg,#12b886,#0f8f66);}
-.logout-btn{padding:6px 12px;font-size:12px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;color:#4a6580;}
-.sync-status{font-size:12px;color:#4a6580;padding:4px 0;}
-.sync-status.ok{color:#0f8f66;}.sync-status.err{color:#b30000;}
-.player-banner{background:#e3f1ff;border-radius:10px;padding:8px 14px;font-size:14px;color:#2f4f6f;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;}
+/* ===== PALETTE TEAM RPE ===== */
+:root {
+  --vert:#8dc63f; --vert2:#6aaa1e; --vert3:#3a6a1a;
+  --noir:#0f1a0f; --noir2:#1a2a1a; --noir3:#243224;
+  --blanc:#f4f8f0; --gris:#8a9e8a; --gris2:#4a6a4a;
+  --card-light:#fff; --bg-light:#f0f5ea; --border-light:#c8ddb0;
+  --rouge:#cc0000; --rouge-bg:#ffe0e0; --rouge-border:#ffaaaa;
+  --orange:#cc6600; --orange-bg:#ffe8cc; --orange-border:#ffcc88;
+  --jaune:#998800; --jaune-bg:#fff8cc; --jaune-border:#ffee88;
+  --vert-clair:#227700; --vert-clair-bg:#d8f0cc; --vert-clair-border:#88cc55;
+  --vert-fort:#005522; --vert-fort-bg:#c0ecc8; --vert-fort-border:#55bb77;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:var(--blanc);}
+
+/* ===== ÉCRANS ===== */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+#loginScreen,#pinScreen,#playerPickScreen,#teamScreen{flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:var(--noir);}
+#appContent{display:none;flex-direction:column;}
+#appContent.active{display:flex;}
+
+/* ===== LOGIN ===== */
+.login-logo-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.login-logo-box{width:120px;height:120px;border-radius:20px;background:var(--noir2);border:2px solid var(--noir3);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.login-logo-box img{width:100%;height:100%;object-fit:contain;}
+.login-title{font-size:24px;font-weight:900;color:#fff;letter-spacing:-0.5px;}
+.login-title span{color:var(--vert);}
+.login-subtitle-txt{font-size:12px;color:var(--gris);letter-spacing:1px;}
+.auth-card{background:var(--noir3);border-radius:16px;border:1px solid #2a3f2a;padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;}
+.auth-card .card-title{font-size:13px;color:var(--gris);font-weight:700;margin-bottom:2px;}
+.auth-card input{background:var(--noir2);border:1px solid #2a3f2a;border-radius:8px;padding:11px 12px;font-size:14px;color:var(--blanc);width:100%;}
+.auth-card input::placeholder{color:var(--gris2);}
+.auth-card input:focus{outline:none;border-color:var(--vert);}
+.btn-primary-dark{background:var(--vert);color:var(--noir);border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:900;cursor:pointer;width:100%;letter-spacing:0.5px;}
+.btn-primary-dark:hover{background:var(--vert2);}
+.err-msg{color:#ff6b6b;font-size:13px;text-align:center;display:none;}
+.link-dark{text-align:center;font-size:12px;color:var(--gris);cursor:pointer;padding-top:4px;}
+.link-dark span{color:var(--vert);font-weight:700;}
+.player-access-link{text-align:center;font-size:13px;color:var(--gris);cursor:pointer;border-top:1px solid #2a3f2a;padding-top:12px;margin-top:2px;}
+.player-access-link span{color:var(--vert);font-weight:700;}
+
+/* ===== SÉLECTION ÉQUIPE ===== */
+.team-club-label{font-size:14px;color:var(--gris);margin:0;}
+.team-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px;}
+.team-btn-dark{padding:16px 24px;font-size:17px;font-weight:700;border-radius:12px;border:1.5px solid var(--vert);cursor:pointer;background:var(--noir3);color:var(--vert);min-width:150px;text-align:center;transition:background .15s,transform .1s;}
+.team-btn-dark:hover{background:var(--vert3);transform:translateY(-2px);color:#fff;}
+.team-add-row{display:flex;gap:8px;width:100%;max-width:380px;margin-top:4px;}
+.team-add-row input{flex:1;background:var(--noir2);border:1px solid #2a3f2a;border-radius:8px;padding:10px 12px;font-size:14px;color:var(--blanc);}
+.team-add-row input::placeholder{color:var(--gris2);}
+.team-add-row button{padding:10px 16px;font-size:14px;border-radius:8px;border:none;background:var(--vert);color:var(--noir);font-weight:700;cursor:pointer;}
+.btn-ghost-dark{padding:8px 18px;font-size:13px;border-radius:999px;border:1px solid #2a3f2a;background:transparent;cursor:pointer;color:var(--gris);margin-top:4px;}
+
+/* ===== PIN ===== */
+.pin-card{background:var(--noir3);border-radius:16px;border:1px solid #2a3f2a;padding:28px 24px;width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.pin-team-lbl{font-size:19px;font-weight:900;color:var(--vert);}
+.pin-hint{font-size:12px;color:var(--gris);text-align:center;}
+.pin-inputs{display:flex;gap:10px;}
+.pin-inputs input{width:54px;height:62px;font-size:26px;font-weight:900;text-align:center;border-radius:10px;border:2px solid #2a3f2a;background:var(--noir2);color:var(--vert);}
+.pin-inputs input:focus{border-color:var(--vert);outline:none;}
+.pin-err{color:#ff6b6b;font-size:13px;display:none;text-align:center;}
+
+/* ===== CHOIX JOUEUR ===== */
+.pick-card{background:var(--noir3);border-radius:16px;border:1px solid #2a3f2a;padding:20px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px;}
+.player-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.player-btn-dark{padding:10px 16px;font-size:15px;border-radius:8px;border:1.5px solid #2a3f2a;cursor:pointer;background:var(--noir2);color:var(--gris);transition:background .15s;}
+.player-btn-dark:hover{background:var(--vert3);color:#fff;border-color:var(--vert);}
+.player-btn-dark.selected{background:var(--vert);color:var(--noir);border-color:var(--vert);font-weight:700;}
+.pick-err{color:#ff6b6b;font-size:13px;display:none;}
+
+/* ===== TOP BAR APP ===== */
+.app-topbar{background:var(--noir2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--vert);}
+.app-topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-logos{display:flex;align-items:center;gap:6px;}
+.logo-rpe-sm{width:34px;height:34px;border-radius:7px;background:var(--vert);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.logo-rpe-sm img{width:100%;height:100%;object-fit:contain;}
+.logo-club-sm{width:34px;height:34px;border-radius:7px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #3a5a3a;}
+.logo-club-sm img{width:100%;height:100%;object-fit:contain;}
+.logo-sep{width:1px;height:22px;background:#3a5a3a;}
+.app-titles{display:flex;flex-direction:column;}
+.app-name{font-size:15px;font-weight:900;color:#fff;}
+.app-name span{color:var(--vert);}
+.app-club-name{font-size:10px;color:var(--gris);}
+.topbar-right{display:flex;align-items:center;gap:6px;}
+
+/* BADGES UNIFORMES option A */
+.tbadge{padding:6px 13px;border-radius:999px;font-size:11px;font-weight:700;border:1.5px solid var(--vert);background:transparent;color:var(--vert);cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;}
+.tbadge:hover{background:var(--vert3);}
+.tbadge.active{background:var(--vert);color:var(--noir);}
+.tbadge.coach-on{background:var(--vert);color:var(--noir);}
+
+/* ===== BANNIÈRE JOUEUR ===== */
+.player-banner{background:var(--noir3);padding:8px 16px;font-size:13px;color:var(--gris);display:none;align-items:center;justify-content:space-between;border-bottom:1px solid #2a3f2a;}
 body.player-mode .player-banner{display:flex;}
-body.player-mode .coach-only{display:none !important;}
-body.player-mode #modeCoachBtn{display:none;}
-body.player-mode .logout-btn{display:none;}
-.player-banner button{padding:4px 10px;font-size:12px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;}
-.layout{display:flex;flex-wrap:wrap;gap:16px;}
-.card,.stats-card{background:#fff;border-radius:16px;border:2px solid #6bb4ff;box-shadow:0 4px 12px rgba(0,0,0,0.08);min-width:0;}
-.card{padding:20px;flex:2 1 540px;}
-.stats-card{padding:16px;flex:1 1 260px;}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;align-items:center;}
-.row label{font-weight:bold;flex:1 0 140px;font-size:16px;}
-.row input[type="text"],.row input[type="date"],.row select,.row textarea{flex:2 1 200px;padding:12px;font-size:18px;border-radius:10px;border:1px solid #ccc;min-height:46px;}
-textarea{min-height:60px;resize:vertical;}
-.question{margin-bottom:22px;}
-.question>label{font-weight:bold;display:block;margin-bottom:6px;}
-.qnum{font-weight:900;color:#2f7ccc;margin-right:6px;}
-.scale{display:flex;gap:10px;flex-wrap:nowrap;margin-top:8px;}
-.scale button{flex:1 0 18%;padding:16px 0;border-radius:999px;border:1px solid #ccc;font-size:22px;cursor:pointer;background:#f5f5f5;transition:transform .1s,box-shadow .1s,border .1s;}
-.scale button[data-value="1"]{background:#ffb3b3;}
-.scale button[data-value="2"]{background:#ffd5a6;}
-.scale button[data-value="3"]{background:#fff6a3;}
-.scale button[data-value="4"]{background:#c9f7b5;}
-.scale button[data-value="5"]{background:#9ae69c;}
-.scale button.active{border:2px solid #000;transform:scale(1.07);box-shadow:0 0 6px rgba(0,0,0,0.25);}
-.legend{font-size:12px;color:#666;margin-top:4px;}
-.na-option{margin-top:4px;font-size:13px;color:#475569;}
-.na-option input{margin-right:4px;}
-.actions{margin-top:20px;display:flex;flex-direction:column;gap:10px;}
-.actions button{padding:16px;font-size:18px;border-radius:10px;border:none;cursor:pointer;}
-.primary{background:#2f7ccc;color:#fff;}
-.secondary{background:#ddd;}
-.actions .danger{background:#b30000;color:#fff;}
-.result{margin-top:15px;font-size:16px;font-weight:bold;padding:12px;border-radius:10px;}
+.player-banner strong{color:var(--vert);}
+.player-banner button{padding:4px 10px;font-size:12px;border-radius:999px;border:1px solid #2a3f2a;background:transparent;cursor:pointer;color:var(--gris);}
+
+/* ===== APP BODY ===== */
+.app-body{background:var(--bg-light);min-height:calc(100vh - 57px);padding:16px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;}
+.sync-bar{font-size:12px;padding:4px 16px;min-height:20px;color:var(--gris);}
+.sync-bar.ok{color:var(--vert2);}
+.sync-bar.err{color:#cc0000;}
+
+/* ===== CARD FORMULAIRE ===== */
+.form-card{background:var(--card-light);border-radius:16px;border:1px solid var(--border-light);box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:20px;flex:2 1 520px;}
+.field-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.field-row label{font-weight:700;flex:0 0 130px;font-size:14px;color:#1a2a1a;}
+.field-row select,.field-row input[type="date"],.field-row input[type="text"],.field-row textarea{flex:1;padding:10px 12px;font-size:15px;border-radius:8px;border:1.5px solid var(--border-light);background:#f8fbf4;color:#1a2a1a;min-height:42px;}
+.field-row select:focus,.field-row input:focus,.field-row textarea:focus{outline:none;border-color:var(--vert);}
+textarea{min-height:56px;resize:vertical;}
+.autre-row{display:none;}
+
+/* QUESTIONS */
+.question{margin-bottom:20px;}
+.question>label{font-weight:700;display:block;margin-bottom:8px;font-size:14px;color:#1a2a1a;}
+.qnum{font-weight:900;color:var(--vert2);margin-right:5px;font-size:16px;}
+.scale{display:flex;gap:8px;flex-wrap:nowrap;}
+.scale button{flex:1 0 18%;padding:14px 0;border-radius:10px;border:2px solid transparent;font-size:20px;font-weight:900;cursor:pointer;transition:transform .1s,box-shadow .1s;}
+.scale button[data-value="1"]{background:var(--rouge-bg);color:var(--rouge);border-color:var(--rouge-border);}
+.scale button[data-value="2"]{background:var(--orange-bg);color:var(--orange);border-color:var(--orange-border);}
+.scale button[data-value="3"]{background:var(--jaune-bg);color:var(--jaune);border-color:var(--jaune-border);}
+.scale button[data-value="4"]{background:var(--vert-clair-bg);color:var(--vert-clair);border-color:var(--vert-clair-border);}
+.scale button[data-value="5"]{background:var(--vert-fort-bg);color:var(--vert-fort);border-color:var(--vert-fort-border);}
+.scale button.active{border-color:#1a2a1a;transform:scale(1.09);box-shadow:0 3px 10px rgba(0,0,0,0.18);}
+.legend{font-size:11px;color:#8aaa7a;margin-top:5px;display:flex;justify-content:space-between;}
+.na-option{margin-top:5px;font-size:12px;color:#8aaa7a;display:flex;align-items:center;gap:5px;}
+.na-option input{accent-color:var(--vert);}
+
+/* ACTIONS */
+.form-actions{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+.btn-enregistrer{background:var(--vert);color:var(--noir);border:none;border-radius:10px;padding:15px;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:0.5px;}
+.btn-enregistrer:hover{background:var(--vert2);}
+.btn-sheets{background:var(--noir2);color:var(--vert);border:1.5px solid var(--vert);border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-reset{background:#f0f5ea;color:#8aaa7a;border:1.5px solid var(--border-light);border-radius:10px;padding:12px;font-size:14px;cursor:pointer;}
+.btn-danger{background:#fff0f0;color:#cc0000;border:1.5px solid #ffaaaa;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;}
+.result-box{margin-top:12px;font-size:14px;font-weight:700;padding:12px;border-radius:10px;}
+
+/* ZONES COULEUR résultat */
 .zone-vert-fonce{background:#b7f0c4;color:#145c2e;}
 .zone-vert-clair{background:#d5f7dd;color:#1f7f3f;}
 .zone-jaune{background:#fff8c2;color:#8a7400;}
 .zone-orange{background:#ffe0b8;color:#8a4b06;}
 .zone-rouge{background:#f8d7da;color:#721c24;}
+
+/* HISTORIQUE LOCAL */
+.local-list{margin-top:12px;display:none;}
+body.coach-mode .local-list{display:block;}
+.local-list ul{padding-left:16px;margin-top:6px;}
+.local-list li{margin-bottom:4px;padding:3px 6px;border-radius:6px;font-size:13px;}
+
+/* ===== STATS CARD (coach) ===== */
+.stats-card{background:var(--noir2);border-radius:16px;border:1px solid #2a3f2a;padding:16px;flex:1 1 260px;}
 .coach-only{display:none;}
 body.coach-mode .coach-only{display:block;}
-.liste-joueurs ul{padding-left:20px;}
-.liste-joueurs li{margin-bottom:4px;padding:4px 6px;border-radius:6px;}
-.stats-title{font-weight:bold;margin:0;color:#2f4f6f;}
-.stats-line{font-size:13px;margin-bottom:4px;}
-.stats-bar-container{margin-top:10px;font-size:12px;}
-.stats-bar-row{display:flex;align-items:center;margin-bottom:4px;gap:6px;}
-.stats-bar-label{width:110px;white-space:nowrap;}
-.stats-bar-bg{flex:1;background:#eee;border-radius:999px;overflow:hidden;height:10px;}
-.stats-bar-fill{height:10px;}
-.stats-indice-box{margin-top:10px;padding:10px;border-radius:12px;text-align:center;font-weight:bold;font-size:14px;background:#f0f4ff;color:#2f4f6f;}
-.stats-indice-box.indice-vert{background:#b7f0c4;color:#145c2e;}
-.stats-indice-box.indice-jaune{background:#fff8c2;color:#8a7400;}
-.stats-indice-box.indice-orange{background:#ffe0b8;color:#8a4b06;}
-.stats-indice-box.indice-rouge{background:#f8d7da;color:#721c24;}
-.stats-reco{margin-top:8px;font-size:13px;color:#2f4f6f;}
-.stats-alertes{margin-top:8px;font-size:13px;color:#333;}
-.stats-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;}
-.stats-chart-card{flex:1 1 280px;min-width:260px;}
-.stats-chart-card h3{font-size:15px;margin-bottom:8px;color:#2f4f6f;text-align:center;}
-.iframe-container{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.15);background:#fff;}
-.iframe-container canvas{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
-.stats-header-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;}
-.export-btn{white-space:nowrap;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:#2f7ccc;color:#fff;}
-.alert-card{margin-top:14px;padding:12px 16px;border-radius:12px;border:1px solid #facc15;background:#fef9c3;}
-.alert-card h3{margin:0 0 6px;font-size:15px;color:#854d0e;}
-.alert-list{margin:6px 0 0;padding-left:18px;font-size:14px;}
+.stats-title{font-weight:700;color:var(--vert);font-size:14px;margin-bottom:8px;}
+.stats-line{font-size:12px;color:var(--gris);margin-bottom:4px;}
+.stats-indice{margin-top:8px;padding:10px;border-radius:10px;text-align:center;font-weight:700;font-size:13px;background:var(--noir3);color:var(--vert);}
+.stats-indice.indice-vert{background:#1a3a1a;color:#88dd55;}
+.stats-indice.indice-jaune{background:#3a3a00;color:#ffdd55;}
+.stats-indice.indice-orange{background:#3a2000;color:#ffaa55;}
+.stats-indice.indice-rouge{background:#3a0000;color:#ff6b6b;}
+.stats-reco{font-size:12px;color:var(--gris);margin-top:8px;line-height:1.5;}
+.stats-alertes{font-size:12px;color:var(--gris);margin-top:8px;}
+.bar-container{margin-top:10px;}
+.bar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.bar-label{width:90px;font-size:11px;color:var(--gris);white-space:nowrap;}
+.bar-bg{flex:1;background:var(--noir3);border-radius:999px;overflow:hidden;height:8px;}
+.bar-fill{height:8px;}
+.bar-val{font-size:11px;color:var(--gris);width:14px;text-align:right;}
+.stats-header-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.export-btn{background:var(--vert);color:var(--noir);border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;}
+
+/* PIN SHARE BOX */
+.pin-share-box{background:var(--noir3);border-radius:10px;padding:12px;border:1px solid #2a3f2a;margin-top:10px;}
+.pin-share-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.pin-code-display{font-size:26px;font-weight:900;color:var(--vert);letter-spacing:8px;}
+.pin-link-hidden{display:none;}
+.pin-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.pin-btn{padding:6px 12px;font-size:12px;font-weight:700;border-radius:6px;border:1.5px solid var(--vert);background:transparent;color:var(--vert);cursor:pointer;}
+.pin-btn:hover{background:var(--vert3);}
+
+/* SÉANCE SELECT */
+.seance-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
+.seance-row label{font-size:12px;color:var(--gris);}
+.seance-row select{background:var(--noir3);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);flex:1;}
+
+/* ===== SECTION STATS ÉQUIPE ===== */
+.stats-section{background:var(--noir2);border-radius:16px;border:1px solid #2a3f2a;padding:16px;margin:0 16px 16px;display:none;}
+body.coach-mode .stats-section{display:block;}
+.stats-section h2{font-size:16px;color:var(--vert);margin-bottom:12px;}
+.sheets-status{font-size:11px;color:var(--gris);text-align:center;margin-bottom:8px;}
+.alert-card{background:var(--noir3);border-radius:10px;padding:12px;border:1px solid #3a3a00;margin-bottom:12px;}
+.alert-card h3{font-size:13px;color:#ffdd55;margin-bottom:6px;}
+.alert-list{padding-left:16px;font-size:12px;color:var(--gris);}
 .alert-list li{margin-bottom:4px;}
-.alert-tag{font-weight:bold;padding:2px 6px;border-radius:999px;margin-right:4px;font-size:11px;}
-.alert-tag-orange{background:#fed7aa;color:#9a3412;}
-.alert-tag-rouge{background:#fecaca;color:#b91c1c;}
-.sparkline-card{margin-top:14px;padding:12px;border:1px solid #c7ddff;border-radius:12px;background:#f5f9ff;}
-.sparkline-wrap{width:100%;height:240px;position:relative;}
-#sparklineCanvas{width:100%;height:100%;display:block;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px #e6eefc;}
-@media(max-width:700px){.stats-grid{flex-direction:column;}.iframe-container{aspect-ratio:3/4;}}
-@media print{body{background:#fff !important;margin:0;padding:0;font-size:14px;}.top-bar,.layout .card,.liste-joueurs,.sparkline-card{display:none !important;}.stats-card,#stats-equipe{display:block !important;box-shadow:none !important;page-break-inside:avoid;margin:0 0 12px 0;}.export-btn,.no-print{display:none !important;}.stats-indice-box,.stats-bar-fill,.zone-vert-fonce,.zone-vert-clair,.zone-jaune,.zone-orange,.zone-rouge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}}
+.alert-tag{font-weight:700;padding:1px 6px;border-radius:999px;margin-right:4px;font-size:10px;}
+.alert-orange{background:#3a2000;color:#ffaa55;}
+.alert-rouge{background:#3a0000;color:#ff6b6b;}
+.stats-grid{display:flex;flex-wrap:wrap;gap:16px;}
+.chart-card{flex:1 1 260px;}
+.chart-card h3{font-size:13px;color:var(--gris);text-align:center;margin-bottom:6px;}
+.chart-wrap{position:relative;width:100%;aspect-ratio:4/3;background:var(--noir3);border-radius:10px;overflow:hidden;}
+.chart-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+.sparkline-card{margin-top:12px;background:var(--noir3);border-radius:10px;padding:12px;}
+.sparkline-card h3{font-size:13px;color:var(--gris);margin-bottom:8px;}
+.sparkline-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.sparkline-row label{font-size:12px;color:var(--gris);}
+.sparkline-row select{background:var(--noir2);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);flex:1;}
+.sparkline-wrap{width:100%;height:200px;position:relative;}
+#sparklineCanvas{width:100%;height:100%;display:block;border-radius:8px;background:var(--noir2);}
+
+/* BODY player mode */
+body.player-mode .coach-only{display:none !important;}
+body.player-mode #modeCoachBtn{display:none;}
+
+/* RESPONSIVE */
+@media(max-width:700px){.stats-grid{flex-direction:column;}.chart-wrap{aspect-ratio:3/4;}.app-body{flex-direction:column;}.scale button{font-size:16px;padding:11px 0;}}
+
+/* PRINT */
+@media print{
+  body{background:#fff !important;}
+  .app-topbar,.form-card,.local-list,.sparkline-card,.player-banner,.sync-bar{display:none !important;}
+  .stats-card,.stats-section{display:block !important;background:#fff !important;color:#000 !important;border:none !important;box-shadow:none !important;}
+  .export-btn,.pin-share-box,.no-print{display:none !important;}
+  .stats-indice,.bar-fill,.zone-vert-fonce,.zone-vert-clair,.zone-jaune,.zone-orange,.zone-rouge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+}
 </style>
 </head>
 <body>
-<!-- LOGIN COACH -->
-<div id="loginScreen" class="screen-center">
-  <h1>⚽ Team RPE</h1>
-  <p>Suivi de la fatigue et de l'état de forme</p>
+
+<!-- ============================================================ -->
+<!-- ÉCRAN LOGIN                                                    -->
+<!-- ============================================================ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-logo-wrap">
+    <div class="login-logo-box">
+      <img src="logo_teamrpe.png" alt="Team RPE" onerror="this.style.display='none'"/>
+    </div>
+    <div class="login-title">TEAM <span>RPE</span></div>
+    <div class="login-subtitle-txt">SUIVI FATIGUE &amp; ÉTAT DE FORME</div>
+  </div>
+
   <div class="auth-card" id="loginCard">
-    <div class="subtitle">Connexion coach</div>
-    <input type="email" id="loginEmail" placeholder="Adresse email" autocomplete="email"/>
+    <div class="card-title">Connexion coach</div>
+    <input type="email" id="loginEmail" placeholder="Email" autocomplete="email"/>
     <input type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password"/>
     <div class="err-msg" id="loginError"></div>
-    <button class="btn-primary" onclick="doLogin()">Se connecter</button>
-    <div class="link-text" onclick="showRegister()">Pas encore de compte ? <span>Créer un compte</span></div>
-    <div class="link-text" style="border-top:1px solid #eee;padding-top:10px;" onclick="goToPlayerEntry()">👟 Je suis un joueur → <span>Accès joueur</span></div>
+    <button class="btn-primary-dark" onclick="doLogin()">Se connecter</button>
+    <div class="link-dark" onclick="showRegister()">Pas encore de compte ? <span>Créer un compte</span></div>
+    <div class="player-access-link" onclick="goToPlayerEntry()">👟 Je suis un joueur → <span>Accès joueur</span></div>
   </div>
+
   <div class="auth-card" id="registerCard" style="display:none;">
-    <div class="subtitle">Créer un compte coach</div>
-    <input type="text" id="regClub" placeholder="Nom du club (ex : Racing CFF)"/>
-    <input type="email" id="regEmail" placeholder="Adresse email" autocomplete="email"/>
+    <div class="card-title">Créer un compte coach</div>
+    <input type="text" id="regClub" placeholder="Nom du club"/>
+    <input type="email" id="regEmail" placeholder="Email" autocomplete="email"/>
     <input type="password" id="regPassword" placeholder="Mot de passe (6 car. min)" autocomplete="new-password"/>
     <div class="err-msg" id="registerError"></div>
-    <button class="btn-primary" onclick="doRegister()">Créer mon compte</button>
-    <div class="link-text" onclick="showLogin()">Déjà un compte ? <span>Se connecter</span></div>
+    <button class="btn-primary-dark" onclick="doRegister()">Créer mon compte</button>
+    <div class="link-dark" onclick="showLogin()">Déjà un compte ? <span>Se connecter</span></div>
   </div>
 </div>
 
-<!-- ÉCRAN PIN JOUEUR -->
-<div id="pinScreen" class="screen-center" style="display:none;">
-  <h1>⚽ Team RPE</h1>
-  <p id="pinTeamHint">Entre le code PIN de ton équipe</p>
+<!-- ============================================================ -->
+<!-- ÉCRAN PIN JOUEUR                                               -->
+<!-- ============================================================ -->
+<div id="pinScreen" class="screen">
   <div class="pin-card">
-    <div class="pin-team-label" id="pinTeamLabel">— Équipe —</div>
-    <p style="font-size:13px;color:#4a6580;margin:0;text-align:center;">Code PIN fourni par ton coach</p>
+    <div class="pin-team-lbl" id="pinTeamLabel">— Équipe —</div>
+    <div class="pin-hint" id="pinTeamHint">Entre le code PIN fourni par ton coach</div>
     <div class="pin-inputs">
-      <input type="number" maxlength="1" min="0" max="9" id="pin1" oninput="pinNext(this,'pin2')"/>
-      <input type="number" maxlength="1" min="0" max="9" id="pin2" oninput="pinNext(this,'pin3')"/>
-      <input type="number" maxlength="1" min="0" max="9" id="pin3" oninput="pinNext(this,'pin4')"/>
-      <input type="number" maxlength="1" min="0" max="9" id="pin4" oninput="pinNext(this,null)"/>
+      <input type="number" min="0" max="9" id="pin1" oninput="pinNext(this,'pin2')"/>
+      <input type="number" min="0" max="9" id="pin2" oninput="pinNext(this,'pin3')"/>
+      <input type="number" min="0" max="9" id="pin3" oninput="pinNext(this,'pin4')"/>
+      <input type="number" min="0" max="9" id="pin4" oninput="pinNext(this,null)"/>
     </div>
-    <div class="err-msg" id="pinError" style="display:none;">Code incorrect. Réessaie.</div>
-    <button class="btn-primary" style="width:100%;" onclick="verifierPin()">Valider →</button>
-    <div class="link-text" onclick="showLogin()">Je suis coach → <span>Connexion coach</span></div>
+    <div class="pin-err" id="pinError">Code incorrect. Réessaie.</div>
+    <button class="btn-primary-dark" onclick="verifierPin()">Valider →</button>
+    <div class="link-dark" onclick="showLogin()">Je suis coach → <span>Connexion coach</span></div>
   </div>
 </div>
 
-<!-- ÉCRAN CHOIX JOUEUR -->
-<div id="playerPickScreen" class="screen-center" style="display:none;">
-  <h1>Qui es-tu ?</h1>
-  <p id="playerPickSubtitle"></p>
+<!-- ============================================================ -->
+<!-- ÉCRAN CHOIX JOUEUR                                             -->
+<!-- ============================================================ -->
+<div id="playerPickScreen" class="screen">
+  <div style="font-size:22px;font-weight:900;color:#fff;">Qui es-tu ?</div>
+  <div id="playerPickSubtitle" style="font-size:13px;color:var(--gris);"></div>
   <div class="pick-card">
-    <div style="font-size:15px;color:#2f4f6f;font-weight:bold;">Choisis ton nom dans la liste :</div>
+    <div style="font-size:14px;font-weight:700;color:var(--vert);">Choisis ton nom :</div>
     <div class="player-grid" id="playerGrid"></div>
-    <div class="err-msg" id="playerPickError" style="display:none;">Sélectionne ton nom.</div>
-    <button class="btn-primary" onclick="confirmerJoueur()">Continuer →</button>
+    <div class="pick-err" id="playerPickError">Sélectionne ton nom.</div>
+    <button class="btn-primary-dark" onclick="confirmerJoueur()">Continuer →</button>
   </div>
 </div>
 
-<!-- ÉCRAN SÉLECTION ÉQUIPE COACH -->
-<div id="teamScreen" class="screen-center" style="display:none;">
-  <h2 style="color:#2f7ccc;">Choisir une équipe</h2>
-  <p id="teamClubLabel" style="color:#4a6580;font-size:14px;margin:0;"></p>
+<!-- ============================================================ -->
+<!-- ÉCRAN SÉLECTION ÉQUIPE (coach)                                 -->
+<!-- ============================================================ -->
+<div id="teamScreen" class="screen">
+  <div style="font-size:20px;font-weight:900;color:var(--vert);">Choisir une équipe</div>
+  <div class="team-club-label" id="teamClubLabel"></div>
   <div class="team-grid" id="teamGrid"></div>
   <div class="team-add-row" id="teamAddRow" style="display:none;">
     <input type="text" id="newTeamInput" placeholder="Nom de l'équipe (ex : U17)" maxlength="30"/>
     <button onclick="addTeam()">+ Ajouter</button>
   </div>
-  <button style="margin-top:8px;padding:8px 16px;font-size:13px;border-radius:999px;border:1px solid #6bb4ff;background:#fff;cursor:pointer;color:#2f7ccc;" onclick="toggleAddTeam()">+ Gérer les équipes</button>
-  <button style="margin-top:12px;padding:8px 18px;font-size:13px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;color:#4a6580;" onclick="doLogout()">Se déconnecter</button>
+  <button class="btn-ghost-dark" onclick="toggleAddTeam()">+ Gérer les équipes</button>
+  <button class="btn-ghost-dark" onclick="doLogout()">Se déconnecter</button>
 </div>
 
-<!-- APP PRINCIPALE -->
+<!-- ============================================================ -->
+<!-- APPLICATION PRINCIPALE                                         -->
+<!-- ============================================================ -->
 <div id="appContent">
+
+  <!-- Bannière joueur -->
   <div class="player-banner" id="playerBanner">
     <span>👋 <strong id="playerBannerName">—</strong> &nbsp;|&nbsp; <span id="playerBannerTeam"></span></span>
     <button onclick="quitterModeJoueur()">Changer de joueur</button>
   </div>
-  <div class="top-bar">
-    <div><img src="logo_rcf.png" class="logo-rcf" alt="Logo club"></div>
-    <div class="top-title">
-      <h1>Team RPE</h1>
-      <h2 id="appSubtitle">Questionnaire bien-être</h2>
-    </div>
-    <div class="top-actions">
-      <span class="team-badge" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></span>
-      <button type="button" id="modeCoachBtn" class="mode-toggle-btn" onclick="toggleModeCoach()" aria-pressed="false">Mode coach OFF</button>
-      <div style="position:relative;" id="avatarWrapper">
-        <div id="avatarBtn" onclick="toggleAvatarMenu()" style="width:36px;height:36px;border-radius:50%;background:#2f7ccc;color:#fff;font-size:13px;font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid rgba(255,255,255,0.4);font-family:Arial,sans-serif;user-select:none;" title="Mon compte">
-          <span id="avatarInitials">?</span>
+
+  <!-- Top Bar -->
+  <div class="app-topbar">
+    <div class="app-topbar-left">
+      <div class="topbar-logos">
+        <div class="logo-rpe-sm">
+          <img src="logo_teamrpe.png" alt="Team RPE" onerror="this.parentElement.style.background='#8dc63f'"/>
         </div>
-        <div id="avatarMenu" style="display:none;position:absolute;right:0;top:44px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:200px;z-index:999;overflow:hidden;font-family:Arial,sans-serif;">
-          <div style="padding:12px 14px;border-bottom:1px solid #f0f0f0;">
-            <div id="menuClubNom" style="font-size:14px;font-weight:bold;color:#2f7ccc;"></div>
-            <div id="menuCoachEmail" style="font-size:11px;color:#888;margin-top:2px;"></div>
+        <div class="logo-sep"></div>
+        <div class="logo-club-sm">
+          <img id="logoClubImg" src="logo_rcf.png" alt="Club" onerror="this.style.display='none'"/>
+        </div>
+      </div>
+      <div class="app-titles">
+        <div class="app-name">TEAM <span>RPE</span></div>
+        <div class="app-club-name" id="appSubtitle">—</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></button>
+      <button class="tbadge" id="modeCoachBtn" onclick="toggleModeCoach()" aria-pressed="false">Mode coach OFF</button>
+      <!-- Avatar menu -->
+      <div style="position:relative;" id="avatarWrapper">
+        <button class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
+        <div id="avatarMenu" style="display:none;position:absolute;right:0;top:40px;background:#1a2a1a;border-radius:12px;border:1px solid #2a3f2a;box-shadow:0 8px 24px rgba(0,0,0,0.4);min-width:200px;z-index:999;overflow:hidden;font-family:Arial,sans-serif;">
+          <div style="padding:12px 14px;border-bottom:1px solid #2a3f2a;">
+            <div id="menuClubNom" style="font-size:14px;font-weight:700;color:var(--vert);"></div>
+            <div id="menuCoachEmail" style="font-size:11px;color:var(--gris);margin-top:2px;"></div>
           </div>
-          <div onclick="backToTeamSelect();toggleAvatarMenu();" style="padding:10px 14px;font-size:13px;color:#2f4f6f;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f9ff'" onmouseout="this.style.background='transparent'">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h1M20 12h1M12 3v1M12 20v1M5.6 5.6l.7.7M17.7 17.7l.7.7M5.6 18.4l.7-.7M17.7 6.3l.7-.7"/></svg>
+          <div onclick="backToTeamSelect();toggleAvatarMenu();" style="padding:10px 14px;font-size:13px;color:var(--gris);cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#243224'" onmouseout="this.style.background='transparent'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h1M20 12h1M12 3v1M12 20v1"/></svg>
             Changer d'équipe
           </div>
-          <div style="height:1px;background:#f0f0f0;margin:0 14px;"></div>
-          <div onclick="doLogout()" style="padding:10px 14px;font-size:13px;color:#b30000;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='transparent'">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Se d&#233;connecter
+          <div style="height:1px;background:#2a3f2a;margin:0 14px;"></div>
+          <div onclick="doLogout()" style="padding:10px 14px;font-size:13px;color:#ff6b6b;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#2a1a1a'" onmouseout="this.style.background='transparent'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Se déconnecter
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div id="syncStatusBar" class="sync-status"></div>
-  <div class="layout">
-    <div class="card">
+
+  <div id="syncStatusBar" class="sync-bar"></div>
+
+  <!-- Corps de l'app -->
+  <div class="app-body">
+
+    <!-- FORMULAIRE -->
+    <div class="form-card">
       <form id="fatigueForm">
-        <div class="row" id="rowJoueurSelect">
+        <!-- Joueur -->
+        <div class="field-row" id="rowJoueurSelect">
           <label for="joueurSelect">Joueur :</label>
           <select id="joueurSelect" name="joueurSelect"><option value="">Choisir un joueur...</option></select>
         </div>
-        <div class="row" id="rowAutre" style="display:none;">
-          <label for="joueurAutre">Nom joueur :</label>
+        <div class="field-row autre-row" id="rowAutre">
+          <label for="joueurAutre">Nom :</label>
           <input type="text" id="joueurAutre" name="joueurAutre" placeholder="Nom et prénom"/>
         </div>
-        <div class="row" id="rowJoueurDisplay" style="display:none;">
+        <div class="field-row" id="rowJoueurDisplay" style="display:none;">
           <label>Joueur :</label>
-          <span id="joueurDisplayName" style="font-weight:bold;color:#2f7ccc;font-size:18px;"></span>
+          <span id="joueurDisplayName" style="font-weight:700;color:var(--vert2);font-size:17px;"></span>
         </div>
-        <div class="row coach-only" id="rowAddPlayer" style="display:none;">
+        <div class="field-row coach-only" id="rowAddPlayer" style="display:none;">
           <input type="text" id="newPlayerInput" placeholder="Ajouter un joueur..." style="flex:1;"/>
-          <button type="button" onclick="addPlayer()" style="padding:10px 16px;font-size:14px;border-radius:10px;border:none;background:#2f7ccc;color:#fff;cursor:pointer;">+ Ajouter</button>
+          <button type="button" onclick="addPlayer()" style="padding:9px 14px;font-size:13px;border-radius:8px;border:none;background:var(--vert);color:var(--noir);cursor:pointer;font-weight:700;">+ Ajouter</button>
         </div>
-        <div class="row">
-          <label for="seanceDate">Date de la séance :</label>
-          <input type="date" id="seanceDate" name="seanceDate">
+        <div class="field-row">
+          <label for="seanceDate">Date :</label>
+          <input type="date" id="seanceDate" name="seanceDate"/>
         </div>
+
+        <!-- Q1 -->
         <div class="question">
-          <label><span class="qnum">1.</span>Qualité de la récupération depuis le dernier match 🔄</label>
+          <label><span class="qnum">1.</span>Récupération post-match 🔄</label>
           <div class="scale" data-name="recuperation">
             <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
           </div>
-          <div class="legend">1 = Très mauvaise récupération &nbsp;&nbsp; 5 = Très bonne récupération</div>
+          <div class="legend"><span>1 = Très mauvaise récupération</span><span>5 = Très bonne récupération</span></div>
           <div class="na-option"><label><input type="checkbox" id="recupNA"> Je n'ai pas joué le dernier match (N/A)</label></div>
           <input type="hidden" name="recuperation"/>
         </div>
+
+        <!-- Q2 -->
         <div class="question">
-          <label><span class="qnum">2.</span>Qualité du sommeil 😴</label>
-          <div class="scale" data-name="sommeil"><button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button></div>
-          <div class="legend">1 = Très mauvais sommeil &nbsp;&nbsp; 5 = Très bon sommeil</div>
+          <label><span class="qnum">2.</span>Sommeil 😴</label>
+          <div class="scale" data-name="sommeil">
+            <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend"><span>1 = Très mauvais sommeil</span><span>5 = Très bon sommeil</span></div>
           <input type="hidden" name="sommeil"/>
         </div>
+
+        <!-- Q3 -->
         <div class="question">
-          <label><span class="qnum">3.</span>Qualité de l'alimentation/hydratation 🍽️💧</label>
-          <div class="scale" data-name="alimentation"><button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button></div>
-          <div class="legend">1 = Très mauvaise &nbsp;&nbsp; 5 = Très bonne</div>
+          <label><span class="qnum">3.</span>Alimentation &amp; hydratation 🍽️💧</label>
+          <div class="scale" data-name="alimentation">
+            <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend"><span>1 = Très mauvaise</span><span>5 = Très bonne</span></div>
           <input type="hidden" name="alimentation"/>
         </div>
+
+        <!-- Q4 -->
         <div class="question">
-          <label><span class="qnum">4.</span>Fatigue physique / douleurs musculaires 💢</label>
-          <div class="scale" data-name="fatigue_physique"><button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button></div>
-          <div class="legend">1 = Très fatigué / douleurs fortes &nbsp;&nbsp; 5 = Très en forme</div>
+          <label><span class="qnum">4.</span>Fatigue physique 💢</label>
+          <div class="scale" data-name="fatigue_physique">
+            <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend"><span>1 = Très fatigué / douleurs fortes</span><span>5 = Très en forme</span></div>
           <input type="hidden" name="fatigue_physique"/>
         </div>
+
+        <!-- Q5 -->
         <div class="question">
-          <label><span class="qnum">5.</span>Fatigue mentale 🧠</label>
-          <div class="scale" data-name="fatigue_mentale"><button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button></div>
-          <div class="legend">1 = Très fatigué mentalement &nbsp;&nbsp; 5 = Très frais</div>
+          <label><span class="qnum">5.</span>Fatigue mentale &amp; stress général 🧠</label>
+          <div class="scale" data-name="fatigue_mentale">
+            <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+          </div>
+          <div class="legend"><span>1 = Épuisé / très stressé</span><span>5 = Serein et frais</span></div>
           <input type="hidden" name="fatigue_mentale"/>
         </div>
-        <div class="row">
-          <label for="douleurZone">Douleurs spécifiques :</label>
+
+        <div class="field-row">
+          <label for="douleurZone">Douleurs :</label>
           <input type="text" id="douleurZone" name="douleurZone" placeholder="Ex : ischios droit, cheville gauche..."/>
         </div>
-        <div class="row">
+        <div class="field-row">
           <label for="commentaire">Commentaire :</label>
-          <textarea id="commentaire" name="commentaire" placeholder="Comment tu te sens..."></textarea>
+          <textarea id="commentaire" name="commentaire" placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
         </div>
-        <div class="actions">
-          <button type="button" class="primary" onclick="enregistrerJoueur()">Enregistrer</button>
-          <button type="button" class="primary coach-only" onclick="syncGoogleSheets()">Envoyer vers Google Sheets</button>
-          <button type="button" class="secondary" onclick="resetForm(true)">Effacer le formulaire</button>
-          <button type="button" class="secondary danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
+
+        <div class="form-actions">
+          <button type="button" class="btn-enregistrer" onclick="enregistrerJoueur()">Enregistrer</button>
+          <button type="button" class="btn-sheets coach-only" onclick="syncGoogleSheets()">Envoyer vers Google Sheets</button>
+          <button type="button" class="btn-reset" onclick="resetForm(true)">Effacer le formulaire</button>
+          <button type="button" class="btn-danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
         </div>
-        <div class="result" id="resultat"></div>
+        <div class="result-box" id="resultat"></div>
       </form>
-      <div class="liste-joueurs coach-only" id="listeJoueurs">
-        <strong>Historique local :</strong>
+
+      <div class="local-list" id="listeJoueurs">
+        <strong style="font-size:13px;color:var(--gris);">Historique local :</strong>
         <ul id="listeJoueursUl"></ul>
       </div>
     </div>
-    <!-- STATS CARD COACH -->
+
+    <!-- STATS CARD -->
     <div class="stats-card coach-only">
       <div class="stats-header-row">
         <div class="stats-title">Synthèse rapide</div>
-        <button type="button" class="export-btn no-print" onclick="exportPDF()">PDF</button>
+        <button class="export-btn no-print" onclick="exportPDF()">PDF</button>
       </div>
-      <!-- PARTAGE PIN -->
-      <div style="margin-top:12px;">
-        <div style="font-size:13px;font-weight:bold;color:#2f4f6f;margin-bottom:6px;">🔗 Lien joueurs :</div>
-        <div class="pin-share-box">
-          <div>Code PIN : <span class="pin-display" id="coachPinDisplay">——</span></div>
-          <div class="pin-link" id="coachPinLink" style="display:none;">—</div>
-          <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
-            <button class="pin-copy-btn" onclick="copierLienJoueur()">📋 Copier le lien</button>
-            <button class="pin-copy-btn" style="background:#0f8f66;" onclick="regenererPin()">🔄 Nouveau PIN</button>
-          </div>
+
+      <!-- PIN PARTAGE -->
+      <div class="pin-share-box">
+        <div class="pin-share-label">Lien joueurs</div>
+        <div class="pin-code-display" id="coachPinDisplay">——</div>
+        <div class="pin-link-hidden" id="coachPinLink">—</div>
+        <div class="pin-actions">
+          <button class="pin-btn" onclick="copierLienJoueur()">📋 Copier le lien</button>
+          <button class="pin-btn" onclick="regenererPin()">🔄 Nouveau PIN</button>
         </div>
       </div>
-      <div class="row" style="margin:10px 0 6px;">
-        <label for="statsSeanceSelect" style="flex:0 0 auto;font-size:13px;">Séance :</label>
-        <select id="statsSeanceSelect" style="flex:1 1 auto;min-width:140px;font-size:13px;"></select>
+
+      <div class="seance-row" style="margin-top:12px;">
+        <label>Séance :</label>
+        <select id="statsSeanceSelect"></select>
       </div>
       <div class="stats-line" id="statsNbJoueurs">Joueurs : 0</div>
       <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
       <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
       <div class="stats-line" id="statsNonMatch">Sans match : -</div>
-      <div class="stats-indice-box" id="statsIndiceBox"><div id="statsIndiceLabel">Indice bien-être équipe : -</div></div>
-      <div class="stats-line stats-reco" id="statsRecoSeance">Recommandation : -</div>
-      <div class="stats-alertes"><div class="stats-line"><strong>Alertes (orange/rouge) :</strong></div><div class="stats-line" id="statsAlertesListe">-</div></div>
-      <div class="stats-bar-container">
-        <div class="stats-bar-row"><div class="stats-bar-label">Très bon état</div><div class="stats-bar-bg"><div id="barVFonce" class="stats-bar-fill zone-vert-fonce" style="width:0%"></div></div><div id="textVFonce">0</div></div>
-        <div class="stats-bar-row"><div class="stats-bar-label">Bon état</div><div class="stats-bar-bg"><div id="barVClair" class="stats-bar-fill zone-vert-clair" style="width:0%"></div></div><div id="textVClair">0</div></div>
-        <div class="stats-bar-row"><div class="stats-bar-label">Fatigue légère</div><div class="stats-bar-bg"><div id="barJaune" class="stats-bar-fill zone-jaune" style="width:0%"></div></div><div id="textJaune">0</div></div>
-        <div class="stats-bar-row"><div class="stats-bar-label">Fatigue notable</div><div class="stats-bar-bg"><div id="barOrange" class="stats-bar-fill zone-orange" style="width:0%"></div></div><div id="textOrange">0</div></div>
-        <div class="stats-bar-row"><div class="stats-bar-label">Fatigue importante</div><div class="stats-bar-bg"><div id="barRouge" class="stats-bar-fill zone-rouge" style="width:0%"></div></div><div id="textRouge">0</div></div>
+      <div class="stats-indice" id="statsIndiceBox"><div id="statsIndiceLabel">Indice bien-être : -</div></div>
+      <div class="stats-reco" id="statsRecoSeance">Recommandation : -</div>
+      <div class="stats-alertes"><strong style="color:var(--gris);">Alertes :</strong><br><span id="statsAlertesListe">-</span></div>
+      <div class="bar-container">
+        <div class="bar-row"><div class="bar-label" style="color:#55dd88;">Très bon</div><div class="bar-bg"><div id="barVFonce" class="bar-fill zone-vert-fonce" style="width:0%"></div></div><div class="bar-val" id="textVFonce">0</div></div>
+        <div class="bar-row"><div class="bar-label" style="color:#88dd55;">Bon état</div><div class="bar-bg"><div id="barVClair" class="bar-fill zone-vert-clair" style="width:0%"></div></div><div class="bar-val" id="textVClair">0</div></div>
+        <div class="bar-row"><div class="bar-label" style="color:#ffdd55;">Léger</div><div class="bar-bg"><div id="barJaune" class="bar-fill zone-jaune" style="width:0%"></div></div><div class="bar-val" id="textJaune">0</div></div>
+        <div class="bar-row"><div class="bar-label" style="color:#ffaa55;">Notable</div><div class="bar-bg"><div id="barOrange" class="bar-fill zone-orange" style="width:0%"></div></div><div class="bar-val" id="textOrange">0</div></div>
+        <div class="bar-row"><div class="bar-label" style="color:#ff6b6b;">Important</div><div class="bar-bg"><div id="barRouge" class="bar-fill zone-rouge" style="width:0%"></div></div><div class="bar-val" id="textRouge">0</div></div>
       </div>
     </div>
   </div>
-  <section id="stats-equipe" class="card coach-only" style="margin-top:20px;">
+
+  <!-- SECTION STATS ÉQUIPE -->
+  <div class="stats-section" id="stats-equipe">
     <h2>Statistiques équipe</h2>
-    <div id="sheetsStatus" class="legend" style="text-align:center;margin:-6px 0 8px;">Chargement...</div>
-    <div class="alert-card coach-only" id="alertesDuJourCard">
+    <div class="sheets-status" id="sheetsStatus">Chargement...</div>
+    <div class="alert-card" id="alertesDuJourCard">
       <h3>Alertes séance</h3>
-      <div class="row" style="margin-bottom:6px;"><label for="alertSeanceSelect" style="flex:0 0 auto;">Séance :</label><select id="alertSeanceSelect" style="flex:1 1 auto;min-width:140px;"></select></div>
-      <div id="alertDateLabel" class="legend">Pas de séance enregistrée.</div>
+      <div class="seance-row"><label>Séance :</label><select id="alertSeanceSelect"></select></div>
+      <div id="alertDateLabel" style="font-size:11px;color:var(--gris);margin-bottom:6px;"></div>
       <ul id="alertList" class="alert-list"></ul>
     </div>
     <div class="stats-grid">
-      <div class="stats-chart-card">
-        <h3>Top 5 joueurs les plus fatigués</h3>
-        <div class="row" style="margin-bottom:8px;justify-content:center;"><label for="topFatigueRange" style="flex:0 0 auto;">Dernières séances :</label><select id="topFatigueRange" style="flex:0 0 auto;min-width:90px;"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option></select></div>
-        <div class="iframe-container"><canvas id="topFatigueCanvas"></canvas></div>
-        <div id="topFatigueEmpty" class="legend" style="text-align:center;display:none;">Pas assez de données.</div>
+      <div class="chart-card">
+        <h3>Top 5 — plus fatigués</h3>
+        <div class="seance-row" style="justify-content:center;"><label>Séances :</label><select id="topFatigueRange" style="max-width:80px;"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option></select></div>
+        <div class="chart-wrap"><canvas id="topFatigueCanvas"></canvas></div>
+        <div id="topFatigueEmpty" style="font-size:11px;color:var(--gris);text-align:center;display:none;">Pas assez de données.</div>
       </div>
-      <div class="stats-chart-card">
-        <h3>Top 5 joueurs les plus en forme</h3>
-        <div class="row" style="margin-bottom:8px;justify-content:center;"><label for="topFormeRange" style="flex:0 0 auto;">Dernières séances :</label><select id="topFormeRange" style="flex:0 0 auto;min-width:90px;"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option></select></div>
-        <div class="iframe-container"><canvas id="topFormeCanvas"></canvas></div>
-        <div id="topFormeEmpty" class="legend" style="text-align:center;display:none;">Pas assez de données.</div>
+      <div class="chart-card">
+        <h3>Top 5 — plus en forme</h3>
+        <div class="seance-row" style="justify-content:center;"><label>Séances :</label><select id="topFormeRange" style="max-width:80px;"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option></select></div>
+        <div class="chart-wrap"><canvas id="topFormeCanvas"></canvas></div>
+        <div id="topFormeEmpty" style="font-size:11px;color:var(--gris);text-align:center;display:none;">Pas assez de données.</div>
       </div>
     </div>
-    <div class="sparkline-card coach-only">
+    <div class="sparkline-card">
       <h3>Évolution joueur</h3>
-      <div class="row" style="margin-bottom:8px;">
-        <label for="sparklineSelect" style="flex:0 0 auto;">Joueur :</label><select id="sparklineSelect" style="flex:1 1 auto;min-width:160px;"></select>
-        <label for="sparklineRange" style="flex:0 0 auto;">Derniers :</label><select id="sparklineRange" style="flex:0 0 auto;min-width:90px;"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option></select>
+      <div class="sparkline-row">
+        <label>Joueur :</label><select id="sparklineSelect"></select>
+        <label>Derniers :</label><select id="sparklineRange" style="max-width:80px;"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option></select>
       </div>
       <div class="sparkline-wrap"><canvas id="sparklineCanvas"></canvas></div>
-      <div id="sparklineEmpty" class="legend" style="text-align:center;display:none;">Pas de données.</div>
-      <div class="row" style="margin-top:10px;"><label for="ficheSeanceSelect" style="flex:0 0 auto;">Séance fiche :</label><select id="ficheSeanceSelect" style="flex:1 1 auto;min-width:140px;"></select></div>
-      <button type="button" class="secondary no-print" style="margin-top:4px;" onclick="exportFicheIndivPDF()">Fiche individuelle PDF</button>
+      <div id="sparklineEmpty" style="font-size:11px;color:var(--gris);text-align:center;display:none;">Pas de données.</div>
+      <div class="sparkline-row" style="margin-top:10px;"><label>Séance fiche :</label><select id="ficheSeanceSelect"></select></div>
+      <button type="button" class="btn-reset no-print" style="margin-top:6px;font-size:13px;" onclick="exportFicheIndivPDF()">Fiche individuelle PDF</button>
     </div>
-  </section>
+  </div>
+
 </div>
 <script>
 const firebaseConfig={apiKey:"AIzaSyCFxhn3X3mHnwBGJR5K1ulRvHQ_i9eKGo0",authDomain:"team-rpe-eab8a.firebaseapp.com",projectId:"team-rpe-eab8a",storageBucket:"team-rpe-eab8a.firebasestorage.app",messagingSenderId:"518761564873",appId:"1:518761564873:web:2e08dc13f92050b8535b18"};
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth=firebase.auth(),db=firebase.firestore();
 
 let currentUser=null,currentClub=null,currentTeam=null,playerMode=false,currentPlayer=null;
 let enregistrementsLocal=[],enregistrementsSheets=[];
-const STORAGE_LOCAL_KEY="team_rpe_v12_local";
-const STORAGE_SHEETS_KEY="team_rpe_v12_sheets";
-const GOOGLE_SHEETS_URL="https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
-const GOOGLE_SHEETS_DOC_ID="1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg";
-const GOOGLE_SHEETS_GID=0;
+const STORAGE_LOCAL="team_rpe_v12_local",STORAGE_SHEETS="team_rpe_v12_sheets";
+const GS_URL="https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
+const GS_DOC="1j_655CRZEQg83MpNYiRERhkJmLMgGPCHKlvVrpGxsFg",GS_GID=0;
 
-function showScreen(name){
-  ["loginScreen","pinScreen","playerPickScreen","teamScreen","appContent"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.style.display="none";
-  });
-  const t=document.getElementById(name);
-  if(t)t.style.display=(name==="appContent")?"block":"flex";
+// ===== NAVIGATION =====
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>{s.classList.remove("active");s.style.display="";});
+  document.getElementById("appContent").style.display="none";
+  document.getElementById("appContent").classList.remove("active");
+  if(id==="appContent"){document.getElementById("appContent").style.display="flex";document.getElementById("appContent").classList.add("active");}
+  else{const el=document.getElementById(id);if(el){el.classList.add("active");el.style.display="flex";}}
 }
 function showLogin(){document.getElementById("loginCard").style.display="flex";document.getElementById("registerCard").style.display="none";showScreen("loginScreen");}
 function showRegister(){document.getElementById("loginCard").style.display="none";document.getElementById("registerCard").style.display="flex";showScreen("loginScreen");}
 
+// ===== AUTH =====
 async function doLogin(){
-  const email=document.getElementById("loginEmail").value.trim();
-  const pass=document.getElementById("loginPassword").value;
-  const errEl=document.getElementById("loginError");errEl.style.display="none";
-  try{await auth.signInWithEmailAndPassword(email,pass);}
-  catch(e){errEl.textContent=traduireErr(e.code);errEl.style.display="block";}
+  const e=document.getElementById("loginEmail").value.trim(),p=document.getElementById("loginPassword").value,err=document.getElementById("loginError");
+  err.style.display="none";
+  try{await auth.signInWithEmailAndPassword(e,p);}catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
 async function doRegister(){
-  const club=document.getElementById("regClub").value.trim();
-  const email=document.getElementById("regEmail").value.trim();
-  const pass=document.getElementById("regPassword").value;
-  const errEl=document.getElementById("registerError");errEl.style.display="none";
-  if(!club){errEl.textContent="Saisis le nom de ton club.";errEl.style.display="block";return;}
+  const club=document.getElementById("regClub").value.trim(),e=document.getElementById("regEmail").value.trim(),p=document.getElementById("regPassword").value,err=document.getElementById("registerError");
+  err.style.display="none";
+  if(!club){err.textContent="Saisis le nom de ton club.";err.style.display="block";return;}
   try{
-    const cred=await auth.createUserWithEmailAndPassword(email,pass);
-    await db.collection("clubs").doc(cred.user.uid).set({nom:club,coachEmail:email,teams:["Seniors"],players:{"Seniors":[]},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  }catch(e){errEl.textContent=traduireErr(e.code);errEl.style.display="block";}
+    const c=await auth.createUserWithEmailAndPassword(e,p);
+    await db.collection("clubs").doc(c.user.uid).set({nom:club,coachEmail:e,teams:["Seniors"],players:{"Seniors":[]},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
 function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
-function traduireErr(code){const m={"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court (6 car. min).","auth/invalid-credential":"Email ou mot de passe incorrect."};return m[code]||"Erreur : "+code;}
+function tErr(c){return{"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court.","auth/invalid-credential":"Email ou mot de passe incorrect."}[c]||"Erreur : "+c;}
 
-auth.onAuthStateChanged(async(user)=>{
+auth.onAuthStateChanged(async user=>{
   if(user){currentUser=user;await chargerClub();showScreen("teamScreen");renderTeamScreen();}
-  else{if(!playerMode)showScreen("loginScreen");}
+  else if(!playerMode){showScreen("loginScreen");}
 });
 
+// ===== CLUB =====
 async function chargerClub(){
-  try{
-    const doc=await db.collection("clubs").doc(currentUser.uid).get();
-    if(doc.exists){currentClub={id:currentUser.uid,...doc.data()};if(!currentClub.players)currentClub.players={};if(!currentClub.pins)currentClub.pins={};}
-    else{currentClub={id:currentUser.uid,nom:"Mon club",teams:["Seniors"],players:{"Seniors":[]},pins:{}};}
-  }catch(e){currentClub={id:currentUser.uid,nom:"Mon club",teams:["Seniors"],players:{"Seniors":[]},pins:{}};}
+  try{const d=await db.collection("clubs").doc(currentUser.uid).get();if(d.exists){currentClub={id:currentUser.uid,...d.data()};if(!currentClub.players)currentClub.players={};if(!currentClub.pins)currentClub.pins={};}else{currentClub={id:currentUser.uid,nom:"Mon club",teams:["Seniors"],players:{"Seniors":[]},pins:{}};}}
+  catch(e){currentClub={id:currentUser.uid,nom:"Mon club",teams:["Seniors"],players:{"Seniors":[]},pins:{}};}
 }
 
+// ===== ÉQUIPES =====
 function renderTeamScreen(){
   document.getElementById("teamClubLabel").textContent=currentClub.nom;
-  const grid=document.getElementById("teamGrid");grid.innerHTML="";
-  (currentClub.teams||["Seniors"]).forEach(team=>{
-    const btn=document.createElement("button");btn.className="team-btn";btn.textContent=team;
-    btn.onclick=()=>selectTeam(team);grid.appendChild(btn);
-  });
+  const g=document.getElementById("teamGrid");g.innerHTML="";
+  (currentClub.teams||["Seniors"]).forEach(t=>{const b=document.createElement("button");b.className="team-btn-dark";b.textContent=t;b.onclick=()=>selectTeam(t);g.appendChild(b);});
 }
-async function selectTeam(teamName){currentTeam={id:teamName,nom:teamName};await chargerJoueursEquipe(teamName);showScreen("appContent");initApp();}
+async function selectTeam(n){currentTeam={id:n,nom:n};await chargerJoueursEquipe(n);showScreen("appContent");initApp();}
 function backToTeamSelect(){if(playerMode)return;currentTeam=null;showScreen("teamScreen");renderTeamScreen();}
-function toggleAddTeam(){const row=document.getElementById("teamAddRow");row.style.display=row.style.display==="none"?"flex":"none";}
+function toggleAddTeam(){const r=document.getElementById("teamAddRow");r.style.display=r.style.display==="none"?"flex":"none";}
 async function addTeam(){
-  const input=document.getElementById("newTeamInput");const name=input.value.trim();if(!name)return;
-  if(currentClub.teams.includes(name)){alert("Cette équipe existe déjà.");return;}
-  currentClub.teams.push(name);if(!currentClub.players)currentClub.players={};currentClub.players[name]=[];
-  await db.collection("clubs").doc(currentUser.uid).update({teams:currentClub.teams,["players."+name]:[]});
-  input.value="";renderTeamScreen();
+  const i=document.getElementById("newTeamInput"),n=i.value.trim();if(!n)return;
+  if(currentClub.teams.includes(n)){alert("Cette équipe existe déjà.");return;}
+  currentClub.teams.push(n);if(!currentClub.players)currentClub.players={};currentClub.players[n]=[];
+  await db.collection("clubs").doc(currentUser.uid).update({teams:currentClub.teams,["players."+n]:[]});
+  i.value="";renderTeamScreen();
 }
 
-// ===== SYSTÈME PIN =====
-function genererPin(){return String(Math.floor(1000+Math.random()*9000));}
-async function assurerPin(teamId){
-  let pin=(currentClub.pins&&currentClub.pins[teamId])||null;
-  if(!pin){pin=genererPin();if(!currentClub.pins)currentClub.pins={};currentClub.pins[teamId]=pin;await db.collection("clubs").doc(currentUser.uid).update({["pins."+teamId]:pin});}
-  return pin;
-}
-async function regenererPin(){
-  if(!currentTeam||!currentUser)return;
-  const pin=genererPin();currentClub.pins[currentTeam.id]=pin;
-  await db.collection("clubs").doc(currentUser.uid).update({["pins."+currentTeam.id]:pin});
-  afficherPinCoach(pin);setSyncStatus("✅ Nouveau PIN : "+pin,"ok");
-}
-function afficherPinCoach(pin){
-  const pinEl=document.getElementById("coachPinDisplay");const linkEl=document.getElementById("coachPinLink");
-  if(!pinEl||!linkEl||!currentTeam)return;
-  pinEl.textContent=pin;
-  const url=`${location.origin}${location.pathname}?club=${encodeURIComponent(currentUser.uid)}&team=${encodeURIComponent(currentTeam.id)}`;
-  linkEl.textContent=url;
-}
-function copierLienJoueur(){const linkEl=document.getElementById("coachPinLink");if(!linkEl)return;navigator.clipboard.writeText(linkEl.textContent).then(()=>setSyncStatus("📋 Lien copié !","ok"));}
+// ===== PIN =====
+function genPin(){return String(Math.floor(1000+Math.random()*9000));}
+async function assurerPin(tid){let pin=(currentClub.pins&&currentClub.pins[tid])||null;if(!pin){pin=genPin();if(!currentClub.pins)currentClub.pins={};currentClub.pins[tid]=pin;await db.collection("clubs").doc(currentUser.uid).update({["pins."+tid]:pin});}return pin;}
+async function regenererPin(){if(!currentTeam||!currentUser)return;const pin=genPin();currentClub.pins[currentTeam.id]=pin;await db.collection("clubs").doc(currentUser.uid).update({["pins."+currentTeam.id]:pin});afficherPin(pin);setSyncStatus("✅ Nouveau PIN : "+pin,"ok");}
+function afficherPin(pin){const pe=document.getElementById("coachPinDisplay"),le=document.getElementById("coachPinLink");if(!pe||!le||!currentTeam)return;pe.textContent=pin;le.textContent=`${location.origin}${location.pathname}?club=${encodeURIComponent(currentUser.uid)}&team=${encodeURIComponent(currentTeam.id)}`;}
+function copierLienJoueur(){const l=document.getElementById("coachPinLink");if(!l)return;navigator.clipboard.writeText(l.textContent).then(()=>setSyncStatus("📋 Lien copié !","ok"));}
 
 // ===== ACCÈS JOUEUR =====
-function goToPlayerEntry(){
-  const params=new URLSearchParams(location.search);
-  const clubId=params.get("club");const teamId=params.get("team");
-  if(clubId&&teamId){chargerClubJoueur(clubId,teamId);}
-  else{showScreen("pinScreen");document.getElementById("pinTeamLabel").textContent="Entre le code PIN";}
-}
+function goToPlayerEntry(){const p=new URLSearchParams(location.search);const c=p.get("club"),t=p.get("team");if(c&&t)chargerClubJoueur(c,t);else{showScreen("pinScreen");document.getElementById("pinTeamLabel").textContent="Entre le code PIN";}}
 async function chargerClubJoueur(clubId,teamId){
-  try{
-    const doc=await db.collection("clubs").doc(clubId).get();
-    if(!doc.exists){alert("Club introuvable.");showScreen("loginScreen");return;}
-    currentClub={id:clubId,...doc.data()};currentTeam={id:teamId,nom:teamId};
-    document.getElementById("pinTeamLabel").textContent=currentClub.nom+" — "+teamId;
-    document.getElementById("pinTeamHint").textContent="Entre le code PIN fourni par ton coach";
-    showScreen("pinScreen");
-  }catch(e){alert("Erreur de connexion.");showScreen("loginScreen");}
+  try{const d=await db.collection("clubs").doc(clubId).get();if(!d.exists){alert("Club introuvable.");showScreen("loginScreen");return;}currentClub={id:clubId,...d.data()};currentTeam={id:teamId,nom:teamId};document.getElementById("pinTeamLabel").textContent=(currentClub.nom||"")+" — "+teamId;showScreen("pinScreen");}
+  catch(e){alert("Erreur de connexion.");showScreen("loginScreen");}
 }
-function pinNext(input,nextId){
-  if(input.value.length>1)input.value=input.value.slice(-1);
-  if(nextId&&input.value.length>=1)document.getElementById(nextId)?.focus();
-}
+function pinNext(input,nextId){if(input.value.length>1)input.value=input.value.slice(-1);if(nextId&&input.value.length>=1)document.getElementById(nextId)?.focus();}
 async function verifierPin(){
-  const pinSaisi=[1,2,3,4].map(i=>document.getElementById("pin"+i).value).join("");
-  const errEl=document.getElementById("pinError");errEl.style.display="none";
-  if(pinSaisi.length<4){errEl.textContent="Entre les 4 chiffres.";errEl.style.display="block";return;}
-  if(!currentClub){errEl.textContent="Recharge la page et réessaie.";errEl.style.display="block";return;}
-  const pinAttendu=currentClub.pins&&currentClub.pins[currentTeam?.id];
-  if(!pinAttendu){errEl.textContent="Aucun PIN configuré. Contacte ton coach.";errEl.style.display="block";return;}
-  if(pinSaisi!==pinAttendu){errEl.textContent="Code incorrect. Réessaie.";errEl.style.display="block";return;}
+  const pin=[1,2,3,4].map(i=>document.getElementById("pin"+i).value).join("");
+  const err=document.getElementById("pinError");err.style.display="none";
+  if(pin.length<4){err.textContent="Entre les 4 chiffres.";err.style.display="block";return;}
+  if(!currentClub){err.textContent="Recharge la page.";err.style.display="block";return;}
+  const attendu=currentClub.pins&&currentClub.pins[currentTeam?.id];
+  if(!attendu){err.textContent="Aucun PIN configuré. Contacte ton coach.";err.style.display="block";return;}
+  if(pin!==attendu){err.textContent="Code incorrect. Réessaie.";err.style.display="block";return;}
   await chargerJoueursEquipe(currentTeam.id);showPlayerPick();
 }
 function showPlayerPick(){
-  document.getElementById("playerPickSubtitle").textContent=currentClub.nom+" — "+currentTeam.nom;
-  const grid=document.getElementById("playerGrid");grid.innerHTML="";
+  document.getElementById("playerPickSubtitle").textContent=(currentClub.nom||"")+" — "+(currentTeam.nom||"");
+  const g=document.getElementById("playerGrid");g.innerHTML="";
   const joueurs=(currentClub.players&&currentClub.players[currentTeam.id])||[];
-  if(!joueurs.length){grid.innerHTML='<p style="color:#b30000;">Aucun joueur configuré. Contacte ton coach.</p>';showScreen("playerPickScreen");return;}
-  joueurs.forEach(nom=>{
-    const btn=document.createElement("button");btn.className="player-btn";btn.textContent=nom;
-    btn.onclick=()=>{grid.querySelectorAll(".player-btn").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");};
-    grid.appendChild(btn);
-  });
+  if(!joueurs.length){g.innerHTML='<p style="color:#ff6b6b;font-size:13px;">Aucun joueur configuré. Contacte ton coach.</p>';showScreen("playerPickScreen");return;}
+  joueurs.forEach(n=>{const b=document.createElement("button");b.className="player-btn-dark";b.textContent=n;b.onclick=()=>{g.querySelectorAll(".player-btn-dark").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");};g.appendChild(b);});
   showScreen("playerPickScreen");
 }
-function confirmerJoueur(){
-  const selected=document.querySelector(".player-btn.selected");
-  const errEl=document.getElementById("playerPickError");
-  if(!selected){errEl.style.display="block";return;}
-  errEl.style.display="none";currentPlayer=selected.textContent;playerMode=true;lancerModeJoueur();
-}
+function confirmerJoueur(){const s=document.querySelector(".player-btn-dark.selected"),e=document.getElementById("playerPickError");if(!s){e.style.display="block";return;}e.style.display="none";currentPlayer=s.textContent;playerMode=true;lancerModeJoueur();}
 function lancerModeJoueur(){
   document.body.classList.add("player-mode");document.body.classList.remove("coach-mode");
   document.getElementById("rowJoueurSelect").style.display="none";
@@ -559,169 +674,167 @@ function lancerModeJoueur(){
 }
 function quitterModeJoueur(){playerMode=false;currentPlayer=null;document.body.classList.remove("player-mode");document.getElementById("rowJoueurSelect").style.display="flex";document.getElementById("rowJoueurDisplay").style.display="none";showPlayerPick();}
 
-async function chargerJoueursEquipe(teamName){
-  const joueurs=(currentClub.players&&currentClub.players[teamName])||[];
-  const select=document.getElementById("joueurSelect");select.innerHTML='<option value="">Choisir un joueur...</option>';
-  joueurs.forEach(nom=>{const opt=document.createElement("option");opt.value=opt.textContent=nom;select.appendChild(opt);});
-  const autreOpt=document.createElement("option");autreOpt.value="Autre";autreOpt.textContent="Autre (saisir le nom)";select.appendChild(autreOpt);
+// ===== JOUEURS =====
+async function chargerJoueursEquipe(tn){
+  const joueurs=(currentClub.players&&currentClub.players[tn])||[];
+  const sel=document.getElementById("joueurSelect");sel.innerHTML='<option value="">Choisir un joueur...</option>';
+  joueurs.forEach(n=>{const o=document.createElement("option");o.value=o.textContent=n;sel.appendChild(o);});
+  const ao=document.createElement("option");ao.value="Autre";ao.textContent="Autre (saisir le nom)";sel.appendChild(ao);
 }
 async function addPlayer(){
-  const input=document.getElementById("newPlayerInput");const name=input.value.trim();if(!name)return;
-  const team=currentTeam.id;if(!currentClub.players)currentClub.players={};if(!currentClub.players[team])currentClub.players[team]=[];
-  if(currentClub.players[team].includes(name)){alert("Ce joueur existe déjà.");return;}
-  currentClub.players[team].push(name);
-  await db.collection("clubs").doc(currentUser.uid).update({["players."+team]:currentClub.players[team]});
-  input.value="";await chargerJoueursEquipe(team);setSyncStatus("✅ Joueur "+name+" ajouté !","ok");
+  const i=document.getElementById("newPlayerInput"),n=i.value.trim();if(!n)return;
+  const t=currentTeam.id;if(!currentClub.players)currentClub.players={};if(!currentClub.players[t])currentClub.players[t]=[];
+  if(currentClub.players[t].includes(n)){alert("Ce joueur existe déjà.");return;}
+  currentClub.players[t].push(n);await db.collection("clubs").doc(currentUser.uid).update({["players."+t]:currentClub.players[t]});
+  i.value="";await chargerJoueursEquipe(t);setSyncStatus("✅ "+n+" ajouté !","ok");
 }
 
+// ===== INIT APP =====
 async function initApp(){
-  const lbl=document.getElementById("currentTeamLabel");if(lbl)lbl.textContent=currentTeam?.nom||"—";
-  const sub=document.getElementById("appSubtitle");if(sub)sub.textContent=(currentClub?.nom||"")+" — "+(currentTeam?.nom||"");
+  document.getElementById("currentTeamLabel").textContent=currentTeam?.nom||"—";
+  document.getElementById("appSubtitle").textContent=(currentClub?.nom||"")+" — "+(currentTeam?.nom||"");
   if(!playerMode){
-    const rowAddPlayer=document.getElementById("rowAddPlayer");if(rowAddPlayer)rowAddPlayer.style.display="flex";
-    const pin=await assurerPin(currentTeam.id);afficherPinCoach(pin);
+    document.getElementById("rowAddPlayer").style.display="flex";
+    const pin=await assurerPin(currentTeam.id);afficherPin(pin);
+    majAvatar();
   }
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
-  if(!playerMode){refreshFirestoreData();majAvatar();}
+  if(!playerMode)refreshFirestoreData();
 }
+function majAvatar(){
+  const nom=currentClub?.nom||"";const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
+  const ie=document.getElementById("avatarInitials");if(ie)ie.textContent=initiales;
+  const me=document.getElementById("menuClubNom");if(me)me.textContent=nom;
+  const ee=document.getElementById("menuCoachEmail");if(ee)ee.textContent=currentUser?.email||"";
+}
+function toggleAvatarMenu(){const m=document.getElementById("avatarMenu");if(m)m.style.display=m.style.display==="none"?"block":"none";}
+document.addEventListener("click",e=>{const w=document.getElementById("avatarWrapper");if(w&&!w.contains(e.target)){const m=document.getElementById("avatarMenu");if(m)m.style.display="none";}});
 </script>
 <script>
-function getVizData(){return enregistrementsSheets;}
-const selectJoueur=document.getElementById("joueurSelect");
-const rowAutre=document.getElementById("rowAutre");
-const inputAutre=document.getElementById("joueurAutre");
-const recupNACheckbox=document.getElementById("recupNA");
+// ===== LOGIQUE MÉTIER =====
+const selJoueur=document.getElementById("joueurSelect"),rowAutre=document.getElementById("rowAutre"),inputAutre=document.getElementById("joueurAutre"),recupNA=document.getElementById("recupNA");
+if(recupNA)recupNA.addEventListener("change",()=>{const h=document.querySelector('input[name="recuperation"]'),s=document.querySelector('.scale[data-name="recuperation"]');if(recupNA.checked){if(s)s.querySelectorAll("button").forEach(b=>b.classList.remove("active"));if(h)h.value="N/A";}else{if(h)h.value="";}});
+selJoueur.addEventListener("change",()=>{if(selJoueur.value==="Autre")rowAutre.style.display="flex";else{rowAutre.style.display="none";inputAutre.value="";}});
+document.querySelectorAll(".scale").forEach(sc=>{const nm=sc.getAttribute("data-name"),hi=document.querySelector(`input[name="${nm}"]`);sc.querySelectorAll("button").forEach(btn=>{btn.addEventListener("click",()=>{sc.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");if(hi)hi.value=btn.getAttribute("data-value");if(nm==="recuperation"&&recupNA)recupNA.checked=false;});});});
 
-if(recupNACheckbox){recupNACheckbox.addEventListener("change",()=>{const h=document.querySelector('input[name="recuperation"]');const s=document.querySelector('.scale[data-name="recuperation"]');if(recupNACheckbox.checked){if(s)s.querySelectorAll("button").forEach(b=>b.classList.remove("active"));if(h)h.value="N/A";}else{if(h)h.value="";}});}
-selectJoueur.addEventListener("change",()=>{if(selectJoueur.value==="Autre")rowAutre.style.display="flex";else{rowAutre.style.display="none";inputAutre.value="";}});
-document.querySelectorAll(".scale").forEach(scale=>{const name=scale.getAttribute("data-name");const hiddenInput=document.querySelector(`input[name="${name}"]`);scale.querySelectorAll("button").forEach(btn=>{btn.addEventListener("click",()=>{scale.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");if(hiddenInput)hiddenInput.value=btn.getAttribute("data-value");if(name==="recuperation"&&recupNACheckbox)recupNACheckbox.checked=false;});});});
-
-function getNomJoueur(){if(playerMode&&currentPlayer)return currentPlayer;const v=selectJoueur.value;if(!v)return"";if(v==="Autre")return inputAutre.value.trim();return v;}
-function getSeance(){const val=document.getElementById("seanceDate").value;if(!val)return"";const jours=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];const d=new Date(val+"T00:00:00");return val+" ("+jours[d.getDay()]+")";}
-function initDateSeance(){const inp=document.getElementById("seanceDate");if(!inp)return;const t=new Date();inp.value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;}
-function computeZone(pct){if(pct>=88)return{zoneTexte:"VERT FONCE tres bon etat (22-25)",zoneClass:"zone-vert-fonce"};else if(pct>=76)return{zoneTexte:"VERT CLAIR bon etat general (19-21)",zoneClass:"zone-vert-clair"};else if(pct>=64)return{zoneTexte:"JAUNE fatigue legere (16-18)",zoneClass:"zone-jaune"};else if(pct>=52)return{zoneTexte:"ORANGE fatigue notable (13-15)",zoneClass:"zone-orange"};else return{zoneTexte:"ROUGE fatigue importante (5-12)",zoneClass:"zone-rouge"};}
+function getNom(){if(playerMode&&currentPlayer)return currentPlayer;const v=selJoueur.value;if(!v)return"";if(v==="Autre")return inputAutre.value.trim();return v;}
+function getSeance(){const v=document.getElementById("seanceDate").value;if(!v)return"";const j=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],d=new Date(v+"T00:00:00");return v+" ("+j[d.getDay()]+")";}
+function initDateSeance(){const i=document.getElementById("seanceDate");if(!i)return;const t=new Date();i.value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;}
+function computeZone(p){if(p>=88)return{zoneTexte:"VERT FONCE tres bon etat (22-25)",zoneClass:"zone-vert-fonce"};if(p>=76)return{zoneTexte:"VERT CLAIR bon etat general (19-21)",zoneClass:"zone-vert-clair"};if(p>=64)return{zoneTexte:"JAUNE fatigue legere (16-18)",zoneClass:"zone-jaune"};if(p>=52)return{zoneTexte:"ORANGE fatigue notable (13-15)",zoneClass:"zone-orange"};return{zoneTexte:"ROUGE fatigue importante (5-12)",zoneClass:"zone-rouge"};}
 
 async function enregistrerJoueur(){
-  const form=document.getElementById("fatigueForm");const joueur=getNomJoueur();if(!joueur)return alert("Sélectionne un joueur.");
+  const form=document.getElementById("fatigueForm"),joueur=getNom();if(!joueur)return alert("Sélectionne un joueur.");
   const seance=getSeance();
-  const champs=[{name:"recuperation",label:"Qualité de la récupération"},{name:"sommeil",label:"Qualité du sommeil"},{name:"alimentation",label:"Qualité alimentation/hydratation"},{name:"fatigue_physique",label:"Fatigue physique/douleurs"},{name:"fatigue_mentale",label:"Fatigue mentale"}];
-  const valeurs={};
-  for(const champ of champs){const val=form[champ.name].value;if(!val&&champ.name!=="recuperation")return alert('Réponds à : "'+champ.label+'" (1 à 5).');valeurs[champ.name]=val;}
-  const recupNA=valeurs.recuperation==="N/A";const recuperationNum=recupNA?0:Number(valeurs.recuperation||0);
-  const sommeil=Number(valeurs.sommeil),alimentation=Number(valeurs.alimentation),fatigue_physique=Number(valeurs.fatigue_physique),fatigue_mentale=Number(valeurs.fatigue_mentale);
-  const douleurZone=document.getElementById("douleurZone").value.trim(),commentaire=document.getElementById("commentaire").value.trim();
-  const total=recuperationNum+sommeil+alimentation+fatigue_physique+fatigue_mentale;
-  const denom=recupNA?20:25;const pourcentage=Math.round((total/denom)*100);
-  const{zoneTexte,zoneClass}=computeZone(pourcentage);
-  const record={date:new Date().toLocaleString(),joueur,seance,equipe:currentTeam?.id||"Seniors",clubId:currentClub?.id||"",recuperation:recupNA?"N/A":recuperationNum,sommeil,alimentation,fatigue_physique,fatigue_mentale,total,pourcentage,zone:zoneTexte,zoneClass,douleurZone,commentaire,naMatch:recupNA,envoye:false};
-  enregistrementsLocal.push(record);sauvegarderLocal();
-  if(navigator.onLine){await sauvegarderFirestore(record);envoyerVersGoogleSheets(record);}
+  const champs=[{name:"recuperation",label:"Récupération"},{name:"sommeil",label:"Sommeil"},{name:"alimentation",label:"Alimentation"},{name:"fatigue_physique",label:"Fatigue physique"},{name:"fatigue_mentale",label:"Fatigue mentale"}];
+  const val={};for(const c of champs){const v=form[c.name].value;if(!v&&c.name!=="recuperation")return alert('Réponds à : "'+c.label+'" (1 à 5).');val[c.name]=v;}
+  const recNA=val.recuperation==="N/A",rNum=recNA?0:Number(val.recuperation||0);
+  const som=Number(val.sommeil),ali=Number(val.alimentation),fph=Number(val.fatigue_physique),fme=Number(val.fatigue_mentale);
+  const doul=document.getElementById("douleurZone").value.trim(),comm=document.getElementById("commentaire").value.trim();
+  const total=rNum+som+ali+fph+fme,denom=recNA?20:25,pct=Math.round((total/denom)*100);
+  const{zoneTexte,zoneClass}=computeZone(pct);
+  const rec={date:new Date().toLocaleString(),joueur,seance,equipe:currentTeam?.id||"Seniors",clubId:currentClub?.id||"",recuperation:recNA?"N/A":rNum,sommeil:som,alimentation:ali,fatigue_physique:fph,fatigue_mentale:fme,total,pourcentage:pct,zone:zoneTexte,zoneClass,douleurZone:doul,commentaire:comm,naMatch:recNA,envoye:false};
+  enregistrementsLocal.push(rec);sauvegarderLocal();
+  if(navigator.onLine){await saveFirestore(rec);envoyerGS(rec);}
   const rd=document.getElementById("resultat");
-  if(playerMode){rd.textContent=`✅ Merci ${joueur} ! Réponse enregistrée. Score : ${total}/${denom} (${pourcentage}%)`;}
-  else{rd.textContent=`Enregistré : ${joueur} | ${seance||"non précisé"} | Score : ${total}/${denom} (${pourcentage}%) — ${zoneTexte}${recupNA?" | N'a pas joué":""}`;} 
-  rd.className="result "+zoneClass;
+  rd.textContent=playerMode?`✅ Merci ${joueur} ! Score : ${total}/${denom} (${pct}%)`:`Enregistré : ${joueur} | ${seance||"non précisé"} | ${total}/${denom} (${pct}%) — ${zoneTexte}${recNA?" | N'a pas joué":""}`;
+  rd.className="result-box "+zoneClass;
   majListeJoueursLocal();resetForm(false);setSyncStatus("✅ Réponse sauvegardée","ok");
-  if(playerMode){setTimeout(()=>{if(confirm("✅ Réponse enregistrée !\n\nUn autre joueur veut répondre ?"))quitterModeJoueur();},800);}
+  if(playerMode)setTimeout(()=>{if(confirm("✅ Réponse enregistrée !\n\nUn autre joueur veut répondre ?"))quitterModeJoueur();},800);
 }
 
-async function sauvegarderFirestore(record){
-  if(!currentClub?.id)return;
-  try{await db.collection("clubs").doc(currentClub.id).collection("reponses").add({...record,timestamp:firebase.firestore.FieldValue.serverTimestamp()});}
-  catch(e){console.error("Firestore:",e);setSyncStatus("⚠️ Sauvegardé localement","err");}
-}
+async function saveFirestore(rec){if(!currentClub?.id)return;try{await db.collection("clubs").doc(currentClub.id).collection("reponses").add({...rec,timestamp:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){console.error("Firestore:",e);}}
 async function refreshFirestoreData(){
   if(!currentUser||!currentTeam)return;
-  const statusEl=document.getElementById("sheetsStatus");if(statusEl)statusEl.textContent="Chargement Firestore...";
+  const st=document.getElementById("sheetsStatus");if(st)st.textContent="Chargement...";
   try{
     const snap=await db.collection("clubs").doc(currentUser.uid).collection("reponses").where("equipe","==",currentTeam.id).orderBy("timestamp","asc").get();
     enregistrementsSheets=snap.docs.map(d=>{const data=d.data();const{zoneTexte,zoneClass}=computeZone(Number(data.pourcentage)||0);return{...data,zoneClass:data.zoneClass||zoneClass,zone:data.zone||zoneTexte,envoye:true};});
-    if(statusEl)statusEl.textContent=`${enregistrementsSheets.length} réponses chargées`;
-  }catch(e){
-    console.warn("Firestore lecture:",e.message,"— fallback Google Sheets");
-    enregistrementsSheets=await chargerDepuisGoogleSheetsAvecBackup();
-    if(statusEl)statusEl.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;
-  }
+    if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
+  }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
   buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();
 }
-function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-status "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-status";},5000);}
+function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
 
-async function envoyerVersGoogleSheets(rec){if(!GOOGLE_SHEETS_URL)return false;const payload={...rec};delete payload.envoye;try{await fetch(GOOGLE_SHEETS_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(payload),cache:"no-store"});rec.envoye=true;sauvegarderLocal();return true;}catch(e){rec.envoye=false;sauvegarderLocal();return false;}}
-async function syncGoogleSheets(){if(!navigator.onLine){alert("Pas de connexion internet.");return;}const aEnvoyer=enregistrementsLocal.filter(r=>!r.envoye);if(!aEnvoyer.length){alert("Tout est déjà envoyé.");return;}if(!confirm("Envoyer "+aEnvoyer.length+" réponses vers Google Sheets ?"))return;let ok=0,fail=0;for(const rec of aEnvoyer){const r=await envoyerVersGoogleSheets(rec);if(r)ok++;else fail++;await new Promise(r=>setTimeout(r,150));}await refreshFirestoreData();majListeJoueursLocal();alert(`Sync terminée. ${ok} envoyés.${fail?" "+fail+" en échec.":""}`);}
+async function envoyerGS(rec){if(!GS_URL)return false;const p={...rec};delete p.envoye;try{await fetch(GS_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(p),cache:"no-store"});rec.envoye=true;sauvegarderLocal();return true;}catch(e){rec.envoye=false;sauvegarderLocal();return false;}}
+async function syncGoogleSheets(){if(!navigator.onLine){alert("Pas de connexion.");return;}const a=enregistrementsLocal.filter(r=>!r.envoye);if(!a.length){alert("Tout est déjà envoyé.");return;}if(!confirm("Envoyer "+a.length+" réponses ?"))return;let ok=0,fail=0;for(const r of a){const res=await envoyerGS(r);if(res)ok++;else fail++;await new Promise(x=>setTimeout(x,150));}await refreshFirestoreData();majListeJoueursLocal();alert(`Sync : ${ok} envoyés.${fail?" "+fail+" en échec.":""}`);}
 
-function chargerDepuisGoogleSheetsJSONP(){return new Promise((resolve)=>{let done=false;const oldVisu=window.google?.visualization?.Query?.setResponse||null;window.google=window.google||{};google.visualization=google.visualization||{};google.visualization.Query=google.visualization.Query||{};google.visualization.Query.setResponse=(resp)=>{if(done){if(typeof oldVisu==="function")oldVisu(resp);return;}done=true;try{const rows=resp?.table?.rows||[];const data=rows.map(r=>{const c=r.c||[];const cellRecup=c[4];let recupBrut="",recupNum="";if(cellRecup&&cellRecup.v!=null){recupBrut=String(cellRecup.v);const n=Number(cellRecup.v);if(!Number.isNaN(n))recupNum=n;}const upRec=recupBrut.toUpperCase();const naMatch=upRec.includes("N/A")||upRec.includes("#N/A");const totalNum=Number(c[9]?.v)||0;const rawPct=c[10]?.v;const pourcentage=Number(String(rawPct).replace("%","").trim())||0;const{zoneTexte,zoneClass}=computeZone(pourcentage);return{date:c[1]?.v||"",joueur:c[2]?.v||"",seance:c[3]?.v||"",recuperation:recupNum,recuperationBrut:naMatch?"N/A":recupBrut,naMatch,sommeil:Number(c[5]?.v)||"",alimentation:Number(c[6]?.v)||"",fatigue_physique:Number(c[7]?.v)||"",fatigue_mentale:Number(c[8]?.v)||"",total:totalNum,pourcentage,zone:c[11]?.v||zoneTexte,zoneClass,douleurZone:c[12]?.v||"",commentaire:c[13]?.v||"",envoye:true};}).filter(x=>x.joueur);resolve(data);}catch(e){resolve([]);}finally{if(typeof oldVisu==="function")google.visualization.Query.setResponse=oldVisu;}};const script=document.createElement("script");script.src=`https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_DOC_ID}/gviz/tq?gid=${GOOGLE_SHEETS_GID}&headers=1&tq=${encodeURIComponent("select *")}&tqx=out:json`;script.onerror=()=>{if(!done){done=true;resolve([]);}};setTimeout(()=>{if(!done){done=true;resolve([]);}},15000);document.body.appendChild(script);});}
-async function chargerDepuisGoogleSheetsAvecBackup(){if(navigator.onLine){const data=await chargerDepuisGoogleSheetsJSONP();localStorage.setItem(STORAGE_SHEETS_KEY,JSON.stringify(data));return data;}const backup=localStorage.getItem(STORAGE_SHEETS_KEY);if(backup){try{const p=JSON.parse(backup);return Array.isArray(p)?p:[];}catch(e){}}return[];}
+function chargerGSJSONP(){return new Promise(res=>{let done=false;const ov=window.google?.visualization?.Query?.setResponse||null;window.google=window.google||{};google.visualization=google.visualization||{};google.visualization.Query=google.visualization.Query||{};google.visualization.Query.setResponse=resp=>{if(done){if(typeof ov==="function")ov(resp);return;}done=true;try{const rows=resp?.table?.rows||[];const data=rows.map(r=>{const c=r.c||[];let rb="",rn="";const cr=c[4];if(cr&&cr.v!=null){rb=String(cr.v);const n=Number(cr.v);if(!Number.isNaN(n))rn=n;}const up=rb.toUpperCase(),na=up.includes("N/A")||up.includes("#N/A");const tot=Number(c[9]?.v)||0,rp=c[10]?.v,pct=Number(String(rp).replace("%","").trim())||0;const{zoneTexte,zoneClass}=computeZone(pct);return{date:c[1]?.v||"",joueur:c[2]?.v||"",seance:c[3]?.v||"",recuperation:rn,recuperationBrut:na?"N/A":rb,naMatch:na,sommeil:Number(c[5]?.v)||"",alimentation:Number(c[6]?.v)||"",fatigue_physique:Number(c[7]?.v)||"",fatigue_mentale:Number(c[8]?.v)||"",total:tot,pourcentage:pct,zone:c[11]?.v||zoneTexte,zoneClass,douleurZone:c[12]?.v||"",commentaire:c[13]?.v||"",envoye:true};}).filter(x=>x.joueur);res(data);}catch(e){res([]);}finally{if(typeof ov==="function")google.visualization.Query.setResponse=ov;}};const sc=document.createElement("script");sc.src=`https://docs.google.com/spreadsheets/d/${GS_DOC}/gviz/tq?gid=${GS_GID}&headers=1&tq=${encodeURIComponent("select *")}&tqx=out:json`;sc.onerror=()=>{if(!done){done=true;res([]);}};setTimeout(()=>{if(!done){done=true;res([]);}},15000);document.body.appendChild(sc);});}
+async function chargerGSBackup(){if(navigator.onLine){const d=await chargerGSJSONP();localStorage.setItem(STORAGE_SHEETS,JSON.stringify(d));return d;}const b=localStorage.getItem(STORAGE_SHEETS);if(b){try{const p=JSON.parse(b);return Array.isArray(p)?p:[];}catch(e){}}return[];}
 
-function sauvegarderLocal(){localStorage.setItem(STORAGE_LOCAL_KEY,JSON.stringify(enregistrementsLocal));}
-function chargerLocal(){const d=localStorage.getItem(STORAGE_LOCAL_KEY);if(!d)return[];try{const p=JSON.parse(d);return Array.isArray(p)?p:[];}catch(e){return[];}}
-function resetDonnees(){if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?"))return;enregistrementsLocal=[];localStorage.removeItem(STORAGE_LOCAL_KEY);majListeJoueursLocal();resetForm(true);alert("Historique tablette effacé.");}
-function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl");if(!ul)return;ul.innerHTML="";enregistrementsLocal.forEach((rec,i)=>{const li=document.createElement("li");li.textContent=`${i+1}. ${rec.joueur} - ${rec.pourcentage}% ${rec.seance?"|"+rec.seance:""} ${rec.envoye?"🟢":"🔴"}`;li.className=rec.zoneClass;ul.appendChild(li);});}
-function resetForm(clearResult){const form=document.getElementById("fatigueForm");form.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNACheckbox)recupNACheckbox.checked=false;if(!clearResult)initDateSeance();if(clearResult){const r=document.getElementById("resultat");r.textContent="";r.className="result";}}
+function sauvegarderLocal(){localStorage.setItem(STORAGE_LOCAL,JSON.stringify(enregistrementsLocal));}
+function chargerLocal(){const d=localStorage.getItem(STORAGE_LOCAL);if(!d)return[];try{const p=JSON.parse(d);return Array.isArray(p)?p:[];}catch(e){return[];}}
+function resetDonnees(){if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?"))return;enregistrementsLocal=[];localStorage.removeItem(STORAGE_LOCAL);majListeJoueursLocal();resetForm(true);alert("Historique tablette effacé.");}
+function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl");if(!ul)return;ul.innerHTML="";enregistrementsLocal.forEach((r,i)=>{const li=document.createElement("li");li.textContent=`${i+1}. ${r.joueur} — ${r.pourcentage}% ${r.seance?"|"+r.seance:""} ${r.envoye?"🟢":"🔴"}`;li.className=r.zoneClass;ul.appendChild(li);});}
+function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
-function forceResizeAllCharts(){resizeTopCanvas("topFatigueCanvas");resizeTopCanvas("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
-async function toggleModeCoach(){const body=document.body;const btn=document.getElementById("modeCoachBtn");body.classList.toggle("coach-mode");const rowAddPlayer=document.getElementById("rowAddPlayer");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");btn.textContent="Mode coach ON";if(rowAddPlayer)rowAddPlayer.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");btn.textContent="Mode coach OFF";if(rowAddPlayer)rowAddPlayer.style.display="none";}}
-function exportPDF(){const body=document.body;const wasCoach=body.classList.contains("coach-mode");if(!wasCoach)body.classList.add("coach-mode");forceResizeAllCharts();window.scrollTo(0,0);setTimeout(()=>{window.print();if(!wasCoach)body.classList.remove("coach-mode");},250);}
+function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
+async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");btn.textContent="Mode coach ON";if(rp)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");btn.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
+function exportPDF(){const body=document.body,wc=body.classList.contains("coach-mode");if(!wc)body.classList.add("coach-mode");forceResizeAllCharts();window.scrollTo(0,0);setTimeout(()=>{window.print();if(!wc)body.classList.remove("coach-mode");},250);}
 
-function getDateFromSeance(s){if(!s)return null;const m=s.match(/^(\d{4}-\d{2}-\d{2})/);if(!m)return null;const d=new Date(m[1]+"T00:00:00");return isNaN(d.getTime())?null:d;}
-function getSeanceKey(r){const d=getDateFromSeance(r.seance)||new Date(r.date);if(isNaN(d.getTime()))return"";return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
-function formatDateKey(key){const d=new Date(key+"T00:00:00");if(isNaN(d.getTime()))return key;return`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;}
-function getSessionKeysSorted(){const data=getVizData();const keys=data.map(getSeanceKey).filter(Boolean);const uniq=[...new Set(keys)];uniq.sort((a,b)=>new Date(a)-new Date(b));return uniq;}
-function getLastSessionKeys(n){return getSessionKeysSorted().slice(-n);}
+// ===== STATS =====
+function getVizData(){return enregistrementsSheets;}
+function getDFromS(s){if(!s)return null;const m=s.match(/^(\d{4}-\d{2}-\d{2})/);if(!m)return null;const d=new Date(m[1]+"T00:00:00");return isNaN(d.getTime())?null:d;}
+function getSKey(r){const d=getDFromS(r.seance)||new Date(r.date);if(isNaN(d.getTime()))return"";return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+function fmtKey(k){const d=new Date(k+"T00:00:00");if(isNaN(d.getTime()))return k;return`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;}
+function getKeysSorted(){const data=getVizData(),keys=data.map(getSKey).filter(Boolean),uniq=[...new Set(keys)];uniq.sort((a,b)=>new Date(a)-new Date(b));return uniq;}
+function getLastKeys(n){return getKeysSorted().slice(-n);}
 
-function majStats(){const data=getVizData();const elNb=document.getElementById("statsNbJoueurs"),elMoy=document.getElementById("statsMoyenneScore"),elDom=document.getElementById("statsZoneDom"),elNonMatch=document.getElementById("statsNonMatch"),indiceBox=document.getElementById("statsIndiceBox"),indiceLabel=document.getElementById("statsIndiceLabel"),recoEl=document.getElementById("statsRecoSeance"),alertesEl=document.getElementById("statsAlertesListe"),selectSeance=document.getElementById("statsSeanceSelect");const allKeys=getSessionKeysSorted();if(!allKeys.length||!data.length){if(elNb)elNb.textContent="Joueurs : 0";if(elMoy)elMoy.textContent="Score moyen : -";if(elDom)elDom.textContent="Zone dominante : -";if(elNonMatch)elNonMatch.textContent="Sans match : -";if(indiceBox&&indiceLabel){indiceBox.className="stats-indice-box";indiceLabel.textContent="Indice bien-être équipe : -";}if(recoEl)recoEl.textContent="Recommandation : -";if(alertesEl)alertesEl.textContent="-";["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{const bar=document.getElementById("bar"+z);const txt=document.getElementById("text"+z);if(bar)bar.style.width="0%";if(txt)txt.textContent="0";});return;}let dateKey=allKeys[allKeys.length-1];if(selectSeance&&selectSeance.value)dateKey=selectSeance.value;const rowsSameDay=data.filter(r=>getSeanceKey(r)===dateKey);const dernierParJoueur={};rowsSameDay.forEach(r=>{const k=r.joueur;const d=getDateFromSeance(r.seance)||new Date(r.date);if(!dernierParJoueur[k])dernierParJoueur[k]=r;else{const d0=getDateFromSeance(dernierParJoueur[k].seance)||new Date(dernierParJoueur[k].date);if(d>d0)dernierParJoueur[k]=r;}});const liste=Object.values(dernierParJoueur);const nb=liste.length;if(elNb)elNb.textContent="Joueurs (dernière mesure) : "+nb;if(!nb)return;function estNonMatch(rec){const t=String(rec.recuperationBrut||"").toUpperCase();const t2=String(rec.recuperation||"").toUpperCase();if(t.includes("N/A")||t2.includes("N/A"))return true;if(rec.naMatch)return true;const total=Number(rec.total)||0;const pct=Number(rec.pourcentage)||0;if(total>0&&pct>0&&(total/pct)<0.225)return true;return false;}const listeNonMatch=liste.filter(estNonMatch);let somme=0;const compte={vf:0,vc:0,j:0,o:0,r:0};liste.forEach(rec=>{somme+=Number(rec.total)||0;const zc=rec.zoneClass||"";if(zc==="zone-vert-fonce")compte.vf++;else if(zc==="zone-vert-clair")compte.vc++;else if(zc==="zone-jaune")compte.j++;else if(zc==="zone-orange")compte.o++;else compte.r++;});const moy=(somme/nb).toFixed(1);if(elMoy)elMoy.textContent="Score moyen : "+moy+" (base 20/25)";const ordre=[{code:"vf",nom:"VERT FONCE"},{code:"vc",nom:"VERT CLAIR"},{code:"j",nom:"JAUNE"},{code:"o",nom:"ORANGE"},{code:"r",nom:"ROUGE"}];let maxNom="",maxVal=-1;ordre.forEach(z=>{if(compte[z.code]>maxVal){maxVal=compte[z.code];maxNom=z.nom;}});if(elDom)elDom.textContent=`Zone dominante : ${maxNom} (${maxVal} joueurs)`;["VFonce","VClair","Jaune","Orange","Rouge"].forEach((id,i)=>{const code=["vf","vc","j","o","r"][i];const bar=document.getElementById("bar"+id);const txt=document.getElementById("text"+id);if(bar)bar.style.width=Math.round((compte[code]/nb)*100)+"%";if(txt)txt.textContent=compte[code];});const pctEquipe=Math.round((parseFloat(moy)/25)*100);let classe="",texte="";if(pctEquipe>=88){classe="indice-vert";texte="Très bon état général";}else if(pctEquipe>=76){classe="indice-vert";texte="Bon état général";}else if(pctEquipe>=64){classe="indice-jaune";texte="Fatigue légère";}else if(pctEquipe>=52){classe="indice-orange";texte="Fatigue notable";}else{classe="indice-rouge";texte="Fatigue importante";}if(indiceBox&&indiceLabel){indiceBox.className="stats-indice-box "+classe;indiceLabel.textContent=`Indice bien-être équipe : ${pctEquipe}% – ${texte}`;}const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>r.joueur);if(alertesEl)alertesEl.textContent=alertes.length?alertes.join(", "):"Aucun joueur en alerte.";if(elNonMatch)elNonMatch.textContent=listeNonMatch.length?"Sans match : "+listeNonMatch.map(r=>r.joueur).join(", "):"Sans match : -";const pctRO=Math.round(((compte.o+compte.r)/nb)*100);let reco="";if(pctEquipe>=80&&pctRO<=10)reco="Équipe en forme : charge normale ou légèrement haute.";else if(pctEquipe>=70&&pctRO<=25)reco="Fatigue modérée : charge normale + surveillance.";else if(pctEquipe>=60||pctRO>30)reco="Plusieurs joueurs fatigués : réduis intensité/volume.";else reco="Fatigue élevée : séance récupération / charge très réduite.";if(recoEl)recoEl.textContent="Recommandation : "+reco;}
+function majStats(){
+  const data=getVizData(),allKeys=getKeysSorted();
+  const elNb=document.getElementById("statsNbJoueurs"),elMoy=document.getElementById("statsMoyenneScore"),elDom=document.getElementById("statsZoneDom"),elNM=document.getElementById("statsNonMatch"),ib=document.getElementById("statsIndiceBox"),il=document.getElementById("statsIndiceLabel"),re=document.getElementById("statsRecoSeance"),al=document.getElementById("statsAlertesListe"),ss=document.getElementById("statsSeanceSelect");
+  if(!allKeys.length||!data.length){if(elNb)elNb.textContent="Joueurs : 0";if(elMoy)elMoy.textContent="Score moyen : -";if(elDom)elDom.textContent="Zone dominante : -";if(elNM)elNM.textContent="Sans match : -";if(ib&&il){ib.className="stats-indice";il.textContent="Indice bien-être : -";}if(re)re.textContent="Recommandation : -";if(al)al.textContent="-";["VFonce","VClair","Jaune","Orange","Rouge"].forEach(z=>{const b=document.getElementById("bar"+z),t=document.getElementById("text"+z);if(b)b.style.width="0%";if(t)t.textContent="0";});return;}
+  let dk=allKeys[allKeys.length-1];if(ss&&ss.value)dk=ss.value;
+  const rows=data.filter(r=>getSKey(r)===dk),dpj={};
+  rows.forEach(r=>{const k=r.joueur,d=getDFromS(r.seance)||new Date(r.date);if(!dpj[k])dpj[k]=r;else{const d0=getDFromS(dpj[k].seance)||new Date(dpj[k].date);if(d>d0)dpj[k]=r;}});
+  const liste=Object.values(dpj),nb=liste.length;
+  if(elNb)elNb.textContent="Joueurs (dernière mesure) : "+nb;
+  if(!nb)return;
+  function isNA(r){const t=String(r.recuperationBrut||"").toUpperCase(),t2=String(r.recuperation||"").toUpperCase();if(t.includes("N/A")||t2.includes("N/A"))return true;if(r.naMatch)return true;const tot=Number(r.total)||0,p=Number(r.pourcentage)||0;if(tot>0&&p>0&&(tot/p)<0.225)return true;return false;}
+  const nm=liste.filter(isNA);let somme=0;const cpt={vf:0,vc:0,j:0,o:0,r:0};
+  liste.forEach(r=>{somme+=Number(r.total)||0;const z=r.zoneClass||"";if(z==="zone-vert-fonce")cpt.vf++;else if(z==="zone-vert-clair")cpt.vc++;else if(z==="zone-jaune")cpt.j++;else if(z==="zone-orange")cpt.o++;else cpt.r++;});
+  const moy=(somme/nb).toFixed(1);if(elMoy)elMoy.textContent="Score moyen : "+moy+" /25";
+  const ord=[{c:"vf",n:"VERT FONCE"},{c:"vc",n:"VERT CLAIR"},{c:"j",n:"JAUNE"},{c:"o",n:"ORANGE"},{c:"r",n:"ROUGE"}];let mn="",mv=-1;ord.forEach(z=>{if(cpt[z.c]>mv){mv=cpt[z.c];mn=z.n;}});
+  if(elDom)elDom.textContent=`Zone dominante : ${mn} (${mv})`;
+  ["VFonce","VClair","Jaune","Orange","Rouge"].forEach((id,i)=>{const c=["vf","vc","j","o","r"][i],b=document.getElementById("bar"+id),t=document.getElementById("text"+id);if(b)b.style.width=Math.round((cpt[c]/nb)*100)+"%";if(t)t.textContent=cpt[c];});
+  const pe=Math.round((parseFloat(moy)/25)*100);let cl="",tx="";if(pe>=88){cl="indice-vert";tx="Très bon état général";}else if(pe>=76){cl="indice-vert";tx="Bon état général";}else if(pe>=64){cl="indice-jaune";tx="Fatigue légère";}else if(pe>=52){cl="indice-orange";tx="Fatigue notable";}else{cl="indice-rouge";tx="Fatigue importante";}
+  if(ib&&il){ib.className="stats-indice "+cl;il.textContent=`Indice : ${pe}% — ${tx}`;}
+  const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>r.joueur);
+  if(al)al.textContent=alertes.length?alertes.join(", "):"Aucun joueur en alerte.";
+  if(elNM)elNM.textContent=nm.length?"Sans match : "+nm.map(r=>r.joueur).join(", "):"Sans match : -";
+  const pRO=Math.round(((cpt.o+cpt.r)/nb)*100);let reco="";if(pe>=80&&pRO<=10)reco="Équipe en forme : charge normale.";else if(pe>=70&&pRO<=25)reco="Fatigue modérée : charge normale + surveillance.";else if(pe>=60||pRO>30)reco="Plusieurs fatigués : réduis intensité.";else reco="Fatigue élevée : séance récup.";
+  if(re)re.textContent="Recommandation : "+reco;
+}
 
-let statsSeanceHandlersBound=false;
-function buildStatsSeanceSelect(){const select=document.getElementById("statsSeanceSelect");if(!select)return;const keys=getSessionKeysSorted();select.innerHTML="";if(!keys.length){select.appendChild(Object.assign(document.createElement("option"),{value:"",textContent:"Aucune séance"}));majStats();return;}keys.forEach(k=>select.appendChild(Object.assign(document.createElement("option"),{value:k,textContent:formatDateKey(k)})));select.value=keys[keys.length-1];if(!statsSeanceHandlersBound){select.addEventListener("change",majStats);statsSeanceHandlersBound=true;}majStats();}
+let ssBound=false;
+function buildStatsSeanceSelect(){const s=document.getElementById("statsSeanceSelect");if(!s)return;const k=getKeysSorted();s.innerHTML="";if(!k.length){s.appendChild(Object.assign(document.createElement("option"),{value:"",textContent:"Aucune séance"}));majStats();return;}k.forEach(x=>s.appendChild(Object.assign(document.createElement("option"),{value:x,textContent:fmtKey(x)})));s.value=k[k.length-1];if(!ssBound){s.addEventListener("change",majStats);ssBound=true;}majStats();}
 
-function computeAlertesDuJour(selectedKey){const data=getVizData();if(!data.length)return{dateKey:null,alertes:[]};const allKeys=getSessionKeysSorted();if(!allKeys.length)return{dateKey:null,alertes:[]};const dateKey=selectedKey||allKeys[allKeys.length-1];const rowsSameDay=data.filter(r=>getSeanceKey(r)===dateKey);const lastByPlayer={};rowsSameDay.forEach(r=>{const d=getDateFromSeance(r.seance)||new Date(r.date);const k=r.joueur;if(!lastByPlayer[k])lastByPlayer[k]=r;else{const d0=getDateFromSeance(lastByPlayer[k].seance)||new Date(lastByPlayer[k].date);if(d>d0)lastByPlayer[k]=r;}});const alertes=Object.values(lastByPlayer).filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>({joueur:r.joueur,pourcentage:r.pourcentage,zoneClass:r.zoneClass,zone:r.zone,douleurZone:r.douleurZone||"",commentaire:r.commentaire||""}));return{dateKey,alertes};}
-function majAlertesDuJour(){const card=document.getElementById("alertesDuJourCard"),dateLabel=document.getElementById("alertDateLabel"),listEl=document.getElementById("alertList"),select=document.getElementById("alertSeanceSelect");if(!card||!dateLabel||!listEl||!select)return;const{dateKey,alertes}=computeAlertesDuJour(select.value||null);listEl.innerHTML="";if(!dateKey){dateLabel.textContent="Pas de séance enregistrée.";return;}dateLabel.textContent=`Séance : ${formatDateKey(dateKey)}`;if(!alertes.length){const li=document.createElement("li");li.textContent="Aucun joueur en alerte sur cette séance.";listEl.appendChild(li);return;}alertes.forEach(a=>{const li=document.createElement("li");const tag=document.createElement("span");tag.className="alert-tag "+(a.zoneClass==="zone-orange"?"alert-tag-orange":"alert-tag-rouge");tag.textContent=a.zoneClass==="zone-orange"?"ORANGE":"ROUGE";li.appendChild(tag);const txt=document.createElement("span");let details=`${a.joueur} – ${a.pourcentage}%`;if(a.douleurZone)details+=` – Douleurs : ${a.douleurZone}`;if(a.commentaire)details+=` – Note : ${a.commentaire}`;txt.textContent=" "+details;li.appendChild(txt);listEl.appendChild(li);});}
-let alertSeanceHandlersBound=false;
-function buildAlertSeanceSelect(){const select=document.getElementById("alertSeanceSelect");if(!select)return;const keys=getSessionKeysSorted();select.innerHTML="";if(!keys.length){select.appendChild(Object.assign(document.createElement("option"),{value:"",textContent:"Aucune séance"}));majAlertesDuJour();return;}keys.forEach(k=>select.appendChild(Object.assign(document.createElement("option"),{value:k,textContent:formatDateKey(k)})));select.value=keys[keys.length-1];if(!alertSeanceHandlersBound){select.addEventListener("change",majAlertesDuJour);alertSeanceHandlersBound=true;}majAlertesDuJour();}
+function getAlertesDuJour(sk){const data=getVizData();if(!data.length)return{dk:null,alertes:[]};const keys=getKeysSorted();if(!keys.length)return{dk:null,alertes:[]};const dk=sk||keys[keys.length-1];const rows=data.filter(r=>getSKey(r)===dk);const lbp={};rows.forEach(r=>{const d=getDFromS(r.seance)||new Date(r.date),k=r.joueur;if(!lbp[k])lbp[k]=r;else{const d0=getDFromS(lbp[k].seance)||new Date(lbp[k].date);if(d>d0)lbp[k]=r;}});const alertes=Object.values(lbp).filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>({joueur:r.joueur,pourcentage:r.pourcentage,zoneClass:r.zoneClass,zone:r.zone,douleurZone:r.douleurZone||"",commentaire:r.commentaire||""}));return{dk,alertes};}
+function majAlertes(){const card=document.getElementById("alertesDuJourCard"),dl=document.getElementById("alertDateLabel"),listEl=document.getElementById("alertList"),sel=document.getElementById("alertSeanceSelect");if(!card||!dl||!listEl||!sel)return;const{dk,alertes}=getAlertesDuJour(sel.value||null);listEl.innerHTML="";if(!dk){dl.textContent="Pas de séance.";return;}dl.textContent="Séance : "+fmtKey(dk);if(!alertes.length){const li=document.createElement("li");li.textContent="Aucun joueur en alerte.";listEl.appendChild(li);return;}alertes.forEach(a=>{const li=document.createElement("li");const tag=document.createElement("span");tag.className="alert-tag "+(a.zoneClass==="zone-orange"?"alert-orange":"alert-rouge");tag.textContent=a.zoneClass==="zone-orange"?"ORANGE":"ROUGE";li.appendChild(tag);const txt=document.createElement("span");let d=`${a.joueur} — ${a.pourcentage}%`;if(a.douleurZone)d+=` | ${a.douleurZone}`;if(a.commentaire)d+=` | ${a.commentaire}`;txt.textContent=" "+d;li.appendChild(txt);listEl.appendChild(li);});}
+let asBound=false;
+function buildAlertSeanceSelect(){const s=document.getElementById("alertSeanceSelect");if(!s)return;const k=getKeysSorted();s.innerHTML="";if(!k.length){s.appendChild(Object.assign(document.createElement("option"),{value:"",textContent:"Aucune séance"}));majAlertes();return;}k.forEach(x=>s.appendChild(Object.assign(document.createElement("option"),{value:x,textContent:fmtKey(x)})));s.value=k[k.length-1];if(!asBound){s.addEventListener("change",majAlertes);asBound=true;}majAlertes();}
 
-function computeTop5(n,mode="fatigue"){const data=getVizData();const lastKeys=getLastSessionKeys(n);if(!lastKeys.length)return[];const windowRows=data.filter(r=>lastKeys.includes(getSeanceKey(r)));const lastByPlayer={};windowRows.forEach(r=>{const k=r.joueur;const dr=getDateFromSeance(r.seance)||new Date(r.date);if(!lastByPlayer[k])lastByPlayer[k]=r;else{const d0=getDateFromSeance(lastByPlayer[k].seance)||new Date(lastByPlayer[k].date);if(dr>d0)lastByPlayer[k]=r;}});const list=Object.values(lastByPlayer).filter(r=>r.joueur&&r.pourcentage!==""&&r.pourcentage!=null).map(r=>({joueur:r.joueur,val:Number(r.pourcentage)||0}));list.sort((a,b)=>mode==="fatigue"?a.val-b.val:b.val-a.val);return list.slice(0,5);}
-function resizeTopCanvas(canvasId){const canvas=document.getElementById(canvasId);if(!canvas)return;const parent=canvas.parentElement;const ratio=window.devicePixelRatio||1;const rect=parent.getBoundingClientRect();const w=rect.width>10?rect.width:320;const h=rect.height>10?rect.height:240;canvas.width=w*ratio;canvas.height=h*ratio;const ctx=canvas.getContext("2d");ctx.setTransform(ratio,0,0,ratio,0,0);}
-function drawTop5Vertical(canvasId,emptyId,data,mode="fatigue"){const canvas=document.getElementById(canvasId);const empty=document.getElementById(emptyId);if(!canvas)return;const ctx=canvas.getContext("2d");const w=canvas.width/(window.devicePixelRatio||1);const h=canvas.height/(window.devicePixelRatio||1);ctx.clearRect(0,0,w,h);if(!data.length){if(empty)empty.style.display="block";ctx.fillStyle="#94a3b8";ctx.font="14px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Aucune donnée",w/2,h/2);return;}if(empty)empty.style.display="none";const padL=36,padR=16,padT=18,padB=60;const plotW=w-padL-padR;const plotH=h-padT-padB;ctx.font="12px Arial";ctx.fillStyle="#64748b";ctx.strokeStyle="#e2e8f0";ctx.textAlign="right";ctx.textBaseline="middle";[0,25,50,75,100].forEach(g=>{const y=padT+plotH*(1-g/100);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.fillText(g+"%",padL-6,y);});const gap=10;const barW=(plotW-gap*(data.length-1))/data.length;data.forEach((d,i)=>{const val=Math.max(0,Math.min(100,d.val));const x=padL+i*(barW+gap);const barH=plotH*(val/100);const y=padT+(plotH-barH);ctx.fillStyle=mode==="fatigue"?"#f59e0b":"#22c55e";ctx.fillRect(x,y,barW,barH);ctx.fillStyle="#0f172a";ctx.textAlign="center";ctx.textBaseline="bottom";ctx.font="13px Arial";ctx.fillText(val.toFixed(0)+"%",x+barW/2,y-4);ctx.textBaseline="top";ctx.font="12px Arial";const label=d.joueur.length>10?d.joueur.slice(0,10)+"…":d.joueur;ctx.fillText(label,x+barW/2,padT+plotH+8);});}
-let top5HandlersBound=false;
-function drawTop5Now(){const selFat=document.getElementById("topFatigueRange");const selFor=document.getElementById("topFormeRange");const nFat=Number(selFat?.value||5);const nFor=Number(selFor?.value||5);resizeTopCanvas("topFatigueCanvas");resizeTopCanvas("topFormeCanvas");drawTop5Vertical("topFatigueCanvas","topFatigueEmpty",computeTop5(nFat,"fatigue"),"fatigue");drawTop5Vertical("topFormeCanvas","topFormeEmpty",computeTop5(nFor,"forme"),"forme");}
-function buildTop5Charts(){const selFat=document.getElementById("topFatigueRange");const selFor=document.getElementById("topFormeRange");if(!selFat||!selFor)return;if(!top5HandlersBound){selFat.addEventListener("change",drawTop5Now);selFor.addEventListener("change",drawTop5Now);top5HandlersBound=true;}drawTop5Now();}
+function computeTop5(n,mode){const data=getVizData(),lk=getLastKeys(n);if(!lk.length)return[];const wr=data.filter(r=>lk.includes(getSKey(r)));const lbp={};wr.forEach(r=>{const k=r.joueur,d=getDFromS(r.seance)||new Date(r.date);if(!lbp[k])lbp[k]=r;else{const d0=getDFromS(lbp[k].seance)||new Date(lbp[k].date);if(d>d0)lbp[k]=r;}});const l=Object.values(lbp).filter(r=>r.joueur&&r.pourcentage!==""&&r.pourcentage!=null).map(r=>({joueur:r.joueur,val:Number(r.pourcentage)||0}));l.sort((a,b)=>mode==="fatigue"?a.val-b.val:b.val-a.val);return l.slice(0,5);}
+function resizeC(id){const c=document.getElementById(id);if(!c)return;const p=c.parentElement,ratio=window.devicePixelRatio||1,rect=p.getBoundingClientRect(),w=rect.width>10?rect.width:320,h=rect.height>10?rect.height:240;c.width=w*ratio;c.height=h*ratio;c.getContext("2d").setTransform(ratio,0,0,ratio,0,0);}
+function drawTop5(cid,eid,data,mode){const c=document.getElementById(cid),e=document.getElementById(eid);if(!c)return;const ctx=c.getContext("2d"),w=c.width/(window.devicePixelRatio||1),h=c.height/(window.devicePixelRatio||1);ctx.clearRect(0,0,w,h);if(!data.length){if(e)e.style.display="block";ctx.fillStyle="#6a8a6a";ctx.font="13px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Aucune donnée",w/2,h/2);return;}if(e)e.style.display="none";const pL=36,pR=16,pT=18,pB=55,pw=w-pL-pR,ph=h-pT-pB;ctx.font="11px Arial";ctx.fillStyle="#6a8a6a";ctx.strokeStyle="#2a3f2a";ctx.textAlign="right";ctx.textBaseline="middle";[0,25,50,75,100].forEach(g=>{const y=pT+ph*(1-g/100);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(w-pR,y);ctx.stroke();ctx.fillText(g+"%",pL-4,y);});const gap=8,bw=(pw-gap*(data.length-1))/data.length;data.forEach((d,i)=>{const val=Math.max(0,Math.min(100,d.val)),x=pL+i*(bw+gap),bh=ph*(val/100),y=pT+(ph-bh);ctx.fillStyle=mode==="fatigue"?"#ff9900":"#8dc63f";ctx.fillRect(x,y,bw,bh);ctx.fillStyle="#f4f8f0";ctx.textAlign="center";ctx.textBaseline="bottom";ctx.font="12px Arial";ctx.fillText(val.toFixed(0)+"%",x+bw/2,y-3);ctx.textBaseline="top";ctx.font="11px Arial";const lbl=d.joueur.length>10?d.joueur.slice(0,10)+"…":d.joueur;ctx.fillText(lbl,x+bw/2,pT+ph+6);});}
+let t5b=false;
+function drawTop5Now(){const sf=document.getElementById("topFatigueRange"),so=document.getElementById("topFormeRange"),nf=Number(sf?.value||5),no=Number(so?.value||5);resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5("topFatigueCanvas","topFatigueEmpty",computeTop5(nf,"fatigue"),"fatigue");drawTop5("topFormeCanvas","topFormeEmpty",computeTop5(no,"forme"),"forme");}
+function buildTop5Charts(){const sf=document.getElementById("topFatigueRange"),so=document.getElementById("topFormeRange");if(!sf||!so)return;if(!t5b){sf.addEventListener("change",drawTop5Now);so.addEventListener("change",drawTop5Now);t5b=true;}drawTop5Now();}
 
-function getDateLabelFromRecord(r){const d=getDateFromSeance(r.seance)||new Date(r.date);if(isNaN(d.getTime()))return"";return`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;}
-function getLastNRecordsForPlayer(joueur,n=5){const data=getVizData();const rows=data.filter(r=>r.joueur===joueur);if(!rows.length)return[];const byKey={};rows.forEach(r=>{const key=getSeanceKey(r);if(!key)return;const d=getDateFromSeance(r.seance)||new Date(r.date);if(!byKey[key])byKey[key]=r;else{const d0=getDateFromSeance(byKey[key].seance)||new Date(byKey[key].date);if(d>d0)byKey[key]=r;}});let list=Object.entries(byKey).map(([key,rec])=>({...rec,_dateKey:key}));list.sort((a,b)=>new Date(a._dateKey)-new Date(b._dateKey));return list.slice(-n);}
-function getTeamAverageLastN(n){const data=getVizData();const rows=[...data];rows.sort((a,b)=>{const da=getDateFromSeance(a.seance)||new Date(a.date);const db=getDateFromSeance(b.seance)||new Date(b.date);return da-db;});const last=rows.slice(-n);if(!last.length)return null;return last.reduce((s,r)=>s+(Number(r.pourcentage)||0),0)/last.length;}
-function resizeSparklineCanvas(){const canvas=document.getElementById("sparklineCanvas");const wrap=document.querySelector(".sparkline-wrap");if(!canvas||!wrap)return;const ratio=window.devicePixelRatio||1;const rect=wrap.getBoundingClientRect();const w=rect.width>10?rect.width:320;const h=rect.height>10?rect.height:240;canvas.width=w*ratio;canvas.height=h*ratio;const ctx=canvas.getContext("2d");ctx.setTransform(ratio,0,0,ratio,0,0);}
-function drawZones(ctx,padL,padT,plotW,plotH){const zones=[{from:0,to:52},{from:52,to:64},{from:64,to:76},{from:76,to:88},{from:88,to:100}];const colors=["#f8d7da","#ffe0b8","#fff8c2","#d5f7dd","#b7f0c4"];zones.forEach((z,i)=>{const yTop=padT+plotH*(1-z.to/100);const yBot=padT+plotH*(1-z.from/100);ctx.fillStyle=colors[i];ctx.fillRect(padL,yTop,plotW,yBot-yTop);});}
-function drawSparkline(points,avgEquipe){const canvas=document.getElementById("sparklineCanvas");const empty=document.getElementById("sparklineEmpty");if(!canvas)return;const ctx=canvas.getContext("2d");const w=canvas.width/(window.devicePixelRatio||1);const h=canvas.height/(window.devicePixelRatio||1);ctx.clearRect(0,0,w,h);if(!points||!points.length){if(empty)empty.style.display="block";ctx.fillStyle="#94a3b8";ctx.font="14px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Aucune donnée",w/2,h/2);return;}if(empty)empty.style.display="none";const padL=52,padR=14,padT=28,padB=46;const plotW=w-padL-padR;const plotH=h-padT-padB;drawZones(ctx,padL,padT,plotW,plotH);const stepX=plotW/Math.max(points.length-1,1);const toXY=(v,i)=>({x:padL+i*stepX,y:padT+plotH*(1-v/100)});const pts=points.map((p,i)=>toXY(p.value,i));if(avgEquipe!=null){const yAvg=padT+plotH*(1-avgEquipe/100);ctx.save();ctx.strokeStyle="#0f172a";ctx.lineWidth=1.8;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(padL,yAvg);ctx.lineTo(w-padR,yAvg);ctx.stroke();ctx.restore();ctx.fillStyle="#0f172a";ctx.font="11px Arial";ctx.textAlign="left";ctx.textBaseline="bottom";ctx.fillText("Moy. équipe: "+Math.round(avgEquipe)+"%",padL+4,yAvg-2);}ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.strokeStyle="#2f7ccc";ctx.lineWidth=2.5;ctx.setLineDash([]);ctx.stroke();pts.forEach((p,i)=>{const v=points[i].value;let col="#2f7ccc";if(v>=88)col="#145c2e";else if(v>=76)col="#1f7f3f";else if(v>=64)col="#8a7400";else if(v>=52)col="#8a4b06";else col="#721c24";ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.fillStyle="#0f172a";ctx.font="11px Arial";ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(v+"%",p.x,p.y-7);});ctx.fillStyle="#555";ctx.font="11px Arial";ctx.textAlign="center";ctx.textBaseline="top";points.forEach((p,i)=>ctx.fillText(p.label,pts[i].x,padT+plotH+6));}
-function drawSparklineNow(){const sel=document.getElementById("sparklineSelect");const rng=document.getElementById("sparklineRange");const joueur=sel?.value;const n=Number(rng?.value||5);if(!joueur){drawSparkline([]);return;}const records=getLastNRecordsForPlayer(joueur,n);const points=records.map(r=>({value:Number(r.pourcentage)||0,label:getDateLabelFromRecord(r)}));const avg=getTeamAverageLastN(n);resizeSparklineCanvas();drawSparkline(points,avg);}
-function buildSparklineSelect(){const sel=document.getElementById("sparklineSelect");if(!sel)return;const data=getVizData();const joueurs=[...new Set(data.map(r=>r.joueur))].filter(Boolean).sort();const prev=sel.value;sel.innerHTML="";joueurs.forEach(j=>sel.appendChild(Object.assign(document.createElement("option"),{value:j,textContent:j})));if(prev&&joueurs.includes(prev))sel.value=prev;sel.addEventListener("change",drawSparklineNow);document.getElementById("sparklineRange")?.addEventListener("change",drawSparklineNow);drawSparklineNow();buildFicheSeanceSelect();}
-function buildFicheSeanceSelect(){const select=document.getElementById("ficheSeanceSelect");if(!select)return;const keys=getSessionKeysSorted();select.innerHTML="";keys.slice().reverse().forEach(k=>select.appendChild(Object.assign(document.createElement("option"),{value:k,textContent:formatDateKey(k)})));}
-function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelect");const ficheSelect=document.getElementById("ficheSeanceSelect");const joueur=sel?.value;const dateKey=ficheSelect?.value;if(!joueur){alert("Sélectionne un joueur.");return;}const data=getVizData();const rowsJoueur=data.filter(r=>r.joueur===joueur&&(!dateKey||getSeanceKey(r)===dateKey));const last=rowsJoueur.slice(-1)[0];if(!last){alert("Pas de données pour ce joueur/cette séance.");return;}const fmtNote=v=>v!=null&&v!==""?v+"/5":"-";const{zoneTexte,zoneClass}=computeZone(Number(last.pourcentage)||0);const historique=getLastNRecordsForPlayer(joueur,5);let html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Fiche ${joueur}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:auto;}h1{color:#2f7ccc;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:13px;}th{background:#e3f1ff;}.zone-vert-fonce{background:#b7f0c4;color:#145c2e;}.zone-vert-clair{background:#d5f7dd;color:#1f7f3f;}.zone-jaune{background:#fff8c2;color:#8a7400;}.zone-orange{background:#ffe0b8;color:#8a4b06;}.zone-rouge{background:#f8d7da;color:#721c24;}</style></head><body><h1>Fiche bien-être — ${joueur}</h1><p>Séance : <strong>${last.seance||"-"}</strong></p><div class="${zoneClass}" style="padding:10px;border-radius:8px;margin:12px 0;font-size:16px;font-weight:bold;text-align:center;">Score : ${last.total}/${last.naMatch?20:25} (${last.pourcentage}%) — ${zoneTexte}</div><table><thead><tr><th>Récupération</th><th>Sommeil</th><th>Alimentation</th><th>Fatigue phy.</th><th>Fatigue men.</th></tr></thead><tbody><tr><td>${last.naMatch?"N/A":fmtNote(last.recuperation)}</td><td>${fmtNote(last.sommeil)}</td><td>${fmtNote(last.alimentation)}</td><td>${fmtNote(last.fatigue_physique)}</td><td>${fmtNote(last.fatigue_mentale)}</td></tr></tbody></table>`;if(last.douleurZone)html+=`<p><strong>Douleurs :</strong> ${last.douleurZone}</p>`;if(last.commentaire)html+=`<p><strong>Commentaire :</strong> ${last.commentaire}</p>`;if(historique.length){html+=`<h2>Historique (5 dernières séances)</h2><table><thead><tr><th>Date</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>%</th></tr></thead><tbody>`;historique.forEach(h=>{html+=`<tr><td>${formatDateKey(h._dateKey||getSeanceKey(h))}</td><td>${h.naMatch?"N/A":fmtNote(h.recuperation)}</td><td>${fmtNote(h.sommeil)}</td><td>${fmtNote(h.alimentation)}</td><td>${fmtNote(h.fatigue_physique)}</td><td>${fmtNote(h.fatigue_mentale)}</td><td>${h.total||"-"}</td><td>${h.pourcentage||0}%</td></tr>`;});html+=`</tbody></table>`;}html+=`</body></html>`;const w=window.open("","_blank");if(!w){alert("Popup bloquée ?");return;}w.document.open();w.document.write(html);w.document.close();w.focus();w.print();}
+function getDlbl(r){const d=getDFromS(r.seance)||new Date(r.date);if(isNaN(d.getTime()))return"";return`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;}
+function getLastN(joueur,n){const data=getVizData(),rows=data.filter(r=>r.joueur===joueur);if(!rows.length)return[];const bk={};rows.forEach(r=>{const k=getSKey(r);if(!k)return;const d=getDFromS(r.seance)||new Date(r.date);if(!bk[k])bk[k]=r;else{const d0=getDFromS(bk[k].seance)||new Date(bk[k].date);if(d>d0)bk[k]=r;}});let l=Object.entries(bk).map(([k,rec])=>({...rec,_dk:k}));l.sort((a,b)=>new Date(a._dk)-new Date(b._dk));return l.slice(-n);}
+function getTeamAvg(n){const data=getVizData(),rows=[...data];rows.sort((a,b)=>{const da=getDFromS(a.seance)||new Date(a.date),db=getDFromS(b.seance)||new Date(b.date);return da-db;});const last=rows.slice(-n);if(!last.length)return null;return last.reduce((s,r)=>s+(Number(r.pourcentage)||0),0)/last.length;}
+function resizeSparklineCanvas(){const c=document.getElementById("sparklineCanvas"),w=document.querySelector(".sparkline-wrap");if(!c||!w)return;const ratio=window.devicePixelRatio||1,rect=w.getBoundingClientRect(),wi=rect.width>10?rect.width:320,hi=rect.height>10?rect.height:200;c.width=wi*ratio;c.height=hi*ratio;c.getContext("2d").setTransform(ratio,0,0,ratio,0,0);}
+function drawZones(ctx,pL,pT,pW,pH){[[0,52,"#3a0000"],[52,64,"#3a2000"],[64,76,"#3a3a00"],[76,88,"#1a3a1a"],[88,100,"#0d3a1a"]].forEach(([f,t,col])=>{const yTop=pT+pH*(1-t/100),yBot=pT+pH*(1-f/100);ctx.fillStyle=col;ctx.fillRect(pL,yTop,pW,yBot-yTop);});}
+function drawSparkline(pts,avg){const c=document.getElementById("sparklineCanvas"),e=document.getElementById("sparklineEmpty");if(!c)return;const ctx=c.getContext("2d"),w=c.width/(window.devicePixelRatio||1),h=c.height/(window.devicePixelRatio||1);ctx.clearRect(0,0,w,h);if(!pts||!pts.length){if(e)e.style.display="block";ctx.fillStyle="#6a8a6a";ctx.font="13px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Aucune donnée",w/2,h/2);return;}if(e)e.style.display="none";const pL=48,pR=12,pT=24,pB=40,pW=w-pL-pR,pH=h-pT-pB;drawZones(ctx,pL,pT,pW,pH);const sx=pW/Math.max(pts.length-1,1),toXY=(v,i)=>({x:pL+i*sx,y:pT+pH*(1-v/100)}),pp=pts.map((p,i)=>toXY(p.value,i));if(avg!=null){const ya=pT+pH*(1-avg/100);ctx.save();ctx.strokeStyle="#6a8a6a";ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pL,ya);ctx.lineTo(w-pR,ya);ctx.stroke();ctx.restore();ctx.fillStyle="#6a8a6a";ctx.font="10px Arial";ctx.textAlign="left";ctx.textBaseline="bottom";ctx.fillText("Moy: "+Math.round(avg)+"%",pL+3,ya-2);}ctx.beginPath();ctx.moveTo(pp[0].x,pp[0].y);pp.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.strokeStyle="#8dc63f";ctx.lineWidth=2.5;ctx.setLineDash([]);ctx.stroke();pp.forEach((p,i)=>{const v=pts[i].value;let col="#8dc63f";if(v<52)col="#ff4444";else if(v<64)col="#ff9900";else if(v<76)col="#ffdd55";else if(v<88)col="#88dd55";ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.fillStyle="#f4f8f0";ctx.font="10px Arial";ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(v+"%",p.x,p.y-7);});ctx.fillStyle="#6a8a6a";ctx.font="10px Arial";ctx.textAlign="center";ctx.textBaseline="top";pts.forEach((p,i)=>ctx.fillText(p.label,pp[i].x,pT+pH+5));}
+function drawSparklineNow(){const sel=document.getElementById("sparklineSelect"),rng=document.getElementById("sparklineRange"),joueur=sel?.value,n=Number(rng?.value||5);if(!joueur){drawSparkline([]);return;}const recs=getLastN(joueur,n),pts=recs.map(r=>({value:Number(r.pourcentage)||0,label:getDlbl(r)})),avg=getTeamAvg(n);resizeSparklineCanvas();drawSparkline(pts,avg);}
+function buildSparklineSelect(){const sel=document.getElementById("sparklineSelect");if(!sel)return;const data=getVizData(),joueurs=[...new Set(data.map(r=>r.joueur))].filter(Boolean).sort(),prev=sel.value;sel.innerHTML="";joueurs.forEach(j=>sel.appendChild(Object.assign(document.createElement("option"),{value:j,textContent:j})));if(prev&&joueurs.includes(prev))sel.value=prev;sel.addEventListener("change",drawSparklineNow);document.getElementById("sparklineRange")?.addEventListener("change",drawSparklineNow);drawSparklineNow();buildFicheSelect();}
+function buildFicheSelect(){const s=document.getElementById("ficheSeanceSelect");if(!s)return;const k=getKeysSorted();s.innerHTML="";k.slice().reverse().forEach(x=>s.appendChild(Object.assign(document.createElement("option"),{value:x,textContent:fmtKey(x)})));}
+
+function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelect"),fs=document.getElementById("ficheSeanceSelect"),joueur=sel?.value,dk=fs?.value;if(!joueur){alert("Sélectionne un joueur.");return;}const data=getVizData(),rows=data.filter(r=>r.joueur===joueur&&(!dk||getSKey(r)===dk)),last=rows.slice(-1)[0];if(!last){alert("Pas de données.");return;}const fn=v=>v!=null&&v!==""?v+"/5":"-";const{zoneTexte,zoneClass}=computeZone(Number(last.pourcentage)||0),hist=getLastN(joueur,5);let html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Fiche ${joueur}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:auto;}h1{color:#5a9a1a;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:13px;}th{background:#f0f5ea;}.zone-vert-fonce{background:#b7f0c4;color:#145c2e;}.zone-vert-clair{background:#d5f7dd;color:#1f7f3f;}.zone-jaune{background:#fff8c2;color:#8a7400;}.zone-orange{background:#ffe0b8;color:#8a4b06;}.zone-rouge{background:#f8d7da;color:#721c24;}</style></head><body><h1>Fiche bien-être — ${joueur}</h1><p>Séance : <strong>${last.seance||"-"}</strong></p><div class="${zoneClass}" style="padding:10px;border-radius:8px;margin:12px 0;font-size:16px;font-weight:bold;text-align:center;">Score : ${last.total}/${last.naMatch?20:25} (${last.pourcentage}%) — ${zoneTexte}</div><table><thead><tr><th>Récupération</th><th>Sommeil</th><th>Alimentation</th><th>Fatigue phy.</th><th>Fatigue men.</th></tr></thead><tbody><tr><td>${last.naMatch?"N/A":fn(last.recuperation)}</td><td>${fn(last.sommeil)}</td><td>${fn(last.alimentation)}</td><td>${fn(last.fatigue_physique)}</td><td>${fn(last.fatigue_mentale)}</td></tr></tbody></table>`;if(last.douleurZone)html+=`<p><strong>Douleurs :</strong> ${last.douleurZone}</p>`;if(last.commentaire)html+=`<p><strong>Commentaire :</strong> ${last.commentaire}</p>`;if(hist.length){html+=`<h2>Historique</h2><table><thead><tr><th>Date</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>%</th></tr></thead><tbody>`;hist.forEach(h=>{html+=`<tr><td>${fmtKey(h._dk||getSKey(h))}</td><td>${h.naMatch?"N/A":fn(h.recuperation)}</td><td>${fn(h.sommeil)}</td><td>${fn(h.alimentation)}</td><td>${fn(h.fatigue_physique)}</td><td>${fn(h.fatigue_mentale)}</td><td>${h.total||"-"}</td><td>${h.pourcentage||0}%</td></tr>`;});html+=`</tbody></table>`;}html+=`</body></html>`;const win=window.open("","_blank");if(!win){alert("Popup bloquée ?");return;}win.document.open();win.document.write(html);win.document.close();win.focus();win.print();}
 
 window.addEventListener("resize",()=>{if(document.body.classList.contains("coach-mode"))forceResizeAllCharts();});
-
-function toggleAvatarMenu(){
-  const menu=document.getElementById("avatarMenu");
-  if(!menu)return;
-  menu.style.display=menu.style.display==="none"?"block":"none";
-}
-document.addEventListener("click",function(e){
-  const wrapper=document.getElementById("avatarWrapper");
-  if(wrapper&&!wrapper.contains(e.target)){
-    const menu=document.getElementById("avatarMenu");
-    if(menu)menu.style.display="none";
-  }
-});
-function majAvatar(){
-  const initEl=document.getElementById("avatarInitials");
-  const nomEl=document.getElementById("menuClubNom");
-  const emailEl=document.getElementById("menuCoachEmail");
-  if(!currentClub||!currentUser)return;
-  const nom=currentClub.nom||"";
-  const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
-  if(initEl)initEl.textContent=initiales;
-  if(nomEl)nomEl.textContent=nom;
-  if(emailEl)emailEl.textContent=currentUser.email||"";
-}
-window.addEventListener("DOMContentLoaded",()=>{const params=new URLSearchParams(location.search);const clubId=params.get("club");const teamId=params.get("team");if(clubId&&teamId){chargerClubJoueur(clubId,teamId);}else{showScreen("loginScreen");}});
+window.addEventListener("DOMContentLoaded",()=>{const p=new URLSearchParams(location.search),c=p.get("club"),t=p.get("team");if(c&&t)chargerClubJoueur(c,t);else showScreen("loginScreen");});
 </script>
-<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(err=>console.log("Erreur SW:",err));}</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(e=>console.log("SW err:",e));}</script>
 </body>
 </html>
