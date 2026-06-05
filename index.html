@@ -133,7 +133,7 @@ body.player-mode .player-banner{display:flex;}
 /* ===== APP BODY ===== */
 .app-body{background:transparent;padding:20px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;box-sizing:border-box;}
 #appContent{background:#0f1a0f;}
-body.coach-mode #appContent{background:#1c2e1c !important;}
+body.coach-mode #appContent{background:#f0f5ea !important;}
 .sync-bar{font-size:12px;padding:4px 16px;min-height:20px;color:var(--gris);}
 .sync-bar.ok{color:var(--vert2);}
 .sync-bar.err{color:#cc0000;}
@@ -186,31 +186,31 @@ body.coach-mode .local-list{display:block;}
 .local-list li{margin-bottom:4px;padding:3px 6px;border-radius:6px;font-size:13px;}
 
 /* ===== STATS CARD (coach) ===== */
-.stats-card{background:#1e3020;border-radius:16px;border:1px solid #3a5a3a;padding:16px;flex:0 0 360px;max-width:380px;font-size:13px;align-self:flex-start;}
+.stats-card{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:16px;flex:0 0 360px;max-width:380px;font-size:13px;align-self:flex-start;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 .coach-only{display:none;}
 body.coach-mode .coach-only{display:block;}
-.stats-title{font-weight:700;color:var(--vert);font-size:14px;margin-bottom:8px;}
-.stats-line{font-size:12px;color:#b8d0b8;margin-bottom:4px;}
-.stats-indice{margin-top:8px;padding:10px;border-radius:10px;text-align:center;font-weight:700;font-size:13px;background:var(--noir3);color:var(--vert);}
-.stats-indice.indice-vert{background:#1a3a1a;color:#88dd55;}
-.stats-indice.indice-jaune{background:#3a3a00;color:#ffdd55;}
-.stats-indice.indice-orange{background:#3a2000;color:#ffaa55;}
-.stats-indice.indice-rouge{background:#3a0000;color:#ff6b6b;}
+.stats-title{font-weight:700;color:#3a6a1a;font-size:14px;margin-bottom:8px;}
+.stats-line{font-size:12px;color:#2a4a2a;margin-bottom:4px;}
+.stats-indice{margin-top:8px;padding:10px;border-radius:10px;text-align:center;font-weight:700;font-size:13px;background:#f0f5ea;color:#3a6a1a;border:1px solid #c8ddb0;}
+.stats-indice.indice-vert{background:#d0f0d0;color:#145c2e;}
+.stats-indice.indice-jaune{background:#fff8c2;color:#8a7400;}
+.stats-indice.indice-orange{background:#ffe0b8;color:#8a4b06;}
+.stats-indice.indice-rouge{background:#f8d7da;color:#721c24;}
 .stats-reco{font-size:12px;color:var(--gris);margin-top:8px;line-height:1.5;}
 .stats-alertes{font-size:12px;color:var(--gris);margin-top:8px;}
 .bar-container{margin-top:10px;}
 .bar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
-.bar-label{width:90px;font-size:11px;color:var(--gris);white-space:nowrap;}
-.bar-bg{flex:1;background:#2a3f2a;border-radius:999px;overflow:hidden;height:8px;}
+.bar-label{width:90px;font-size:11px;color:#5a8a5a;white-space:nowrap;}
+.bar-bg{flex:1;background:#e8f0e0;border-radius:999px;overflow:hidden;height:8px;}
 .bar-fill{height:8px;}
-.bar-val{font-size:11px;color:var(--gris);width:14px;text-align:right;}
+.bar-val{font-size:11px;color:#5a8a5a;width:14px;text-align:right;}
 .stats-header-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
 .export-btn{background:var(--vert);color:var(--noir);border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;}
 
 /* PIN SHARE BOX */
-.pin-share-box{background:var(--noir3);border-radius:10px;padding:12px;border:1px solid #2a3f2a;margin-top:10px;}
-.pin-share-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-.pin-code-display{font-size:26px;font-weight:900;color:var(--vert);letter-spacing:8px;}
+.pin-share-box{background:#f0f8e8;border-radius:10px;padding:12px;border:1px solid #c8ddb0;margin-top:10px;}
+.pin-share-label{font-size:10px;color:#5a8a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.pin-code-display{font-size:26px;font-weight:900;color:#3a8a1a;letter-spacing:8px;}
 .pin-link-hidden{display:none;}
 .pin-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
 .pin-btn{padding:6px 12px;font-size:12px;font-weight:700;border-radius:6px;border:1.5px solid var(--vert);background:transparent;color:var(--vert);cursor:pointer;}
@@ -218,34 +218,34 @@ body.coach-mode .coach-only{display:block;}
 
 /* SÉANCE SELECT */
 .seance-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
-.seance-row label{font-size:12px;color:var(--gris);}
+.seance-row label{font-size:12px;color:#5a8a5a;}
 .seance-row select{background:var(--noir3);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);flex:1;}
 
 /* ===== SECTION STATS ÉQUIPE ===== */
-.stats-section{background:#1e3020;border-radius:16px;border:1px solid #3a5a3a;padding:20px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 48px);display:none;}
+.stats-section{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 48px);display:none;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 body.coach-mode .stats-section{display:block;}
 body.coach-mode .app-body{align-items:flex-start;padding:20px 24px;}
-.stats-section h2{font-size:16px;color:var(--vert);margin-bottom:12px;}
-.sheets-status{font-size:11px;color:var(--gris);text-align:center;margin-bottom:8px;}
-.alert-card{background:#1e3010;border-radius:10px;padding:12px;border:1px solid #4a6a2a;margin-bottom:12px;}
-.alert-card h3{font-size:13px;color:#ffdd55;margin-bottom:6px;}
-.alert-list{padding-left:16px;font-size:12px;color:var(--gris);}
+.stats-section h2{font-size:16px;color:#3a6a1a;margin-bottom:12px;}
+.sheets-status{font-size:11px;color:#8aaa7a;text-align:center;margin-bottom:8px;}
+.alert-card{background:#fffbe6;border-radius:10px;padding:12px;border:1px solid #ffe082;margin-bottom:12px;}
+.alert-card h3{font-size:13px;color:#8a6000;margin-bottom:6px;}
+.alert-list{padding-left:16px;font-size:12px;color:#444;}
 .alert-list li{margin-bottom:4px;}
 .alert-tag{font-weight:700;padding:1px 6px;border-radius:999px;margin-right:4px;font-size:10px;}
 .alert-orange{background:#3a2000;color:#ffaa55;}
 .alert-rouge{background:#3a0000;color:#ff6b6b;}
 .stats-grid{display:flex;flex-wrap:wrap;gap:16px;max-width:900px;}
 .chart-card{flex:1 1 260px;}
-.chart-card h3{font-size:13px;color:var(--gris);text-align:center;margin-bottom:6px;}
-.chart-wrap{position:relative;width:100%;height:220px;background:#162516;border-radius:10px;overflow:hidden;border:1px solid #2a4a2a;}
+.chart-card h3{font-size:13px;color:#3a5a3a;text-align:center;margin-bottom:6px;}
+.chart-wrap{position:relative;width:100%;height:220px;background:#f5fbf0;border-radius:10px;overflow:hidden;border:1px solid #c8ddb0;}
 .chart-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
-.sparkline-card{margin-top:12px;background:#162516;border-radius:10px;padding:12px;border:1px solid #2a4a2a;}
-.sparkline-card h3{font-size:13px;color:var(--gris);margin-bottom:8px;}
+.sparkline-card{margin-top:12px;background:#f5fbf0;border-radius:10px;padding:12px;border:1px solid #c8ddb0;}
+.sparkline-card h3{font-size:13px;color:#3a6a1a;margin-bottom:8px;}
 .sparkline-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
 .sparkline-row label{font-size:12px;color:var(--gris);}
 .sparkline-row select{background:var(--noir2);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);flex:1;}
 .sparkline-wrap{width:100%;height:180px;position:relative;}
-#sparklineCanvas{width:100%;height:100%;display:block;border-radius:8px;background:var(--noir2);}
+#sparklineCanvas{width:100%;height:100%;display:block;border-radius:8px;background:#f0f8e8;}
 
 /* BODY player mode */
 body.player-mode .coach-only{display:none !important;}
@@ -365,15 +365,15 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .zone-tag button{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;color:inherit;padding:0;}
 
 /* Dashboard douleurs */
-.douleur-dashboard{background:#162516;border-radius:12px;padding:14px;margin-top:12px;border:1px solid #2a4a2a;}
-.douleur-dashboard h3{font-size:13px;color:var(--vert);margin-bottom:10px;}
+.douleur-dashboard{background:#f5fbf0;border-radius:12px;padding:14px;margin-top:12px;border:1px solid #c8ddb0;}
+.douleur-dashboard h3{font-size:13px;color:#3a6a1a;margin-bottom:10px;}
 .heatmap-corps{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
 .heatmap-vue{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .heatmap-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;}
 .top-zones{margin-top:12px;}
 .top-zone-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
-.top-zone-name{font-size:12px;color:var(--gris);width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.top-zone-bar-bg{flex:1;background:var(--noir2);border-radius:999px;height:8px;}
+.top-zone-name{font-size:12px;color:#3a5a3a;width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-zone-bar-bg{flex:1;background:#e0ecd0;border-radius:999px;height:8px;}
 .top-zone-bar-fill{height:8px;border-radius:999px;background:#f44336;}
 .top-zone-val{font-size:11px;color:var(--gris);width:20px;text-align:right;}
 </style>
