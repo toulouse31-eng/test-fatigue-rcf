@@ -257,6 +257,10 @@ body.player-mode .form-card{flex:1 1 100%;max-width:100%;}
 body.player-mode .app-body{justify-content:center;padding:0;}
 /* Mode coach ON : cacher le formulaire */
 body.coach-mode .form-card{display:none;}
+body:not(.coach-mode):not(.player-mode) #coachInterface{display:flex !important;flex-direction:column;}
+body:not(.coach-mode):not(.player-mode) #formCard{display:none !important;}
+body.player-mode #coachInterface{display:none !important;}
+body.player-mode #formCard{display:flex !important;flex-direction:column;}
 body.coach-mode #appContent{background:#1e2e1e !important;}
 
 /* RESPONSIVE */
@@ -378,6 +382,36 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .top-zone-bar-bg{flex:1;background:#e0ecd0;border-radius:999px;height:8px;}
 .top-zone-bar-fill{height:8px;border-radius:999px;background:#f44336;}
 .top-zone-val{font-size:11px;color:var(--gris);width:20px;text-align:right;}
+
+/* ===== INTERFACE COACH ===== */
+.coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:0 auto;width:calc(100% - 48px);}
+.coach-interface h2{font-size:18px;color:#3a6a1a;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.coach-add-row{display:flex;gap:8px;margin-bottom:20px;}
+.coach-add-row input{flex:1;padding:11px 14px;font-size:15px;border-radius:10px;border:1.5px solid #c8ddb0;background:#f8fbf4;color:#1a2a1a;}
+.coach-add-row input:focus{outline:none;border-color:#8dc63f;}
+.coach-add-row button{padding:11px 18px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
+.coach-add-row button:hover{background:#6aaa1e;}
+.joueurs-grid{display:flex;flex-direction:column;gap:8px;}
+.joueur-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;border:1px solid #e8f0e0;background:#f8fbf4;transition:background .15s;}
+.joueur-row:hover{background:#f0f8e8;}
+.joueur-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.dot-vert-fonce{background:#2a8a4a;}
+.dot-vert-clair{background:#4aaa6a;}
+.dot-jaune{background:#ccaa00;}
+.dot-orange{background:#cc6600;}
+.dot-rouge{background:#cc0000;}
+.dot-gris{background:#aaa;}
+.joueur-nom{font-size:15px;font-weight:600;color:#1a2a1a;flex:1;}
+.joueur-score{font-size:12px;color:#5a8a5a;min-width:80px;}
+.joueur-zone{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:600;white-space:nowrap;}
+.joueur-date{font-size:11px;color:#8aaa7a;min-width:70px;text-align:right;}
+.joueur-delete{background:none;border:none;cursor:pointer;color:#ccc;font-size:18px;padding:0 4px;line-height:1;transition:color .15s;}
+.joueur-delete:hover{color:#cc0000;}
+.coach-empty{text-align:center;padding:32px;color:#8aaa7a;font-size:14px;}
+.coach-stats-row{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1;min-width:100px;text-align:center;}
+.coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;}
+.coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -458,6 +492,9 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <div class="player-grid" id="playerGrid"></div>
     <div class="pick-err" id="playerPickError">Sélectionne ton nom.</div>
     <button class="btn-primary-dark" onclick="confirmerJoueur()">Continuer →</button>
+    <div style="margin-top:12px;font-size:12px;color:#6a8a6a;text-align:center;border-top:1px solid #2a3f2a;padding-top:10px;">
+      Tu ne te trouves pas dans la liste ?<br>Contacte ton coach pour être ajouté.
+    </div>
   </div>
 </div>
 
@@ -539,8 +576,30 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
   <!-- Corps de l'app -->
   <div class="app-body">
 
-    <!-- FORMULAIRE -->
-    <div class="form-card">
+    <!-- INTERFACE COACH (visible quand coach connecté, mode coach OFF) -->
+    <div class="coach-interface" id="coachInterface" style="display:none;">
+      <h2>
+        <span>👥 Joueurs — <span id="coachTeamName"></span></span>
+        <span style="font-size:13px;color:#8aaa7a;" id="coachLastUpdate"></span>
+      </h2>
+      <!-- Stats rapides -->
+      <div class="coach-stats-row" id="coachStatsRow"></div>
+      <!-- Ajouter joueur -->
+      <div class="coach-add-row">
+        <input type="text" id="coachNewPlayer" placeholder="Prénom du joueur à ajouter..." maxlength="40"/>
+        <button onclick="coachAddPlayer()">+ Ajouter</button>
+      </div>
+      <!-- Liste joueurs -->
+      <div class="joueurs-grid" id="joueursGrid">
+        <div class="coach-empty">Aucun joueur dans cette équipe.<br>Ajoute le premier joueur ci-dessus.</div>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:#8aaa7a;text-align:center;">
+        Passe en <strong>Mode coach ON</strong> pour voir les statistiques complètes et le dashboard.
+      </div>
+    </div>
+
+    <!-- FORMULAIRE JOUEUR (caché pour le coach) -->
+    <div class="form-card" id="formCard">
       <form id="fatigueForm" onsubmit="return false;" method="post">
         <!-- Joueur -->
         <div class="field-row" id="rowJoueurSelect">
@@ -1044,7 +1103,7 @@ function showPlayerPick(){
   document.getElementById("playerPickSubtitle").textContent=(currentClub.nom||"")+" — "+(currentTeam.nom||"");
   const g=document.getElementById("playerGrid");g.innerHTML="";
   const joueurs=(currentClub.players&&currentClub.players[currentTeam.id])||[];
-  if(!joueurs.length){g.innerHTML='<p style="color:#ff6b6b;font-size:13px;">Aucun joueur configuré. Contacte ton coach.</p>';showScreen("playerPickScreen");return;}
+  if(!joueurs.length){g.innerHTML='<p style="color:#ff6b6b;font-size:13px;">Aucun joueur configuré. Contacte ton coach pour être ajouté.</p>';showScreen("playerPickScreen");return;}
   joueurs.forEach(n=>{const b=document.createElement("button");b.className="player-btn-dark";b.textContent=n;b.onclick=()=>{g.querySelectorAll(".player-btn-dark").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");};g.appendChild(b);});
   showScreen("playerPickScreen");
 }
@@ -1096,7 +1155,7 @@ async function initApp(){
   }
   document.getElementById("rowAddPlayer").style.display="none";
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
-  if(!playerMode)refreshFirestoreData();
+  if(!playerMode){refreshFirestoreData();setTimeout(buildCoachInterface,300);}
 }
 function majAvatar(){
   const nom=currentClub?.nom||"";const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
@@ -1148,7 +1207,7 @@ async function refreshFirestoreData(){
     enregistrementsSheets=snap.docs.map(d=>{const data=d.data();const{zoneTexte,zoneClass}=computeZone(Number(data.pourcentage)||0);return{...data,zoneClass:data.zoneClass||zoneClass,zone:data.zone||zoneTexte,envoye:true};});
     if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
   }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
-  buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();
+  buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();buildCoachInterface();
 }
 function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
 
@@ -1307,6 +1366,125 @@ function buildFicheSelect(){const s=document.getElementById("ficheSeanceSelect")
 
 function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelect"),fs=document.getElementById("ficheSeanceSelect"),joueur=sel?.value,dk=fs?.value;if(!joueur){alert("Sélectionne un joueur.");return;}const data=getVizData(),rows=data.filter(r=>r.joueur===joueur&&(!dk||getSKey(r)===dk)),last=rows.slice(-1)[0];if(!last){alert("Pas de données.");return;}const fn=v=>v!=null&&v!==""?v+"/5":"-";const{zoneTexte,zoneClass}=computeZone(Number(last.pourcentage)||0),hist=getLastN(joueur,5);let html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Fiche ${joueur}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:auto;}h1{color:#5a9a1a;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:13px;}th{background:#f0f5ea;}.zone-vert-fonce{background:#b7f0c4;color:#145c2e;}.zone-vert-clair{background:#d5f7dd;color:#1f7f3f;}.zone-jaune{background:#fff8c2;color:#8a7400;}.zone-orange{background:#ffe0b8;color:#8a4b06;}.zone-rouge{background:#f8d7da;color:#721c24;}</style></head><body><h1>Fiche bien-être — ${joueur}</h1><p>Séance : <strong>${last.seance||"-"}</strong></p><div class="${zoneClass}" style="padding:10px;border-radius:8px;margin:12px 0;font-size:16px;font-weight:bold;text-align:center;">Score : ${last.total}/${last.naMatch?20:25} (${last.pourcentage}%) — ${zoneTexte}</div><table><thead><tr><th>Récupération</th><th>Sommeil</th><th>Alimentation</th><th>Fatigue phy.</th><th>Fatigue men.</th></tr></thead><tbody><tr><td>${last.naMatch?"N/A":fn(last.recuperation)}</td><td>${fn(last.sommeil)}</td><td>${fn(last.alimentation)}</td><td>${fn(last.fatigue_physique)}</td><td>${fn(last.fatigue_mentale)}</td></tr></tbody></table>`;if(last.douleurZone)html+=`<p><strong>Douleurs :</strong> ${last.douleurZone}</p>`;if(last.commentaire)html+=`<p><strong>Commentaire :</strong> ${last.commentaire}</p>`;if(hist.length){html+=`<h2>Historique</h2><table><thead><tr><th>Date</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>%</th></tr></thead><tbody>`;hist.forEach(h=>{html+=`<tr><td>${fmtKey(h._dk||getSKey(h))}</td><td>${h.naMatch?"N/A":fn(h.recuperation)}</td><td>${fn(h.sommeil)}</td><td>${fn(h.alimentation)}</td><td>${fn(h.fatigue_physique)}</td><td>${fn(h.fatigue_mentale)}</td><td>${h.total||"-"}</td><td>${h.pourcentage||0}%</td></tr>`;});html+=`</tbody></table>`;}html+=`</body></html>`;const win=window.open("","_blank");if(!win){alert("Popup bloquée ?");return;}win.document.open();win.document.write(html);win.document.close();win.focus();win.print();}
 
+
+
+// ===== INTERFACE COACH =====
+async function buildCoachInterface(){
+  const data = getVizData();
+  const team = currentTeam?.id||"";
+  const joueurs = (currentClub?.players&&currentClub.players[team])||[];
+
+  // Titre
+  const teamNameEl = document.getElementById("coachTeamName");
+  if(teamNameEl) teamNameEl.textContent = currentTeam?.nom||"—";
+
+  // Dernier état par joueur
+  const lastByPlayer = {};
+  data.forEach(r=>{
+    const k=r.joueur;
+    const d=getDFromS(r.seance)||new Date(r.date);
+    if(!lastByPlayer[k])lastByPlayer[k]=r;
+    else{const d0=getDFromS(lastByPlayer[k].seance)||new Date(lastByPlayer[k].date);if(d>d0)lastByPlayer[k]=r;}
+  });
+
+  // Stats rapides
+  const statsRow = document.getElementById("coachStatsRow");
+  if(statsRow){
+    const total = joueurs.length;
+    const avecReponse = joueurs.filter(j=>lastByPlayer[j]).length;
+    const enAlerte = joueurs.filter(j=>{const r=lastByPlayer[j];return r&&(r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge");}).length;
+    const lastDate = data.length ? (() => {
+      const keys = [...new Set(data.map(getSKey))].filter(Boolean).sort();
+      return keys.length ? fmtKey(keys[keys.length-1]) : "—";
+    })() : "—";
+    statsRow.innerHTML = `
+      <div class="coach-stat-box"><div class="coach-stat-num">${total}</div><div class="coach-stat-label">Joueurs</div></div>
+      <div class="coach-stat-box"><div class="coach-stat-num">${avecReponse}</div><div class="coach-stat-label">Réponses reçues</div></div>
+      <div class="coach-stat-box" style="${enAlerte>0?'background:#fff0f0;border-color:#ffaaaa;':''}"><div class="coach-stat-num" style="${enAlerte>0?'color:#cc0000;':''}">${enAlerte}</div><div class="coach-stat-label">En alerte</div></div>
+      <div class="coach-stat-box"><div class="coach-stat-num" style="font-size:14px;">${lastDate}</div><div class="coach-stat-label">Dernière séance</div></div>
+    `;
+  }
+
+  // Liste joueurs
+  const grid = document.getElementById("joueursGrid");
+  if(!grid) return;
+  grid.innerHTML = "";
+
+  if(!joueurs.length){
+    grid.innerHTML = '<div class="coach-empty">Aucun joueur dans cette équipe.<br>Ajoute le premier joueur ci-dessus.</div>';
+    return;
+  }
+
+  const ZONE_DOT = {
+    "zone-vert-fonce":"dot-vert-fonce","zone-vert-clair":"dot-vert-clair",
+    "zone-jaune":"dot-jaune","zone-orange":"dot-orange","zone-rouge":"dot-rouge"
+  };
+  const ZONE_LABEL = {
+    "zone-vert-fonce":["Très bon état","#d0f0d0","#145c2e"],
+    "zone-vert-clair":["Bon état","#d5f7dd","#1f7f3f"],
+    "zone-jaune":["Fatigue légère","#fff8c2","#8a7400"],
+    "zone-orange":["Fatigue notable","#ffe0b8","#8a4b06"],
+    "zone-rouge":["Fatigue importante","#f8d7da","#721c24"],
+  };
+
+  joueurs.forEach(nom => {
+    const rec = lastByPlayer[nom];
+    const dotClass = rec ? (ZONE_DOT[rec.zoneClass]||"dot-gris") : "dot-gris";
+    const zoneInfo = rec ? (ZONE_LABEL[rec.zoneClass]||["—","#f0f0f0","#666"]) : null;
+    const scoreText = rec ? `${rec.total||"?"}/${rec.naMatch?20:25} (${rec.pourcentage||0}%)` : "Pas encore répondu";
+    const dateText = rec ? (() => {const d=getDFromS(rec.seance)||new Date(rec.date);return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;})() : "";
+
+    const row = document.createElement("div");
+    row.className = "joueur-row";
+    row.innerHTML = `
+      <div class="joueur-dot ${dotClass}"></div>
+      <div class="joueur-nom">${nom}</div>
+      <div class="joueur-score">${scoreText}</div>
+      ${zoneInfo ? `<div class="joueur-zone" style="background:${zoneInfo[1]};color:${zoneInfo[2]};">${zoneInfo[0]}</div>` : '<div class="joueur-zone" style="background:#f0f0f0;color:#888;">—</div>'}
+      <div class="joueur-date">${dateText}</div>
+      <button class="joueur-delete" type="button" onclick="coachDeletePlayer('${nom.replace(/'/g,"\'")}')">×</button>
+    `;
+    grid.appendChild(row);
+  });
+
+  // Trier : alertes en premier
+  const rows = [...grid.querySelectorAll(".joueur-row")];
+  const order = {"dot-rouge":0,"dot-orange":1,"dot-jaune":2,"dot-gris":3,"dot-vert-clair":4,"dot-vert-fonce":5};
+  rows.sort((a,b)=>{
+    const da = a.querySelector(".joueur-dot").className.split(" ")[1];
+    const db = b.querySelector(".joueur-dot").className.split(" ")[1];
+    return (order[da]??9)-(order[db]??9);
+  });
+  rows.forEach(r=>grid.appendChild(r));
+}
+
+async function coachAddPlayer(){
+  const input = document.getElementById("coachNewPlayer");
+  const name = input.value.trim();
+  if(!name) return;
+  const team = currentTeam?.id;
+  if(!team||!currentClub) return;
+  if(!currentClub.players) currentClub.players={};
+  if(!currentClub.players[team]) currentClub.players[team]=[];
+  if(currentClub.players[team].includes(name)){setSyncStatus("⚠️ Ce joueur existe déjà","err");return;}
+  currentClub.players[team].push(name);
+  await db.collection("clubs").doc(currentUser.uid).update({["players."+team]:currentClub.players[team]});
+  input.value="";
+  await chargerJoueursEquipe(team);
+  await buildCoachInterface();
+  setSyncStatus("✅ "+name+" ajouté !","ok");
+}
+
+async function coachDeletePlayer(nom){
+  if(!confirm(`Supprimer ${nom} de l'équipe ?`)) return;
+  const team = currentTeam?.id;
+  if(!team||!currentClub) return;
+  currentClub.players[team] = currentClub.players[team].filter(j=>j!==nom);
+  await db.collection("clubs").doc(currentUser.uid).update({["players."+team]:currentClub.players[team]});
+  await chargerJoueursEquipe(team);
+  await buildCoachInterface();
+  setSyncStatus("✅ "+nom+" supprimé","ok");
+}
 
 // ===== LOGIQUE DOULEURS PAR ZONE =====
 let zonesSelectionnees = {}; // {zoneName: intensite}
