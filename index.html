@@ -614,95 +614,97 @@ body.player-mode .app-body{justify-content:center;padding:0;}
             <!-- AVANT -->
             <div class="corps-vue">
               <div class="corps-vue-label">Avant</div>
+              <div style="font-size:9px;color:#aaa;margin-bottom:2px;">← droite &nbsp; gauche →</div>
               <svg class="corps-svg" id="corpsSvgAvant" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
                 <!-- Tête -->
                 <ellipse class="zone" data-zone="Tête" cx="60" cy="18" rx="16" ry="18"/>
                 <!-- Cou -->
                 <rect class="zone" data-zone="Cou" x="52" y="34" width="16" height="10" rx="4"/>
                 <!-- Épaule gauche -->
-                <ellipse class="zone" data-zone="Épaule gauche" cx="32" cy="52" rx="12" ry="10"/>
+                <ellipse class="zone" data-zone="Épaule droit" cx="32" cy="52" rx="12" ry="10"/>
                 <!-- Épaule droite -->
-                <ellipse class="zone" data-zone="Épaule droite" cx="88" cy="52" rx="12" ry="10"/>
+                <ellipse class="zone" data-zone="Épaule gauchee" cx="88" cy="52" rx="12" ry="10"/>
                 <!-- Torse/pec -->
                 <rect class="zone" data-zone="Torse" x="40" y="44" width="40" height="36" rx="6"/>
                 <!-- Abdominaux -->
                 <rect class="zone" data-zone="Abdominaux" x="42" y="80" width="36" height="24" rx="4"/>
                 <!-- Bras gauche -->
-                <rect class="zone" data-zone="Bras gauche" x="18" y="62" width="13" height="30" rx="6"/>
+                <rect class="zone" data-zone="Bras droit" x="18" y="62" width="13" height="30" rx="6"/>
                 <!-- Bras droit -->
-                <rect class="zone" data-zone="Bras droit" x="89" y="62" width="13" height="30" rx="6"/>
+                <rect class="zone" data-zone="Bras gauche" x="89" y="62" width="13" height="30" rx="6"/>
                 <!-- Avant-bras gauche -->
-                <rect class="zone" data-zone="Avant-bras gauche" x="14" y="94" width="12" height="28" rx="5"/>
+                <rect class="zone" data-zone="Avant-bras droit" x="14" y="94" width="12" height="28" rx="5"/>
                 <!-- Avant-bras droit -->
-                <rect class="zone" data-zone="Avant-bras droit" x="94" y="94" width="12" height="28" rx="5"/>
+                <rect class="zone" data-zone="Avant-bras gauche" x="94" y="94" width="12" height="28" rx="5"/>
                 <!-- Hanche/bassin -->
                 <rect class="zone" data-zone="Hanche / bassin" x="38" y="104" width="44" height="20" rx="4"/>
                 <!-- Cuisse gauche -->
-                <rect class="zone" data-zone="Cuisse gauche" x="38" y="126" width="19" height="38" rx="6"/>
+                <rect class="zone" data-zone="Cuisse droit" x="38" y="126" width="19" height="38" rx="6"/>
                 <!-- Cuisse droite -->
-                <rect class="zone" data-zone="Cuisse droite" x="63" y="126" width="19" height="38" rx="6"/>
+                <rect class="zone" data-zone="Cuisse gauchee" x="63" y="126" width="19" height="38" rx="6"/>
                 <!-- Genou gauche -->
-                <rect class="zone" data-zone="Genou gauche" x="39" y="166" width="17" height="14" rx="5"/>
+                <rect class="zone" data-zone="Genou droit" x="39" y="166" width="17" height="14" rx="5"/>
                 <!-- Genou droit -->
-                <rect class="zone" data-zone="Genou droit" x="64" y="166" width="17" height="14" rx="5"/>
+                <rect class="zone" data-zone="Genou gauche" x="64" y="166" width="17" height="14" rx="5"/>
                 <!-- Tibia/mollet gauche -->
-                <rect class="zone" data-zone="Tibia gauche" x="40" y="182" width="15" height="36" rx="5"/>
+                <rect class="zone" data-zone="Tibia droit" x="40" y="182" width="15" height="36" rx="5"/>
                 <!-- Tibia/mollet droit -->
-                <rect class="zone" data-zone="Tibia droit" x="65" y="182" width="15" height="36" rx="5"/>
+                <rect class="zone" data-zone="Tibia gauche" x="65" y="182" width="15" height="36" rx="5"/>
                 <!-- Cheville gauche -->
-                <rect class="zone" data-zone="Cheville gauche" x="40" y="220" width="15" height="10" rx="4"/>
+                <rect class="zone" data-zone="Cheville droit" x="40" y="220" width="15" height="10" rx="4"/>
                 <!-- Cheville droite -->
-                <rect class="zone" data-zone="Cheville droite" x="65" y="220" width="15" height="10" rx="4"/>
+                <rect class="zone" data-zone="Cheville gauchee" x="65" y="220" width="15" height="10" rx="4"/>
                 <!-- Pied gauche -->
-                <ellipse class="zone" data-zone="Pied gauche" cx="47" cy="238" rx="11" ry="7"/>
+                <ellipse class="zone" data-zone="Pied droit" cx="47" cy="238" rx="11" ry="7"/>
                 <!-- Pied droit -->
-                <ellipse class="zone" data-zone="Pied droit" cx="73" cy="238" rx="11" ry="7"/>
+                <ellipse class="zone" data-zone="Pied gauche" cx="73" cy="238" rx="11" ry="7"/>
               </svg>
             </div>
             <!-- ARRIÈRE -->
             <div class="corps-vue">
               <div class="corps-vue-label">Arrière</div>
+              <div style="font-size:9px;color:#aaa;margin-bottom:2px;">← gauche &nbsp; droite →</div>
               <svg class="corps-svg" id="corpsSvgArriere" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
                 <!-- Tête arrière -->
                 <ellipse class="zone" data-zone="Tête (arrière)" cx="60" cy="18" rx="16" ry="18"/>
                 <!-- Nuque -->
                 <rect class="zone" data-zone="Nuque" x="52" y="34" width="16" height="10" rx="4"/>
                 <!-- Trapèze gauche -->
-                <ellipse class="zone" data-zone="Trapèze gauche" cx="32" cy="50" rx="12" ry="10"/>
+                <ellipse class="zone" data-zone="Trapèze droit" cx="32" cy="50" rx="12" ry="10"/>
                 <!-- Trapèze droit -->
-                <ellipse class="zone" data-zone="Trapèze droit" cx="88" cy="50" rx="12" ry="10"/>
+                <ellipse class="zone" data-zone="Trapèze gauche" cx="88" cy="50" rx="12" ry="10"/>
                 <!-- Haut du dos -->
                 <rect class="zone" data-zone="Haut du dos" x="40" y="44" width="40" height="22" rx="5"/>
                 <!-- Lombaires -->
                 <rect class="zone" data-zone="Lombaires" x="42" y="68" width="36" height="20" rx="4"/>
                 <!-- Fessier gauche -->
-                <ellipse class="zone" data-zone="Fessier gauche" cx="50" cy="104" rx="13" ry="12"/>
+                <ellipse class="zone" data-zone="Fessier droit" cx="50" cy="104" rx="13" ry="12"/>
                 <!-- Fessier droit -->
-                <ellipse class="zone" data-zone="Fessier droit" cx="70" cy="104" rx="13" ry="12"/>
+                <ellipse class="zone" data-zone="Fessier gauche" cx="70" cy="104" rx="13" ry="12"/>
                 <!-- Bras gauche arr -->
-                <rect class="zone" data-zone="Bras gauche (arr.)" x="18" y="62" width="13" height="30" rx="6"/>
+                <rect class="zone" data-zone="Bras droit (arr.)" x="18" y="62" width="13" height="30" rx="6"/>
                 <!-- Bras droit arr -->
-                <rect class="zone" data-zone="Bras droit (arr.)" x="89" y="62" width="13" height="30" rx="6"/>
+                <rect class="zone" data-zone="Bras gauche (arr.)" x="89" y="62" width="13" height="30" rx="6"/>
                 <!-- Ischios gauche -->
-                <rect class="zone" data-zone="Ischios gauche" x="38" y="118" width="19" height="36" rx="6"/>
+                <rect class="zone" data-zone="Ischios droit" x="38" y="118" width="19" height="36" rx="6"/>
                 <!-- Ischios droit -->
-                <rect class="zone" data-zone="Ischios droit" x="63" y="118" width="19" height="36" rx="6"/>
+                <rect class="zone" data-zone="Ischios gauche" x="63" y="118" width="19" height="36" rx="6"/>
                 <!-- Creux du genou gauche -->
-                <rect class="zone" data-zone="Creux genou gauche" x="39" y="156" width="17" height="14" rx="5"/>
+                <rect class="zone" data-zone="Creux genou droit" x="39" y="156" width="17" height="14" rx="5"/>
                 <!-- Creux du genou droit -->
-                <rect class="zone" data-zone="Creux genou droit" x="64" y="156" width="17" height="14" rx="5"/>
+                <rect class="zone" data-zone="Creux genou gauche" x="64" y="156" width="17" height="14" rx="5"/>
                 <!-- Mollet gauche -->
-                <rect class="zone" data-zone="Mollet gauche" x="40" y="172" width="15" height="38" rx="5"/>
+                <rect class="zone" data-zone="Mollet droit" x="40" y="172" width="15" height="38" rx="5"/>
                 <!-- Mollet droit -->
-                <rect class="zone" data-zone="Mollet droit" x="65" y="172" width="15" height="38" rx="5"/>
+                <rect class="zone" data-zone="Mollet gauche" x="65" y="172" width="15" height="38" rx="5"/>
                 <!-- Tendon Achille gauche -->
-                <rect class="zone" data-zone="Tendon Achille gauche" x="41" y="212" width="13" height="10" rx="4"/>
+                <rect class="zone" data-zone="Tendon Achille droit" x="41" y="212" width="13" height="10" rx="4"/>
                 <!-- Tendon Achille droit -->
-                <rect class="zone" data-zone="Tendon Achille droit" x="66" y="212" width="13" height="10" rx="4"/>
+                <rect class="zone" data-zone="Tendon Achille gauche" x="66" y="212" width="13" height="10" rx="4"/>
                 <!-- Talon gauche -->
-                <ellipse class="zone" data-zone="Talon gauche" cx="47" cy="230" rx="9" ry="7"/>
+                <ellipse class="zone" data-zone="Talon droit" cx="47" cy="230" rx="9" ry="7"/>
                 <!-- Talon droit -->
-                <ellipse class="zone" data-zone="Talon droit" cx="73" cy="230" rx="9" ry="7"/>
+                <ellipse class="zone" data-zone="Talon gauche" cx="73" cy="230" rx="9" ry="7"/>
               </svg>
             </div>
           </div>
@@ -717,9 +719,9 @@ body.player-mode .app-body{justify-content:center;padding:0;}
           <div class="intensite-title">Niveau de douleur</div>
           <div class="intensite-zone-name" id="intensiteZoneName"></div>
           <div class="intensite-btns">
-            <button class="intensite-btn gene" onclick="selectionnerIntensité('gene')">🟡 Gêne — je joue normalement</button>
-            <button class="intensite-btn douleur" onclick="selectionnerIntensité('douleur')">🟠 Douleur — c'est difficile</button>
-            <button class="intensite-btn vive" onclick="selectionnerIntensité('vive')">🔴 Vive — je devrais pas jouer</button>
+            <button class="intensite-btn gene" onclick="selectionnerIntensité('gene')">🟡 Gêne — ça passe</button>
+            <button class="intensite-btn douleur" onclick="selectionnerIntensité('douleur')">🟠 Douleur — c'est gênant</button>
+            <button class="intensite-btn vive" onclick="selectionnerIntensité('vive')">🔴 Fort — j'ai vraiment mal</button>
           </div>
           <button class="intensite-btn-cancel" onclick="fermerPopupIntensité()">Annuler</button>
         </div>
