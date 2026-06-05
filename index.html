@@ -1102,10 +1102,14 @@ auth.onAuthStateChanged(async user=>{
           const txtEl=btn?.querySelector(".tbadge-coach-text");
           if(btn)btn.classList.add("coach-on");
           if(txtEl)txtEl.textContent="Mode coach ON";
+          // Forcer masquage liste joueurs
           const rp=document.getElementById("rowAddPlayer");
           if(rp)rp.style.display="none";
           const ci=document.getElementById("coachInterface");
-          if(ci)ci.style.display="none";
+          if(ci){ci.style.display="none";ci.style.visibility="hidden";}
+          // Forcer affichage stats-card
+          const sc=document.querySelector(".stats-card");
+          if(sc)sc.style.display="block";
           await refreshFirestoreData();
           setTimeout(forceResizeAllCharts,200);
         },100);
@@ -1700,6 +1704,12 @@ function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelec
 // ===== INTERFACE COACH =====
 async function buildCoachInterface(){
   if(!currentTeam||!currentClub) return; // Pas encore prêt
+  // Ne pas afficher en mode coach ON
+  const ci=document.getElementById("coachInterface");
+  if(document.body.classList.contains("coach-mode")){
+    if(ci)ci.style.display="none";
+    return;
+  }
   const data = getVizData();
   const team = currentTeam.id;
   // Mettre à jour la preview logo
