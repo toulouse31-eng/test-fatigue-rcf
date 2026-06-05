@@ -412,7 +412,7 @@ body.player-mode .app-body{justify-content:center;}
   <div class="team-club-label" id="teamClubLabel"></div>
   <div class="team-grid" id="teamGrid"></div>
   <div class="team-add-row" id="teamAddRow" style="display:none;">
-    <input type="text" id="newTeamInput" placeholder="Nom de l'équipe (ex : U17)" maxlength="30"/>
+    <input type="text" id="newTeamInput" placeholder="Ex : Seniors N1, Seniors R2, U19, U17..." maxlength="30"/>
     <button onclick="addTeam()">+ Ajouter</button>
   </div>
   <button class="btn-ghost-dark" onclick="toggleAddTeam()">+ Gérer les équipes</button>
@@ -693,7 +693,7 @@ async function doRegister(){
   if(!club){err.textContent="Saisis le nom de ton club.";err.style.display="block";return;}
   try{
     const c=await auth.createUserWithEmailAndPassword(e,p);
-    await db.collection("clubs").doc(c.user.uid).set({nom:club,coachEmail:e,teams:["Seniors"],players:{"Seniors":[]},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection("clubs").doc(c.user.uid).set({nom:club,coachEmail:e,teams:[],players:{},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
 function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
@@ -720,15 +720,24 @@ auth.onAuthStateChanged(async user=>{
 
 // ===== CLUB =====
 async function chargerClub(){
-  try{const d=await db.collection("clubs").doc(currentUser.uid).get();if(d.exists){currentClub={id:currentUser.uid,...d.data()};if(!currentClub.players)currentClub.players={};if(!currentClub.pins)currentClub.pins={};}else{currentClub={id:currentUser.uid,nom:"Mon club",teams:["Seniors"],players:{"Seniors":[]},pins:{}};}}
-  catch(e){currentClub={id:currentUser.uid,nom:"Mon club",teams:["Seniors"],players:{"Seniors":[]},pins:{}};}
+  try{const d=await db.collection("clubs").doc(currentUser.uid).get();if(d.exists){currentClub={id:currentUser.uid,...d.data()};if(!currentClub.players)currentClub.players={};if(!currentClub.pins)currentClub.pins={};}else{currentClub={id:currentUser.uid,nom:"Mon club",teams:[],players:{},pins:{}};}}
+  catch(e){currentClub={id:currentUser.uid,nom:"Mon club",teams:[],players:{},pins:{}};}
 }
 
 // ===== ÉQUIPES =====
 function renderTeamScreen(){
   document.getElementById("teamClubLabel").textContent=currentClub.nom;
   const g=document.getElementById("teamGrid");g.innerHTML="";
-  (currentClub.teams||["Seniors"]).forEach(t=>{const b=document.createElement("button");b.className="team-btn-dark";b.textContent=t;b.onclick=()=>selectTeam(t);g.appendChild(b);});
+  const teams=currentClub.teams||[];
+  if(!teams.length){
+    const msg=document.createElement("p");
+    msg.style.cssText="color:var(--gris);font-size:14px;text-align:center;margin:8px 0;";
+    msg.textContent="Aucune équipe configurée. Crée ta première équipe ci-dessous.";
+    g.appendChild(msg);
+    document.getElementById("teamAddRow").style.display="flex";
+  } else {
+    teams.forEach(t=>{const b=document.createElement("button");b.className="team-btn-dark";b.textContent=t;b.onclick=()=>selectTeam(t);g.appendChild(b);});
+  }
 }
 async function selectTeam(n){currentTeam={id:n,nom:n};sessionStorage.setItem("rpe_team",n);await chargerJoueursEquipe(n);showScreen("appContent");initApp();}
 function backToTeamSelect(){if(playerMode)return;currentTeam=null;sessionStorage.removeItem("rpe_team");showScreen("teamScreen");renderTeamScreen();}
@@ -796,6 +805,10 @@ async function chargerJoueursEquipe(tn){
   const sel=document.getElementById("joueurSelect");sel.innerHTML='<option value="">Choisir un joueur...</option>';
   joueurs.forEach(n=>{const o=document.createElement("option");o.value=o.textContent=n;sel.appendChild(o);});
   const ao=document.createElement("option");ao.value="Autre";ao.textContent="Autre (saisir le nom)";sel.appendChild(ao);
+  if(!joueurs.length){
+    const hint=document.getElementById("rowAddPlayer");
+    if(hint)hint.style.display="flex";
+  }
 }
 async function addPlayer(){
   const i=document.getElementById("newPlayerInput"),n=i.value.trim();if(!n)return;
