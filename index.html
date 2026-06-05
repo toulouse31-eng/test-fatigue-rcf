@@ -131,14 +131,14 @@ body.player-mode .player-banner{display:flex;}
 .player-banner button{padding:4px 10px;font-size:12px;border-radius:999px;border:1px solid #2a3f2a;background:transparent;cursor:pointer;color:var(--gris);}
 
 /* ===== APP BODY ===== */
-.app-body{background:transparent;padding:20px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;}
+.app-body{background:transparent;padding:20px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;box-sizing:border-box;}
 #appContent{background:var(--noir);}
 .sync-bar{font-size:12px;padding:4px 16px;min-height:20px;color:var(--gris);}
 .sync-bar.ok{color:var(--vert2);}
 .sync-bar.err{color:#cc0000;}
 
 /* ===== CARD FORMULAIRE ===== */
-.form-card{background:var(--card-light);border-radius:16px;border:1px solid var(--border-light);box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px 28px;flex:3 1 480px;align-self:flex-start;}
+.form-card{background:var(--card-light);border-radius:16px;border:1px solid var(--border-light);box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px 28px;flex:3 1 480px;align-self:flex-start;height:fit-content;}
 .field-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
 .field-row label{font-weight:700;flex:0 0 130px;font-size:14px;color:#1a2a1a;}
 .field-row select,.field-row input[type="date"],.field-row input[type="text"],.field-row textarea{flex:1;padding:10px 12px;font-size:15px;border-radius:8px;border:1.5px solid var(--border-light);background:#f8fbf4;color:#1a2a1a;min-height:42px;}
@@ -306,9 +306,35 @@ body.player-mode #modeCoachBtn{display:none;}
   .sheets-status{color:#888 !important;font-size:11px !important;}
   @page{margin:1.5cm;size:A4;}
 }
+
+/* Splash screen pendant chargement Firebase */
+#splashScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f1a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity .3s ease;}
+#splashScreen.hidden{opacity:0;pointer-events:none;}
+.splash-logo{width:90px;height:90px;border-radius:16px;background:#1a2a1a;border:2px solid #243224;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.splash-logo img{width:100%;height:100%;object-fit:contain;}
+.splash-title{font-size:24px;font-weight:900;color:#fff;font-family:Arial,sans-serif;letter-spacing:-0.5px;}
+.splash-title span{color:#8dc63f;}
+.splash-dots{display:flex;gap:8px;}
+.splash-dot{width:9px;height:9px;border-radius:50%;background:#8dc63f;opacity:0.3;animation:dotPulse 1.2s ease-in-out infinite;}
+.splash-dot:nth-child(2){animation-delay:.25s;}
+.splash-dot:nth-child(3){animation-delay:.5s;}
+@keyframes dotPulse{0%,100%{opacity:0.3;transform:scale(0.8);}50%{opacity:1;transform:scale(1.1);}}
 </style>
 </head>
 <body>
+
+<!-- SPLASH SCREEN -->
+<div id="splashScreen">
+  <div class="splash-logo">
+    <img src="logo_teamrpe.png" alt="Team RPE" onerror="this.style.display='none'"/>
+  </div>
+  <div class="splash-title">TEAM <span>RPE</span></div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+  </div>
+</div>
 
 <!-- ============================================================ -->
 <!-- ÉCRAN LOGIN                                                    -->
@@ -686,7 +712,8 @@ auth.onAuthStateChanged(async user=>{
       renderTeamScreen();
     }
   } else if(!playerMode){showScreen("loginScreen");}
-  document.body.classList.add("rpe-ready");
+  const splash=document.getElementById("splashScreen");
+  if(splash){splash.classList.add("hidden");setTimeout(()=>splash.style.display="none",350);}
 });
 
 // ===== CLUB =====
@@ -998,7 +1025,7 @@ function buildFicheSelect(){const s=document.getElementById("ficheSeanceSelect")
 function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelect"),fs=document.getElementById("ficheSeanceSelect"),joueur=sel?.value,dk=fs?.value;if(!joueur){alert("Sélectionne un joueur.");return;}const data=getVizData(),rows=data.filter(r=>r.joueur===joueur&&(!dk||getSKey(r)===dk)),last=rows.slice(-1)[0];if(!last){alert("Pas de données.");return;}const fn=v=>v!=null&&v!==""?v+"/5":"-";const{zoneTexte,zoneClass}=computeZone(Number(last.pourcentage)||0),hist=getLastN(joueur,5);let html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Fiche ${joueur}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:auto;}h1{color:#5a9a1a;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:13px;}th{background:#f0f5ea;}.zone-vert-fonce{background:#b7f0c4;color:#145c2e;}.zone-vert-clair{background:#d5f7dd;color:#1f7f3f;}.zone-jaune{background:#fff8c2;color:#8a7400;}.zone-orange{background:#ffe0b8;color:#8a4b06;}.zone-rouge{background:#f8d7da;color:#721c24;}</style></head><body><h1>Fiche bien-être — ${joueur}</h1><p>Séance : <strong>${last.seance||"-"}</strong></p><div class="${zoneClass}" style="padding:10px;border-radius:8px;margin:12px 0;font-size:16px;font-weight:bold;text-align:center;">Score : ${last.total}/${last.naMatch?20:25} (${last.pourcentage}%) — ${zoneTexte}</div><table><thead><tr><th>Récupération</th><th>Sommeil</th><th>Alimentation</th><th>Fatigue phy.</th><th>Fatigue men.</th></tr></thead><tbody><tr><td>${last.naMatch?"N/A":fn(last.recuperation)}</td><td>${fn(last.sommeil)}</td><td>${fn(last.alimentation)}</td><td>${fn(last.fatigue_physique)}</td><td>${fn(last.fatigue_mentale)}</td></tr></tbody></table>`;if(last.douleurZone)html+=`<p><strong>Douleurs :</strong> ${last.douleurZone}</p>`;if(last.commentaire)html+=`<p><strong>Commentaire :</strong> ${last.commentaire}</p>`;if(hist.length){html+=`<h2>Historique</h2><table><thead><tr><th>Date</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>%</th></tr></thead><tbody>`;hist.forEach(h=>{html+=`<tr><td>${fmtKey(h._dk||getSKey(h))}</td><td>${h.naMatch?"N/A":fn(h.recuperation)}</td><td>${fn(h.sommeil)}</td><td>${fn(h.alimentation)}</td><td>${fn(h.fatigue_physique)}</td><td>${fn(h.fatigue_mentale)}</td><td>${h.total||"-"}</td><td>${h.pourcentage||0}%</td></tr>`;});html+=`</tbody></table>`;}html+=`</body></html>`;const win=window.open("","_blank");if(!win){alert("Popup bloquée ?");return;}win.document.open();win.document.write(html);win.document.close();win.focus();win.print();}
 
 window.addEventListener("resize",()=>{if(document.body.classList.contains("coach-mode"))forceResizeAllCharts();});
-window.addEventListener("DOMContentLoaded",()=>{const p=new URLSearchParams(location.search),c=p.get("club"),t=p.get("team");if(c&&t){chargerClubJoueur(c,t);document.body.classList.add("rpe-ready");}});
+window.addEventListener("DOMContentLoaded",()=>{const p=new URLSearchParams(location.search),c=p.get("club"),t=p.get("team");if(c&&t){chargerClubJoueur(c,t);}});
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(e=>console.log("SW err:",e));}</script>
 </body>
