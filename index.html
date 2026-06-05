@@ -1512,7 +1512,8 @@ async function refreshFirestoreData(){
     if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
   }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
   buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();
-  buildCoachInterface();
+  await buildCoachInterface();
+  // Appliquer le mode EN DERNIER après que tout soit construit
   appliquerModeAffichage();
 }
 function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
@@ -1728,13 +1729,11 @@ function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelec
 
 // ===== INTERFACE COACH =====
 async function buildCoachInterface(){
-  if(!currentTeam||!currentClub) return; // Pas encore prêt
-  // Ne pas afficher en mode coach ON
+  if(!currentTeam||!currentClub) return;
+  const isCoachOn=document.body.classList.contains("coach-mode");
   const ci=document.getElementById("coachInterface");
-  if(document.body.classList.contains("coach-mode")){
-    if(ci)ci.style.display="none";
-    return;
-  }
+  // En mode coach ON : cacher immédiatement et ne pas construire
+  if(isCoachOn){if(ci)ci.style.display="none";return;}
   const data = getVizData();
   const team = currentTeam.id;
   // Mettre à jour la preview logo
