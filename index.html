@@ -109,13 +109,13 @@ body.player-mode .player-banner{display:flex;}
 .player-banner button{padding:4px 10px;font-size:12px;border-radius:999px;border:1px solid #2a3f2a;background:transparent;cursor:pointer;color:var(--gris);}
 
 /* ===== APP BODY ===== */
-.app-body{background:var(--bg-light);min-height:calc(100vh - 57px);padding:16px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;}
+.app-body{background:var(--bg-light);min-height:calc(100vh - 57px);padding:16px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;}
 .sync-bar{font-size:12px;padding:4px 16px;min-height:20px;color:var(--gris);}
 .sync-bar.ok{color:var(--vert2);}
 .sync-bar.err{color:#cc0000;}
 
 /* ===== CARD FORMULAIRE ===== */
-.form-card{background:var(--card-light);border-radius:16px;border:1px solid var(--border-light);box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:20px;flex:2 1 520px;}
+.form-card{background:var(--card-light);border-radius:16px;border:1px solid var(--border-light);box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:20px;flex:2 1 520px;max-width:660px;}
 .field-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
 .field-row label{font-weight:700;flex:0 0 130px;font-size:14px;color:#1a2a1a;}
 .field-row select,.field-row input[type="date"],.field-row input[type="text"],.field-row textarea{flex:1;padding:10px 12px;font-size:15px;border-radius:8px;border:1.5px solid var(--border-light);background:#f8fbf4;color:#1a2a1a;min-height:42px;}
@@ -127,8 +127,8 @@ textarea{min-height:56px;resize:vertical;}
 .question{margin-bottom:20px;}
 .question>label{font-weight:700;display:block;margin-bottom:8px;font-size:14px;color:#1a2a1a;}
 .qnum{font-weight:900;color:var(--vert2);margin-right:5px;font-size:16px;}
-.scale{display:flex;gap:8px;flex-wrap:nowrap;}
-.scale button{flex:1 0 18%;padding:14px 0;border-radius:10px;border:2px solid transparent;font-size:20px;font-weight:900;cursor:pointer;transition:transform .1s,box-shadow .1s;}
+.scale{display:flex;gap:8px;flex-wrap:nowrap;max-width:500px;}
+.scale button{flex:1 0 18%;padding:10px 0;border-radius:10px;border:2px solid transparent;font-size:18px;font-weight:900;cursor:pointer;transition:transform .1s,box-shadow .1s;}
 .scale button[data-value="1"]{background:var(--rouge-bg);color:var(--rouge);border-color:var(--rouge-border);}
 .scale button[data-value="2"]{background:var(--orange-bg);color:var(--orange);border-color:var(--orange-border);}
 .scale button[data-value="3"]{background:var(--jaune-bg);color:var(--jaune);border-color:var(--jaune-border);}
@@ -162,7 +162,7 @@ body.coach-mode .local-list{display:block;}
 .local-list li{margin-bottom:4px;padding:3px 6px;border-radius:6px;font-size:13px;}
 
 /* ===== STATS CARD (coach) ===== */
-.stats-card{background:var(--noir2);border-radius:16px;border:1px solid #2a3f2a;padding:16px;flex:1 1 260px;}
+.stats-card{background:var(--noir2);border-radius:16px;border:1px solid #2a3f2a;padding:16px;flex:1 1 300px;max-width:380px;font-size:13px;}
 .coach-only{display:none;}
 body.coach-mode .coach-only{display:block;}
 .stats-title{font-weight:700;color:var(--vert);font-size:14px;margin-bottom:8px;}
@@ -231,11 +231,44 @@ body.player-mode #modeCoachBtn{display:none;}
 
 /* PRINT */
 @media print{
-  body{background:#fff !important;}
-  .app-topbar,.form-card,.local-list,.sparkline-card,.player-banner,.sync-bar{display:none !important;}
-  .stats-card,.stats-section{display:block !important;background:#fff !important;color:#000 !important;border:none !important;box-shadow:none !important;}
-  .export-btn,.pin-share-box,.no-print{display:none !important;}
-  .stats-indice,.bar-fill,.zone-vert-fonce,.zone-vert-clair,.zone-jaune,.zone-orange,.zone-rouge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  body{background:#fff !important;color:#111 !important;font-size:12px;}
+  .app-topbar,.form-card,.local-list,.sparkline-card,.player-banner,.sync-bar,
+  .pin-share-box,.export-btn,.no-print,.chart-card,.seance-row,
+  .btn-sheets,.btn-reset,.btn-danger,.btn-enregistrer{display:none !important;}
+  #appContent{display:block !important;}
+  .app-body{display:block !important;padding:0 !important;background:#fff !important;}
+  .stats-card{display:block !important;background:#fff !important;color:#111 !important;
+    border:1px solid #ccc !important;border-radius:8px !important;
+    box-shadow:none !important;padding:16px !important;margin-bottom:16px !important;
+    max-width:100% !important;}
+  .stats-section{display:block !important;background:#fff !important;color:#111 !important;
+    border:1px solid #ccc !important;border-radius:8px !important;
+    box-shadow:none !important;padding:16px !important;margin:0 0 16px !important;}
+  .stats-title{color:#3a6a1a !important;font-size:16px !important;margin-bottom:12px !important;}
+  .stats-section h2{color:#3a6a1a !important;}
+  .stats-indice{border:2px solid #3a6a1a !important;color:#111 !important;border-radius:8px !important;}
+  .stats-indice.indice-vert{background:#d0f0d0 !important;color:#145c2e !important;}
+  .stats-indice.indice-jaune{background:#fff8c2 !important;color:#8a7400 !important;}
+  .stats-indice.indice-orange{background:#ffe0b8 !important;color:#8a4b06 !important;}
+  .stats-indice.indice-rouge{background:#f8d7da !important;color:#721c24 !important;}
+  .stats-line,.stats-reco,.stats-alertes{color:#111 !important;font-size:13px !important;}
+  .bar-label{color:#111 !important;}
+  .bar-bg{background:#eee !important;}
+  .bar-fill.zone-vert-fonce{background:#2a8a4a !important;}
+  .bar-fill.zone-vert-clair{background:#4aaa6a !important;}
+  .bar-fill.zone-jaune{background:#ccaa00 !important;}
+  .bar-fill.zone-orange{background:#cc6600 !important;}
+  .bar-fill.zone-rouge{background:#cc0000 !important;}
+  .alert-card{background:#fffbe6 !important;border:1px solid #e6c200 !important;color:#111 !important;}
+  .alert-card h3{color:#8a6000 !important;}
+  .alert-orange{background:#ffe8cc !important;color:#8a4000 !important;}
+  .alert-rouge{background:#f8d7da !important;color:#721c24 !important;}
+  .stats-grid{display:block !important;}
+  .chart-card{display:none !important;}
+  .coach-only{display:block !important;}
+  .sheets-status{color:#888 !important;font-size:11px !important;}
+  @page{margin:1.5cm;size:A4;}
 }
 </style>
 </head>
@@ -769,7 +802,85 @@ function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
 async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");btn.textContent="Mode coach ON";if(rp)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");btn.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
-function exportPDF(){const body=document.body,wc=body.classList.contains("coach-mode");if(!wc)body.classList.add("coach-mode");forceResizeAllCharts();window.scrollTo(0,0);setTimeout(()=>{window.print();if(!wc)body.classList.remove("coach-mode");},250);}
+function exportPDF(){
+  const data=getVizData(),keys=getKeysSorted();
+  const dateKey=keys[keys.length-1]||null;
+  const rows=dateKey?data.filter(r=>getSKey(r)===dateKey):[];
+  const dpj={};rows.forEach(r=>{const k=r.joueur,d=getDFromS(r.seance)||new Date(r.date);if(!dpj[k])dpj[k]=r;else{const d0=getDFromS(dpj[k].seance)||new Date(dpj[k].date);if(d>d0)dpj[k]=r;}});
+  const liste=Object.values(dpj),nb=liste.length;
+  let somme=0;const cpt={vf:0,vc:0,j:0,o:0,r:0};
+  liste.forEach(rec=>{somme+=Number(rec.total)||0;const z=rec.zoneClass||"";if(z==="zone-vert-fonce")cpt.vf++;else if(z==="zone-vert-clair")cpt.vc++;else if(z==="zone-jaune")cpt.j++;else if(z==="zone-orange")cpt.o++;else cpt.r++;});
+  const moy=nb?(somme/nb).toFixed(1):"—";
+  const pe=nb?Math.round((parseFloat(moy)/25)*100):0;
+  let indiceTexte="",indiceCoul="#3a6a1a",indiceBg="#d0f0d0";
+  if(pe>=88){indiceTexte="Très bon état général";}else if(pe>=76){indiceTexte="Bon état général";}else if(pe>=64){indiceTexte="Fatigue légère";indiceCoul="#8a7400";indiceBg="#fff8c2";}else if(pe>=52){indiceTexte="Fatigue notable";indiceCoul="#8a4b06";indiceBg="#ffe0b8";}else{indiceTexte="Fatigue importante";indiceCoul="#721c24";indiceBg="#f8d7da";}
+  const alertes=liste.filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge");
+  const top5fat=[...liste].filter(r=>r.pourcentage!=null).sort((a,b)=>Number(a.pourcentage)-Number(b.pourcentage)).slice(0,5);
+  const top5for=[...liste].filter(r=>r.pourcentage!=null).sort((a,b)=>Number(b.pourcentage)-Number(a.pourcentage)).slice(0,5);
+  const zoneBar=(count,color,label)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><div style="width:100px;font-size:12px;color:#333;">${label}</div><div style="flex:1;background:#eee;border-radius:4px;height:10px;"><div style="width:${nb?Math.round(count/nb*100):0}%;background:${color};height:10px;border-radius:4px;"></div></div><div style="width:20px;font-size:12px;color:#333;text-align:right;">${count}</div></div>`;
+  const clubNom=currentClub?.nom||"Team RPE";
+  const equipeNom=currentTeam?.nom||"Équipe";
+  let html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Dashboard ${equipeNom}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;padding:20px;color:#111;font-size:13px;background:#fff;}
+h1{font-size:20px;color:#3a6a1a;border-bottom:3px solid #8dc63f;padding-bottom:8px;margin-bottom:16px;}
+h2{font-size:15px;color:#3a6a1a;margin:16px 0 8px;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.club-info{font-size:12px;color:#666;}
+.date-info{font-size:11px;color:#888;}
+.indice-box{padding:12px 16px;border-radius:8px;text-align:center;font-weight:700;font-size:16px;margin:12px 0;background:${indiceBg};color:${indiceCoul};border:2px solid ${indiceCoul};}
+.section{background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:14px;}
+.meta-line{font-size:13px;color:#333;margin-bottom:4px;}
+.reco{font-size:13px;color:#3a6a1a;font-style:italic;margin-top:8px;padding:8px 12px;background:#f0f8e8;border-radius:6px;border-left:3px solid #8dc63f;}
+.alert-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #eee;font-size:12px;}
+.tag{padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;}
+.tag-rouge{background:#f8d7da;color:#721c24;}
+.tag-orange{background:#ffe0b8;color:#8a4b06;}
+.top5-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;}
+.top5-name{width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.top5-bar{flex:1;background:#eee;border-radius:4px;height:12px;}
+.top5-val{width:40px;text-align:right;}
+.two-col{display:flex;gap:16px;flex-wrap:wrap;}
+.two-col .section{flex:1;min-width:200px;}
+@media print{body{padding:10px;}@page{margin:1.2cm;size:A4;}}
+</style></head><body>
+<div class="header">
+  <div>
+    <h1>Dashboard — ${equipeNom}</h1>
+    <div class="club-info">${clubNom}</div>
+  </div>
+  <div class="date-info">Séance : ${dateKey?fmtKey(dateKey):"—"}<br>Généré le ${new Date().toLocaleDateString("fr-FR")}</div>
+</div>
+
+<div class="section">
+  <div class="meta-line"><strong>Joueurs (dernière séance) :</strong> ${nb}</div>
+  <div class="meta-line"><strong>Score moyen :</strong> ${moy} / 25</div>
+  <div class="meta-line"><strong>Zone dominante :</strong> ${(()=>{const ord=[{c:"vf",n:"Très bon"},{c:"vc",n:"Bon état"},{c:"j",n:"Fatigue légère"},{c:"o",n:"Fatigue notable"},{c:"r",n:"Fatigue importante"}];let mn="—",mv=-1;ord.forEach(z=>{if(cpt[z.c]>mv){mv=cpt[z.c];mn=z.n;}});return mn+" ("+mv+" joueurs)";})()}</div>
+  <div class="indice-box">Indice bien-être : ${pe}% — ${indiceTexte}</div>
+  ${zoneBar(cpt.vf,"#2a8a4a","Très bon")}
+  ${zoneBar(cpt.vc,"#4aaa6a","Bon état")}
+  ${zoneBar(cpt.j,"#ccaa00","Léger")}
+  ${zoneBar(cpt.o,"#cc6600","Notable")}
+  ${zoneBar(cpt.r,"#cc0000","Important")}
+  <div class="reco">Recommandation : ${(()=>{const pRO=nb?Math.round(((cpt.o+cpt.r)/nb)*100):0;if(pe>=80&&pRO<=10)return"Équipe en forme : charge normale.";if(pe>=70&&pRO<=25)return"Fatigue modérée : charge normale + surveillance.";if(pe>=60||pRO>30)return"Plusieurs fatigués : réduis intensité.";return"Fatigue élevée : séance récupération.";})()}</div>
+</div>`;
+
+  if(alertes.length){
+    html+=`<div class="section"><h2>Alertes joueurs</h2>`;
+    alertes.forEach(a=>{html+=`<div class="alert-item"><span class="tag ${a.zoneClass==="zone-rouge"?"tag-rouge":"tag-orange"}">${a.zoneClass==="zone-rouge"?"ROUGE":"ORANGE"}</span><strong>${a.joueur}</strong> — ${a.pourcentage}%${a.douleurZone?" | Douleurs : "+a.douleurZone:""}${a.commentaire?" | "+a.commentaire:""}</div>`;});
+    html+=`</div>`;
+  }
+
+  html+=`<div class="two-col">
+  <div class="section"><h2>Top 5 — plus fatigués</h2>`;
+  top5fat.forEach(p=>{const v=Math.max(0,Math.min(100,Number(p.pourcentage)||0));html+=`<div class="top5-row"><div class="top5-name">${p.joueur}</div><div class="top5-bar"><div style="width:${v}%;background:#cc6600;height:12px;border-radius:4px;"></div></div><div class="top5-val">${v}%</div></div>`;});
+  html+=`</div><div class="section"><h2>Top 5 — plus en forme</h2>`;
+  top5for.forEach(p=>{const v=Math.max(0,Math.min(100,Number(p.pourcentage)||0));html+=`<div class="top5-row"><div class="top5-name">${p.joueur}</div><div class="top5-bar"><div style="width:${v}%;background:#3a8a1a;height:12px;border-radius:4px;"></div></div><div class="top5-val">${v}%</div></div>`;});
+  html+=`</div></div></body></html>`;
+
+  const w=window.open("","_blank");if(!w){alert("Popup bloquée ?");return;}w.document.open();w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+}
 
 // ===== STATS =====
 function getVizData(){return enregistrementsSheets;}
