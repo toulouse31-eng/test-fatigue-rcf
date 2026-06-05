@@ -229,6 +229,7 @@ body.coach-mode .coach-only{display:block;}
 .stats-section{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 48px);display:none;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 body.coach-mode .stats-section{display:block;}
 body.coach-mode .app-body{align-items:center;padding:20px 24px;flex-direction:column;}
+@media(max-width:700px){body.coach-mode .app-body{padding:0;}}
 .stats-section h2{font-size:16px;color:#3a6a1a;margin-bottom:12px;}
 .sheets-status{font-size:11px;color:#8aaa7a;text-align:center;margin-bottom:8px;}
 .alert-card{background:#fffbe6;border-radius:10px;padding:12px;border:1px solid #ffe082;margin-bottom:12px;}
@@ -255,9 +256,10 @@ body.coach-mode .app-body{align-items:center;padding:20px 24px;flex-direction:co
 body.player-mode .coach-only{display:none !important;}
 body.player-mode #modeCoachBtn{display:none;}
 body.player-mode .form-card{flex:1 1 100%;max-width:100%;}
-body.player-mode .app-body{justify-content:center;padding:0;}
+body.player-mode .app-body{justify-content:center;padding:0;gap:0;}
 /* Mode coach ON : cacher le formulaire */
 body.coach-mode .form-card{display:none;}
+body.coach-mode .coach-interface{display:none !important;}
 body:not(.coach-mode):not(.player-mode) #coachInterface{display:flex !important;flex-direction:column;}
 body:not(.coach-mode):not(.player-mode) #formCard{display:none !important;}
 body.player-mode #coachInterface{display:none !important;}
@@ -270,7 +272,13 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
   .app-body{flex-direction:column;padding:0;gap:0;}
   .form-card{padding:16px;border-radius:0;border-left:none;border-right:none;box-shadow:none;flex:1 1 100%;max-width:100%;width:100%;}
   .scale button{font-size:16px;padding:11px 0;}
-  .stats-card{flex:1 1 auto;max-width:100%;border-radius:0;border-left:none;border-right:none;}
+  .stats-card{flex:1 1 auto;max-width:100%;border-radius:0;border-left:none;border-right:none;box-shadow:none;}
+  .coach-interface{border-radius:0;border-left:none;border-right:none;box-shadow:none;width:100%;margin:0;padding:16px;}
+  .stats-section{border-radius:0;border-left:none;border-right:none;box-shadow:none;width:100%;margin:0 0 8px 0;}
+  .coach-stats-row{gap:6px;flex-wrap:wrap;}
+  .coach-stat-box{padding:8px 10px;min-width:60px;}
+  .coach-stat-num{font-size:18px;}
+  .joueur-row{padding:8px 10px;}
 }
 @media(max-width:900px){
   .stats-card{flex:0 0 auto;max-width:100%;width:100%;}
