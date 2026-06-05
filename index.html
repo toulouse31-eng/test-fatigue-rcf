@@ -1439,6 +1439,10 @@ async function paramsDelEquipe(name){
   setSyncStatus("✅ Équipe "+name+" supprimée","ok");
 }
 
+
+function sauvegarderLocal(){localStorage.setItem(STORAGE_LOCAL,JSON.stringify(enregistrementsLocal));}
+function chargerLocal(){const d=localStorage.getItem(STORAGE_LOCAL);if(!d)return[];try{const p=JSON.parse(d);return Array.isArray(p)?p:[];}catch(e){return[];}}
+function resetDonnees(){if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?"))return;enregistrementsLocal=[];localStorage.removeItem(STORAGE_LOCAL);majListeJoueursLocal();resetForm(true);alert("Historique tablette effacé.");}
 </script>
 <script>
 // ===== LOGIQUE MÉTIER =====
@@ -1508,9 +1512,7 @@ async function syncGoogleSheets(){if(!navigator.onLine){alert("Pas de connexion.
 function chargerGSJSONP(){return new Promise(res=>{let done=false;const ov=window.google?.visualization?.Query?.setResponse||null;window.google=window.google||{};google.visualization=google.visualization||{};google.visualization.Query=google.visualization.Query||{};google.visualization.Query.setResponse=resp=>{if(done){if(typeof ov==="function")ov(resp);return;}done=true;try{const rows=resp?.table?.rows||[];const data=rows.map(r=>{const c=r.c||[];let rb="",rn="";const cr=c[4];if(cr&&cr.v!=null){rb=String(cr.v);const n=Number(cr.v);if(!Number.isNaN(n))rn=n;}const up=rb.toUpperCase(),na=up.includes("N/A")||up.includes("#N/A");const tot=Number(c[9]?.v)||0,rp=c[10]?.v,pct=Number(String(rp).replace("%","").trim())||0;const{zoneTexte,zoneClass}=computeZone(pct);return{date:c[1]?.v||"",joueur:c[2]?.v||"",seance:c[3]?.v||"",recuperation:rn,recuperationBrut:na?"N/A":rb,naMatch:na,sommeil:Number(c[5]?.v)||"",alimentation:Number(c[6]?.v)||"",fatigue_physique:Number(c[7]?.v)||"",fatigue_mentale:Number(c[8]?.v)||"",total:tot,pourcentage:pct,zone:c[11]?.v||zoneTexte,zoneClass,douleurZone:c[12]?.v||"",commentaire:c[13]?.v||"",envoye:true};}).filter(x=>x.joueur);res(data);}catch(e){res([]);}finally{if(typeof ov==="function")google.visualization.Query.setResponse=ov;}};const sc=document.createElement("script");sc.src=`https://docs.google.com/spreadsheets/d/${GS_DOC}/gviz/tq?gid=${GS_GID}&headers=1&tq=${encodeURIComponent("select *")}&tqx=out:json`;sc.onerror=()=>{if(!done){done=true;res([]);}};setTimeout(()=>{if(!done){done=true;res([]);}},15000);document.body.appendChild(sc);});}
 async function chargerGSBackup(){if(navigator.onLine){const d=await chargerGSJSONP();localStorage.setItem(STORAGE_SHEETS,JSON.stringify(d));return d;}const b=localStorage.getItem(STORAGE_SHEETS);if(b){try{const p=JSON.parse(b);return Array.isArray(p)?p:[];}catch(e){}}return[];}
 
-function sauvegarderLocal(){localStorage.setItem(STORAGE_LOCAL,JSON.stringify(enregistrementsLocal));}
-function chargerLocal(){const d=localStorage.getItem(STORAGE_LOCAL);if(!d)return[];try{const p=JSON.parse(d);return Array.isArray(p)?p:[];}catch(e){return[];}}
-function resetDonnees(){if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?"))return;enregistrementsLocal=[];localStorage.removeItem(STORAGE_LOCAL);majListeJoueursLocal();resetForm(true);alert("Historique tablette effacé.");}
+
 function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl");if(!ul)return;ul.innerHTML="";enregistrementsLocal.forEach((r,i)=>{const li=document.createElement("li");li.textContent=`${i+1}. ${r.joueur} — ${r.pourcentage}% ${r.seance?"|"+r.seance:""} ${r.envoye?"🟢":"🔴"}`;li.className=r.zoneClass;ul.appendChild(li);});}
 function resetForm(cr){const f=document.getElementById("fatigueForm");
   // Reset manuel des champs (div au lieu de form)
@@ -1737,7 +1739,7 @@ async function buildCoachInterface(){
     const row = document.createElement("div");
     row.className = "joueur-row";
     row.dataset.nom = nom;
-    const naText = rec?.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;"> (n'a pas joué)</span>' : '';
+    const naText = rec && rec.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;"> (N/A)</span>' : '';
     row.innerHTML = `
       <div class="joueur-checkbox"><span class="joueur-checkbox-tick">✓</span></div>
       <div class="joueur-dot ${dotClass}"></div>
