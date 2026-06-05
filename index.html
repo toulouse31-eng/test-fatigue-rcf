@@ -321,6 +321,55 @@ body.player-mode .app-body{justify-content:center;padding:0;}
 .splash-dot:nth-child(2){animation-delay:.25s;}
 .splash-dot:nth-child(3){animation-delay:.5s;}
 @keyframes dotPulse{0%,100%{opacity:0.3;transform:scale(0.8);}50%{opacity:1;transform:scale(1.1);}}
+
+/* ===== DOULEURS PAR ZONE ===== */
+.douleur-section{margin-bottom:20px;}
+.douleur-title{font-size:14px;font-weight:700;color:#1a2a1a;margin-bottom:10px;}
+.corps-container{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.corps-vue{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.corps-vue-label{font-size:10px;color:#8aaa7a;text-transform:uppercase;letter-spacing:1px;}
+.corps-svg{width:120px;cursor:pointer;}
+.corps-svg .zone{fill:#e8f5e9;stroke:#c8ddb0;stroke-width:1.5;transition:fill .15s,stroke .15s;}
+.corps-svg .zone:hover{fill:#c8ddb0;stroke:#8dc63f;}
+.corps-svg .zone.gene{fill:#fff3cd;stroke:#ffc107;}
+.corps-svg .zone.douleur{fill:#ffe0b2;stroke:#ff9800;}
+.corps-svg .zone.vive{fill:#ffcdd2;stroke:#f44336;}
+
+/* Popup intensité */
+.intensite-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:16px;border:2px solid var(--border-light);box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:20px;z-index:1000;min-width:280px;max-width:320px;}
+.intensite-popup.active{display:block;}
+.intensite-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:999;}
+.intensite-overlay.active{display:block;}
+.intensite-title{font-size:15px;font-weight:700;color:#1a2a1a;margin-bottom:4px;}
+.intensite-zone-name{font-size:13px;color:#8aaa7a;margin-bottom:14px;}
+.intensite-btns{display:flex;flex-direction:column;gap:8px;}
+.intensite-btn{padding:12px 16px;border-radius:10px;border:2px solid transparent;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .1s;}
+.intensite-btn:hover{transform:scale(1.02);}
+.intensite-btn.gene{background:#fff8e1;border-color:#ffc107;color:#7a5500;}
+.intensite-btn.douleur{background:#fff3e0;border-color:#ff9800;color:#7a3000;}
+.intensite-btn.vive{background:#ffebee;border-color:#f44336;color:#7a0000;}
+.intensite-btn-cancel{margin-top:4px;padding:10px;border-radius:8px;border:1px solid #c8ddb0;background:#f8fbf4;font-size:13px;color:#8aaa7a;cursor:pointer;width:100%;}
+
+/* Zones sélectionnées */
+.zones-selectionnees{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
+.zone-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;}
+.zone-tag.gene{background:#fff8e1;color:#7a5500;border:1px solid #ffc107;}
+.zone-tag.douleur{background:#fff3e0;color:#7a3000;border:1px solid #ff9800;}
+.zone-tag.vive{background:#ffebee;color:#7a0000;border:1px solid #f44336;}
+.zone-tag button{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;color:inherit;padding:0;}
+
+/* Dashboard douleurs */
+.douleur-dashboard{background:var(--noir3);border-radius:12px;padding:14px;margin-top:12px;}
+.douleur-dashboard h3{font-size:13px;color:var(--vert);margin-bottom:10px;}
+.heatmap-corps{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.heatmap-vue{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.heatmap-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;}
+.top-zones{margin-top:12px;}
+.top-zone-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.top-zone-name{font-size:12px;color:var(--gris);width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-zone-bar-bg{flex:1;background:var(--noir2);border-radius:999px;height:8px;}
+.top-zone-bar-fill{height:8px;border-radius:999px;background:#f44336;}
+.top-zone-val{font-size:11px;color:var(--gris);width:20px;text-align:right;}
 </style>
 </head>
 <body>
@@ -558,9 +607,121 @@ body.player-mode .app-body{justify-content:center;padding:0;}
           <input type="hidden" name="fatigue_mentale"/>
         </div>
 
-        <div class="field-row">
-          <label for="douleurZone">Douleurs :</label>
-          <input type="text" id="douleurZone" name="douleurZone" placeholder="Ex : ischios droit, cheville gauche..."/>
+        <!-- SECTION DOULEURS PAR ZONE -->
+        <div class="douleur-section">
+          <div class="douleur-title">Douleurs / gênes ? <span style="font-size:12px;font-weight:400;color:#8aaa7a;">Clique sur la zone concernée</span></div>
+          <div class="corps-container">
+            <!-- AVANT -->
+            <div class="corps-vue">
+              <div class="corps-vue-label">Avant</div>
+              <svg class="corps-svg" id="corpsSvgAvant" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
+                <!-- Tête -->
+                <ellipse class="zone" data-zone="Tête" cx="60" cy="18" rx="16" ry="18"/>
+                <!-- Cou -->
+                <rect class="zone" data-zone="Cou" x="52" y="34" width="16" height="10" rx="4"/>
+                <!-- Épaule gauche -->
+                <ellipse class="zone" data-zone="Épaule gauche" cx="32" cy="52" rx="12" ry="10"/>
+                <!-- Épaule droite -->
+                <ellipse class="zone" data-zone="Épaule droite" cx="88" cy="52" rx="12" ry="10"/>
+                <!-- Torse/pec -->
+                <rect class="zone" data-zone="Torse" x="40" y="44" width="40" height="36" rx="6"/>
+                <!-- Abdominaux -->
+                <rect class="zone" data-zone="Abdominaux" x="42" y="80" width="36" height="24" rx="4"/>
+                <!-- Bras gauche -->
+                <rect class="zone" data-zone="Bras gauche" x="18" y="62" width="13" height="30" rx="6"/>
+                <!-- Bras droit -->
+                <rect class="zone" data-zone="Bras droit" x="89" y="62" width="13" height="30" rx="6"/>
+                <!-- Avant-bras gauche -->
+                <rect class="zone" data-zone="Avant-bras gauche" x="14" y="94" width="12" height="28" rx="5"/>
+                <!-- Avant-bras droit -->
+                <rect class="zone" data-zone="Avant-bras droit" x="94" y="94" width="12" height="28" rx="5"/>
+                <!-- Hanche/bassin -->
+                <rect class="zone" data-zone="Hanche / bassin" x="38" y="104" width="44" height="20" rx="4"/>
+                <!-- Cuisse gauche -->
+                <rect class="zone" data-zone="Cuisse gauche" x="38" y="126" width="19" height="38" rx="6"/>
+                <!-- Cuisse droite -->
+                <rect class="zone" data-zone="Cuisse droite" x="63" y="126" width="19" height="38" rx="6"/>
+                <!-- Genou gauche -->
+                <rect class="zone" data-zone="Genou gauche" x="39" y="166" width="17" height="14" rx="5"/>
+                <!-- Genou droit -->
+                <rect class="zone" data-zone="Genou droit" x="64" y="166" width="17" height="14" rx="5"/>
+                <!-- Tibia/mollet gauche -->
+                <rect class="zone" data-zone="Tibia gauche" x="40" y="182" width="15" height="36" rx="5"/>
+                <!-- Tibia/mollet droit -->
+                <rect class="zone" data-zone="Tibia droit" x="65" y="182" width="15" height="36" rx="5"/>
+                <!-- Cheville gauche -->
+                <rect class="zone" data-zone="Cheville gauche" x="40" y="220" width="15" height="10" rx="4"/>
+                <!-- Cheville droite -->
+                <rect class="zone" data-zone="Cheville droite" x="65" y="220" width="15" height="10" rx="4"/>
+                <!-- Pied gauche -->
+                <ellipse class="zone" data-zone="Pied gauche" cx="47" cy="238" rx="11" ry="7"/>
+                <!-- Pied droit -->
+                <ellipse class="zone" data-zone="Pied droit" cx="73" cy="238" rx="11" ry="7"/>
+              </svg>
+            </div>
+            <!-- ARRIÈRE -->
+            <div class="corps-vue">
+              <div class="corps-vue-label">Arrière</div>
+              <svg class="corps-svg" id="corpsSvgArriere" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
+                <!-- Tête arrière -->
+                <ellipse class="zone" data-zone="Tête (arrière)" cx="60" cy="18" rx="16" ry="18"/>
+                <!-- Nuque -->
+                <rect class="zone" data-zone="Nuque" x="52" y="34" width="16" height="10" rx="4"/>
+                <!-- Trapèze gauche -->
+                <ellipse class="zone" data-zone="Trapèze gauche" cx="32" cy="50" rx="12" ry="10"/>
+                <!-- Trapèze droit -->
+                <ellipse class="zone" data-zone="Trapèze droit" cx="88" cy="50" rx="12" ry="10"/>
+                <!-- Haut du dos -->
+                <rect class="zone" data-zone="Haut du dos" x="40" y="44" width="40" height="22" rx="5"/>
+                <!-- Lombaires -->
+                <rect class="zone" data-zone="Lombaires" x="42" y="68" width="36" height="20" rx="4"/>
+                <!-- Fessier gauche -->
+                <ellipse class="zone" data-zone="Fessier gauche" cx="50" cy="104" rx="13" ry="12"/>
+                <!-- Fessier droit -->
+                <ellipse class="zone" data-zone="Fessier droit" cx="70" cy="104" rx="13" ry="12"/>
+                <!-- Bras gauche arr -->
+                <rect class="zone" data-zone="Bras gauche (arr.)" x="18" y="62" width="13" height="30" rx="6"/>
+                <!-- Bras droit arr -->
+                <rect class="zone" data-zone="Bras droit (arr.)" x="89" y="62" width="13" height="30" rx="6"/>
+                <!-- Ischios gauche -->
+                <rect class="zone" data-zone="Ischios gauche" x="38" y="118" width="19" height="36" rx="6"/>
+                <!-- Ischios droit -->
+                <rect class="zone" data-zone="Ischios droit" x="63" y="118" width="19" height="36" rx="6"/>
+                <!-- Creux du genou gauche -->
+                <rect class="zone" data-zone="Creux genou gauche" x="39" y="156" width="17" height="14" rx="5"/>
+                <!-- Creux du genou droit -->
+                <rect class="zone" data-zone="Creux genou droit" x="64" y="156" width="17" height="14" rx="5"/>
+                <!-- Mollet gauche -->
+                <rect class="zone" data-zone="Mollet gauche" x="40" y="172" width="15" height="38" rx="5"/>
+                <!-- Mollet droit -->
+                <rect class="zone" data-zone="Mollet droit" x="65" y="172" width="15" height="38" rx="5"/>
+                <!-- Tendon Achille gauche -->
+                <rect class="zone" data-zone="Tendon Achille gauche" x="41" y="212" width="13" height="10" rx="4"/>
+                <!-- Tendon Achille droit -->
+                <rect class="zone" data-zone="Tendon Achille droit" x="66" y="212" width="13" height="10" rx="4"/>
+                <!-- Talon gauche -->
+                <ellipse class="zone" data-zone="Talon gauche" cx="47" cy="230" rx="9" ry="7"/>
+                <!-- Talon droit -->
+                <ellipse class="zone" data-zone="Talon droit" cx="73" cy="230" rx="9" ry="7"/>
+              </svg>
+            </div>
+          </div>
+          <!-- Zones sélectionnées -->
+          <div class="zones-selectionnees" id="zonesSelectionnees"></div>
+          <input type="hidden" id="douleurZone" name="douleurZone"/>
+        </div>
+
+        <!-- POPUP INTENSITÉ -->
+        <div class="intensite-overlay" id="intensiteOverlay" onclick="fermerPopupIntensité()"></div>
+        <div class="intensite-popup" id="intensitePopup">
+          <div class="intensite-title">Niveau de douleur</div>
+          <div class="intensite-zone-name" id="intensiteZoneName"></div>
+          <div class="intensite-btns">
+            <button class="intensite-btn gene" onclick="selectionnerIntensité('gene')">🟡 Gêne — je joue normalement</button>
+            <button class="intensite-btn douleur" onclick="selectionnerIntensité('douleur')">🟠 Douleur — c'est difficile</button>
+            <button class="intensite-btn vive" onclick="selectionnerIntensité('vive')">🔴 Vive — je devrais pas jouer</button>
+          </div>
+          <button class="intensite-btn-cancel" onclick="fermerPopupIntensité()">Annuler</button>
         </div>
 
 
@@ -640,6 +801,36 @@ body.player-mode .app-body{justify-content:center;padding:0;}
         <div class="seance-row" style="justify-content:center;"><label>Séances :</label><select id="topFormeRange" style="max-width:80px;"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option></select></div>
         <div class="chart-wrap"><canvas id="topFormeCanvas"></canvas></div>
         <div id="topFormeEmpty" style="font-size:11px;color:var(--gris);text-align:center;display:none;">Pas assez de données.</div>
+      </div>
+    </div>
+    <!-- DASHBOARD DOULEURS -->
+    <div class="douleur-dashboard">
+      <h3>Carte des douleurs équipe</h3>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <label style="font-size:12px;color:var(--gris);">Période :</label>
+        <select id="douleurPeriode" style="background:var(--noir2);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);" onchange="buildDouleurDashboard()">
+          <option value="7">7 derniers jours</option>
+          <option value="30" selected>30 derniers jours</option>
+          <option value="90">3 derniers mois</option>
+        </select>
+      </div>
+      <div class="heatmap-corps" id="heatmapCorps">
+        <div class="heatmap-vue">
+          <div class="heatmap-label">Avant</div>
+          <svg id="heatmapAvant" style="width:110px;cursor:default;" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="heatmap-vue">
+          <div class="heatmap-label">Arrière</div>
+          <svg id="heatmapArriere" style="width:110px;cursor:default;" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="top-zones" id="topZonesList" style="flex:1;min-width:160px;">
+          <div style="font-size:12px;color:var(--vert);font-weight:700;margin-bottom:8px;">Zones les + touchées</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:var(--gris);display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#fff3cd;border:1px solid #ffc107;display:inline-block;"></span>Gêne</span>
+        <span style="font-size:11px;color:var(--gris);display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#ffe0b2;border:1px solid #ff9800;display:inline-block;"></span>Douleur</span>
+        <span style="font-size:11px;color:var(--gris);display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#ffcdd2;border:1px solid #f44336;display:inline-block;"></span>Vive</span>
       </div>
     </div>
     <div class="sparkline-card">
@@ -878,7 +1069,7 @@ async function refreshFirestoreData(){
     enregistrementsSheets=snap.docs.map(d=>{const data=d.data();const{zoneTexte,zoneClass}=computeZone(Number(data.pourcentage)||0);return{...data,zoneClass:data.zoneClass||zoneClass,zone:data.zone||zoneTexte,envoye:true};});
     if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
   }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
-  buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();
+  buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();
 }
 function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
 
@@ -892,7 +1083,7 @@ function sauvegarderLocal(){localStorage.setItem(STORAGE_LOCAL,JSON.stringify(en
 function chargerLocal(){const d=localStorage.getItem(STORAGE_LOCAL);if(!d)return[];try{const p=JSON.parse(d);return Array.isArray(p)?p:[];}catch(e){return[];}}
 function resetDonnees(){if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?"))return;enregistrementsLocal=[];localStorage.removeItem(STORAGE_LOCAL);majListeJoueursLocal();resetForm(true);alert("Historique tablette effacé.");}
 function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl");if(!ul)return;ul.innerHTML="";enregistrementsLocal.forEach((r,i)=>{const li=document.createElement("li");li.textContent=`${i+1}. ${r.joueur} — ${r.pourcentage}% ${r.seance?"|"+r.seance:""} ${r.envoye?"🟢":"🔴"}`;li.className=r.zoneClass;ul.appendChild(li);});}
-function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
+function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;resetDouleurs();if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
 async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp&&!playerMode)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
@@ -1036,6 +1227,241 @@ function buildSparklineSelect(){const sel=document.getElementById("sparklineSele
 function buildFicheSelect(){const s=document.getElementById("ficheSeanceSelect");if(!s)return;const k=getKeysSorted();s.innerHTML="";k.slice().reverse().forEach(x=>s.appendChild(Object.assign(document.createElement("option"),{value:x,textContent:fmtKey(x)})));}
 
 function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelect"),fs=document.getElementById("ficheSeanceSelect"),joueur=sel?.value,dk=fs?.value;if(!joueur){alert("Sélectionne un joueur.");return;}const data=getVizData(),rows=data.filter(r=>r.joueur===joueur&&(!dk||getSKey(r)===dk)),last=rows.slice(-1)[0];if(!last){alert("Pas de données.");return;}const fn=v=>v!=null&&v!==""?v+"/5":"-";const{zoneTexte,zoneClass}=computeZone(Number(last.pourcentage)||0),hist=getLastN(joueur,5);let html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Fiche ${joueur}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:auto;}h1{color:#5a9a1a;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:13px;}th{background:#f0f5ea;}.zone-vert-fonce{background:#b7f0c4;color:#145c2e;}.zone-vert-clair{background:#d5f7dd;color:#1f7f3f;}.zone-jaune{background:#fff8c2;color:#8a7400;}.zone-orange{background:#ffe0b8;color:#8a4b06;}.zone-rouge{background:#f8d7da;color:#721c24;}</style></head><body><h1>Fiche bien-être — ${joueur}</h1><p>Séance : <strong>${last.seance||"-"}</strong></p><div class="${zoneClass}" style="padding:10px;border-radius:8px;margin:12px 0;font-size:16px;font-weight:bold;text-align:center;">Score : ${last.total}/${last.naMatch?20:25} (${last.pourcentage}%) — ${zoneTexte}</div><table><thead><tr><th>Récupération</th><th>Sommeil</th><th>Alimentation</th><th>Fatigue phy.</th><th>Fatigue men.</th></tr></thead><tbody><tr><td>${last.naMatch?"N/A":fn(last.recuperation)}</td><td>${fn(last.sommeil)}</td><td>${fn(last.alimentation)}</td><td>${fn(last.fatigue_physique)}</td><td>${fn(last.fatigue_mentale)}</td></tr></tbody></table>`;if(last.douleurZone)html+=`<p><strong>Douleurs :</strong> ${last.douleurZone}</p>`;if(last.commentaire)html+=`<p><strong>Commentaire :</strong> ${last.commentaire}</p>`;if(hist.length){html+=`<h2>Historique</h2><table><thead><tr><th>Date</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>%</th></tr></thead><tbody>`;hist.forEach(h=>{html+=`<tr><td>${fmtKey(h._dk||getSKey(h))}</td><td>${h.naMatch?"N/A":fn(h.recuperation)}</td><td>${fn(h.sommeil)}</td><td>${fn(h.alimentation)}</td><td>${fn(h.fatigue_physique)}</td><td>${fn(h.fatigue_mentale)}</td><td>${h.total||"-"}</td><td>${h.pourcentage||0}%</td></tr>`;});html+=`</tbody></table>`;}html+=`</body></html>`;const win=window.open("","_blank");if(!win){alert("Popup bloquée ?");return;}win.document.open();win.document.write(html);win.document.close();win.focus();win.print();}
+
+
+// ===== LOGIQUE DOULEURS PAR ZONE =====
+let zonesSelectionnees = {}; // {zoneName: intensite}
+let zoneEnCours = null;
+
+// Zones avant et arrière avec leurs coordonnées pour le heatmap
+const ZONES_AVANT = [
+  {zone:"Tête", el:"ellipse", attrs:{cx:60,cy:18,rx:16,ry:18}},
+  {zone:"Cou", el:"rect", attrs:{x:52,y:34,w:16,h:10,rx:4}},
+  {zone:"Épaule gauche", el:"ellipse", attrs:{cx:32,cy:52,rx:12,ry:10}},
+  {zone:"Épaule droite", el:"ellipse", attrs:{cx:88,cy:52,rx:12,ry:10}},
+  {zone:"Torse", el:"rect", attrs:{x:40,y:44,w:40,h:36,rx:6}},
+  {zone:"Abdominaux", el:"rect", attrs:{x:42,y:80,w:36,h:24,rx:4}},
+  {zone:"Bras gauche", el:"rect", attrs:{x:18,y:62,w:13,h:30,rx:6}},
+  {zone:"Bras droit", el:"rect", attrs:{x:89,y:62,w:13,h:30,rx:6}},
+  {zone:"Avant-bras gauche", el:"rect", attrs:{x:14,y:94,w:12,h:28,rx:5}},
+  {zone:"Avant-bras droit", el:"rect", attrs:{x:94,y:94,w:12,h:28,rx:5}},
+  {zone:"Hanche / bassin", el:"rect", attrs:{x:38,y:104,w:44,h:20,rx:4}},
+  {zone:"Cuisse gauche", el:"rect", attrs:{x:38,y:126,w:19,h:38,rx:6}},
+  {zone:"Cuisse droite", el:"rect", attrs:{x:63,y:126,w:19,h:38,rx:6}},
+  {zone:"Genou gauche", el:"rect", attrs:{x:39,y:166,w:17,h:14,rx:5}},
+  {zone:"Genou droit", el:"rect", attrs:{x:64,y:166,w:17,h:14,rx:5}},
+  {zone:"Tibia gauche", el:"rect", attrs:{x:40,y:182,w:15,h:36,rx:5}},
+  {zone:"Tibia droit", el:"rect", attrs:{x:65,y:182,w:15,h:36,rx:5}},
+  {zone:"Cheville gauche", el:"rect", attrs:{x:40,y:220,w:15,h:10,rx:4}},
+  {zone:"Cheville droite", el:"rect", attrs:{x:65,y:220,w:15,h:10,rx:4}},
+  {zone:"Pied gauche", el:"ellipse", attrs:{cx:47,cy:238,rx:11,ry:7}},
+  {zone:"Pied droit", el:"ellipse", attrs:{cx:73,cy:238,rx:11,ry:7}},
+];
+const ZONES_ARRIERE = [
+  {zone:"Tête (arrière)", el:"ellipse", attrs:{cx:60,cy:18,rx:16,ry:18}},
+  {zone:"Nuque", el:"rect", attrs:{x:52,y:34,w:16,h:10,rx:4}},
+  {zone:"Trapèze gauche", el:"ellipse", attrs:{cx:32,cy:50,rx:12,ry:10}},
+  {zone:"Trapèze droit", el:"ellipse", attrs:{cx:88,cy:50,rx:12,ry:10}},
+  {zone:"Haut du dos", el:"rect", attrs:{x:40,y:44,w:40,h:22,rx:5}},
+  {zone:"Lombaires", el:"rect", attrs:{x:42,y:68,w:36,h:20,rx:4}},
+  {zone:"Fessier gauche", el:"ellipse", attrs:{cx:50,cy:104,rx:13,ry:12}},
+  {zone:"Fessier droit", el:"ellipse", attrs:{cx:70,cy:104,rx:13,ry:12}},
+  {zone:"Bras gauche (arr.)", el:"rect", attrs:{x:18,y:62,w:13,h:30,rx:6}},
+  {zone:"Bras droit (arr.)", el:"rect", attrs:{x:89,y:62,w:13,h:30,rx:6}},
+  {zone:"Ischios gauche", el:"rect", attrs:{x:38,y:118,w:19,h:36,rx:6}},
+  {zone:"Ischios droit", el:"rect", attrs:{x:63,y:118,w:19,h:36,rx:6}},
+  {zone:"Creux genou gauche", el:"rect", attrs:{x:39,y:156,w:17,h:14,rx:5}},
+  {zone:"Creux genou droit", el:"rect", attrs:{x:64,y:156,w:17,h:14,rx:5}},
+  {zone:"Mollet gauche", el:"rect", attrs:{x:40,y:172,w:15,h:38,rx:5}},
+  {zone:"Mollet droit", el:"rect", attrs:{x:65,y:172,w:15,h:38,rx:5}},
+  {zone:"Tendon Achille gauche", el:"rect", attrs:{x:41,y:212,w:13,h:10,rx:4}},
+  {zone:"Tendon Achille droit", el:"rect", attrs:{x:66,y:212,w:13,h:10,rx:4}},
+  {zone:"Talon gauche", el:"ellipse", attrs:{cx:47,cy:230,rx:9,ry:7}},
+  {zone:"Talon droit", el:"ellipse", attrs:{cx:73,cy:230,rx:9,ry:7}},
+];
+
+const INTENSITE_COLORS = {
+  gene:    {fill:"#fff3cd", stroke:"#ffc107"},
+  douleur: {fill:"#ffe0b2", stroke:"#ff9800"},
+  vive:    {fill:"#ffcdd2", stroke:"#f44336"},
+  none:    {fill:"#e8f5e9", stroke:"#c8ddb0"},
+};
+
+function initCorpsCliquable() {
+  document.querySelectorAll(".corps-svg .zone").forEach(el => {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", function() {
+      const zone = this.getAttribute("data-zone");
+      ouvrirPopupIntensité(zone, this);
+    });
+  });
+}
+
+function ouvrirPopupIntensité(zone, svgEl) {
+  zoneEnCours = {zone, svgEl};
+  document.getElementById("intensiteZoneName").textContent = zone;
+  document.getElementById("intensitePopup").classList.add("active");
+  document.getElementById("intensiteOverlay").classList.add("active");
+}
+
+function fermerPopupIntensité() {
+  document.getElementById("intensitePopup").classList.remove("active");
+  document.getElementById("intensiteOverlay").classList.remove("active");
+  zoneEnCours = null;
+}
+
+function selectionnerIntensité(intensite) {
+  if (!zoneEnCours) return;
+  const {zone, svgEl} = zoneEnCours;
+
+  // Si la même zone avec la même intensité → désélectionner
+  if (zonesSelectionnees[zone] === intensite) {
+    delete zonesSelectionnees[zone];
+    // Reset couleur sur tous les SVG
+    document.querySelectorAll(`.zone[data-zone="${zone}"]`).forEach(el => {
+      el.classList.remove("gene","douleur","vive");
+    });
+  } else {
+    zonesSelectionnees[zone] = intensite;
+    // Appliquer la couleur sur tous les SVG (avant + arrière)
+    document.querySelectorAll(`.zone[data-zone="${zone}"]`).forEach(el => {
+      el.classList.remove("gene","douleur","vive");
+      el.classList.add(intensite);
+    });
+  }
+
+  fermerPopupIntensité();
+  majZonesSelectionnees();
+  majInputDouleur();
+}
+
+function majZonesSelectionnees() {
+  const container = document.getElementById("zonesSelectionnees");
+  if (!container) return;
+  container.innerHTML = "";
+  Object.entries(zonesSelectionnees).forEach(([zone, intensite]) => {
+    const icons = {gene:"🟡", douleur:"🟠", vive:"🔴"};
+    const tag = document.createElement("span");
+    tag.className = "zone-tag " + intensite;
+    tag.innerHTML = `${icons[intensite]} ${zone} <button onclick="supprimerZone('${zone}')" title="Supprimer">×</button>`;
+    container.appendChild(tag);
+  });
+}
+
+function supprimerZone(zone) {
+  delete zonesSelectionnees[zone];
+  document.querySelectorAll(`.zone[data-zone="${zone}"]`).forEach(el => {
+    el.classList.remove("gene","douleur","vive");
+  });
+  majZonesSelectionnees();
+  majInputDouleur();
+}
+
+function majInputDouleur() {
+  const input = document.getElementById("douleurZone");
+  if (!input) return;
+  const parts = Object.entries(zonesSelectionnees).map(([z,i]) => `${z}(${i})`);
+  input.value = parts.join(", ");
+}
+
+function resetDouleurs() {
+  zonesSelectionnees = {};
+  document.querySelectorAll(".corps-svg .zone").forEach(el => {
+    el.classList.remove("gene","douleur","vive");
+  });
+  const container = document.getElementById("zonesSelectionnees");
+  if (container) container.innerHTML = "";
+  const input = document.getElementById("douleurZone");
+  if (input) input.value = "";
+}
+
+// ===== DASHBOARD DOULEURS COACH =====
+function buildDouleurDashboard() {
+  const data = getVizData();
+  const periode = parseInt(document.getElementById("douleurPeriode")?.value || 30);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - periode);
+
+  // Compter les zones
+  const zoneCounts = {};
+  data.forEach(r => {
+    const d = getDFromS(r.seance) || new Date(r.date);
+    if (d < cutoff) return;
+    if (!r.douleurZone) return;
+    const zones = r.douleurZone.split(",").map(s => s.trim()).filter(Boolean);
+    zones.forEach(z => {
+      // Format: "Zone(intensite)" ou juste "Zone"
+      const match = z.match(/^(.+?)\((\w+)\)$/);
+      const zoneName = match ? match[1].trim() : z;
+      const intensite = match ? match[2] : "douleur";
+      if (!zoneCounts[zoneName]) zoneCounts[zoneName] = {total:0, gene:0, douleur:0, vive:0};
+      zoneCounts[zoneName].total++;
+      if (zoneCounts[zoneName][intensite] !== undefined) zoneCounts[zoneName][intensite]++;
+    });
+  });
+
+  // Construire le heatmap SVG avant
+  buildHeatmapSVG("heatmapAvant", ZONES_AVANT, zoneCounts);
+  buildHeatmapSVG("heatmapArriere", ZONES_ARRIERE, zoneCounts);
+
+  // Top zones
+  const topZonesList = document.getElementById("topZonesList");
+  if (!topZonesList) return;
+  const sorted = Object.entries(zoneCounts).sort((a,b) => b[1].total - a[1].total).slice(0,6);
+  const maxCount = sorted[0]?.[1].total || 1;
+  topZonesList.innerHTML = '<div style="font-size:12px;color:var(--vert);font-weight:700;margin-bottom:8px;">Zones les + touchées</div>';
+  if (!sorted.length) {
+    topZonesList.innerHTML += '<div style="font-size:12px;color:var(--gris);">Aucune douleur déclarée.</div>';
+    return;
+  }
+  sorted.forEach(([zone, counts]) => {
+    const pct = Math.round((counts.total / maxCount) * 100);
+    const col = counts.vive > 0 ? "#f44336" : counts.douleur > 0 ? "#ff9800" : "#ffc107";
+    topZonesList.innerHTML += `
+      <div class="top-zone-row">
+        <div class="top-zone-name" title="${zone}">${zone}</div>
+        <div class="top-zone-bar-bg"><div class="top-zone-bar-fill" style="width:${pct}%;background:${col};"></div></div>
+        <div class="top-zone-val">${counts.total}</div>
+      </div>`;
+  });
+}
+
+function buildHeatmapSVG(svgId, zonesList, zoneCounts) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.innerHTML = "";
+  zonesList.forEach(({zone, el, attrs}) => {
+    const counts = zoneCounts[zone] || {total:0, gene:0, douleur:0, vive:0};
+    let fill = "#1a2a1a", stroke = "#2a3f2a";
+    if (counts.vive > 0)    { fill="#ffcdd2"; stroke="#f44336"; }
+    else if (counts.douleur>0){ fill="#ffe0b2"; stroke="#ff9800"; }
+    else if (counts.gene > 0){ fill="#fff3cd"; stroke="#ffc107"; }
+
+    let shape;
+    if (el === "ellipse") {
+      shape = document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+      shape.setAttribute("cx", attrs.cx); shape.setAttribute("cy", attrs.cy);
+      shape.setAttribute("rx", attrs.rx); shape.setAttribute("ry", attrs.ry);
+    } else {
+      shape = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      shape.setAttribute("x", attrs.x); shape.setAttribute("y", attrs.y);
+      shape.setAttribute("width", attrs.w); shape.setAttribute("height", attrs.h);
+      shape.setAttribute("rx", attrs.rx || 4);
+    }
+    shape.setAttribute("fill", fill);
+    shape.setAttribute("stroke", stroke);
+    shape.setAttribute("stroke-width", "1.5");
+    if (counts.total > 0) {
+      shape.setAttribute("title", `${zone}: ${counts.total} signalement(s)`);
+    }
+    svg.appendChild(shape);
+  });
+}
+
+// Init au chargement
+document.addEventListener("DOMContentLoaded", () => {
+  initCorpsCliquable();
+});
 
 window.addEventListener("resize",()=>{if(document.body.classList.contains("coach-mode"))forceResizeAllCharts();});
 window.addEventListener("DOMContentLoaded",()=>{const p=new URLSearchParams(location.search),c=p.get("club"),t=p.get("team");if(c&&t){chargerClubJoueur(c,t);}});
