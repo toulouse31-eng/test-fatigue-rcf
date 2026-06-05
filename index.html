@@ -652,12 +652,24 @@ async function doRegister(){
     await db.collection("clubs").doc(c.user.uid).set({nom:club,coachEmail:e,teams:["Seniors"],players:{"Seniors":[]},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
-function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
+function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
 function tErr(c){return{"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court.","auth/invalid-credential":"Email ou mot de passe incorrect."}[c]||"Erreur : "+c;}
 
 auth.onAuthStateChanged(async user=>{
-  if(user){currentUser=user;await chargerClub();showScreen("teamScreen");renderTeamScreen();}
-  else if(!playerMode){showScreen("loginScreen");}
+  if(user){
+    currentUser=user;
+    await chargerClub();
+    const savedTeam=sessionStorage.getItem("rpe_team");
+    if(savedTeam&&(currentClub.teams||[]).includes(savedTeam)){
+      currentTeam={id:savedTeam,nom:savedTeam};
+      await chargerJoueursEquipe(savedTeam);
+      showScreen("appContent");
+      initApp();
+    } else {
+      showScreen("teamScreen");
+      renderTeamScreen();
+    }
+  } else if(!playerMode){showScreen("loginScreen");}
 });
 
 // ===== CLUB =====
@@ -672,8 +684,8 @@ function renderTeamScreen(){
   const g=document.getElementById("teamGrid");g.innerHTML="";
   (currentClub.teams||["Seniors"]).forEach(t=>{const b=document.createElement("button");b.className="team-btn-dark";b.textContent=t;b.onclick=()=>selectTeam(t);g.appendChild(b);});
 }
-async function selectTeam(n){currentTeam={id:n,nom:n};await chargerJoueursEquipe(n);showScreen("appContent");initApp();}
-function backToTeamSelect(){if(playerMode)return;currentTeam=null;showScreen("teamScreen");renderTeamScreen();}
+async function selectTeam(n){currentTeam={id:n,nom:n};sessionStorage.setItem("rpe_team",n);await chargerJoueursEquipe(n);showScreen("appContent");initApp();}
+function backToTeamSelect(){if(playerMode)return;currentTeam=null;sessionStorage.removeItem("rpe_team");showScreen("teamScreen");renderTeamScreen();}
 function toggleAddTeam(){const r=document.getElementById("teamAddRow");r.style.display=r.style.display==="none"?"flex":"none";}
 async function addTeam(){
   const i=document.getElementById("newTeamInput"),n=i.value.trim();if(!n)return;
