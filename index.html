@@ -1234,6 +1234,49 @@ function majAvatar(){
 }
 function toggleAvatarMenu(){const m=document.getElementById("avatarMenu");if(m)m.style.display=m.style.display==="none"?"block":"none";}
 document.addEventListener("click",e=>{const w=document.getElementById("avatarWrapper");if(w&&!w.contains(e.target)){const m=document.getElementById("avatarMenu");if(m)m.style.display="none";}});
+
+// ===== LOGO CLUB =====
+async function uploadLogoClub(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){alert("Image trop lourde (max 5MB).");return;}
+  setSyncStatus("⏳ Compression du logo...","");
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    const img=new Image();
+    img.onload=async()=>{
+      const MAX=200;let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      const base64=canvas.toDataURL("image/png",0.85);
+      try{
+        await db.collection("clubs").doc(currentUser.uid).update({logoBase64:base64});
+        currentClub.logoBase64=base64;
+        majLogoPartout(base64);
+        setSyncStatus("✅ Logo mis à jour !","ok");
+      }catch(e){console.error(e);setSyncStatus("❌ Erreur sauvegarde logo","err");}
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value="";
+}
+
+function majLogoPartout(base64){
+  if(!base64)return;
+  const topbarLogo=document.getElementById("logoClubImg");
+  if(topbarLogo){topbarLogo.src=base64;topbarLogo.style.display="block";}
+  const previewImg=document.getElementById("logoPreviewImg");
+  const previewIcon=document.getElementById("logoPreviewIcon");
+  if(previewImg){previewImg.src=base64;previewImg.style.display="block";}
+  if(previewIcon)previewIcon.style.display="none";
+}
+
+function chargerLogoClub(){
+  const base64=currentClub?.logoBase64;
+  if(base64)majLogoPartout(base64);
+}
+
 </script>
 <script>
 // ===== LOGIQUE MÉTIER =====
