@@ -649,7 +649,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 
     <!-- FORMULAIRE JOUEUR (caché pour le coach) -->
     <div class="form-card" id="formCard">
-      <form id="fatigueForm" onsubmit="return false;" method="post">
+      <div id="fatigueForm">
         <!-- Joueur -->
         <div class="field-row" id="rowJoueurSelect">
           <label for="joueurSelect">Joueur :</label>
@@ -859,7 +859,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
           <button type="button" class="btn-danger coach-only" onclick="resetDonnees()">Effacer tous les enregistrements (staff)</button>
         </div>
         <div class="result-box" id="resultat"></div>
-      </form>
+      </div>
 
       <div class="local-list" id="listeJoueurs">
         <strong style="font-size:13px;color:var(--gris);">Historique local :</strong>
@@ -1218,7 +1218,14 @@ async function initApp(){
   }
   document.getElementById("rowAddPlayer").style.display="none";
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
-  if(!playerMode){chargerLogoClub();refreshFirestoreData();}
+  if(!playerMode){
+    // Nettoyer l'URL des params de formulaire
+    if(location.search && !location.search.includes("club=")) {
+      history.replaceState(null,"",location.pathname);
+    }
+    chargerLogoClub();
+    refreshFirestoreData();
+  }
 }
 function majAvatar(){
   const nom=currentClub?.nom||"";const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
@@ -1256,7 +1263,7 @@ async function enregistrerJoueur(){
   const form=document.getElementById("fatigueForm"),joueur=getNom();if(!joueur)return alert("Sélectionne un joueur.");
   const seance=getSeance();
   const champs=[{name:"recuperation",label:"Récupération"},{name:"sommeil",label:"Sommeil"},{name:"alimentation",label:"Alimentation"},{name:"fatigue_physique",label:"Fatigue physique"},{name:"fatigue_mentale",label:"Fatigue mentale"}];
-  const val={};for(const c of champs){const v=form[c.name].value;if(!v&&c.name!=="recuperation")return alert('Réponds à : "'+c.label+'" (1 à 5).');val[c.name]=v;}
+  const val={};for(const c of champs){const el=form.querySelector(`[name="${c.name}"]`)||document.querySelector(`[name="${c.name}"]`);const v=el?el.value:"";if(!v&&c.name!=="recuperation")return alert('Réponds à : "'+c.label+'" (1 à 5).');val[c.name]=v;}
   const recNA=val.recuperation==="N/A",rNum=recNA?0:Number(val.recuperation||0);
   const som=Number(val.sommeil),ali=Number(val.alimentation),fph=Number(val.fatigue_physique),fme=Number(val.fatigue_mentale);
   const doul=document.getElementById("douleurZone").value.trim(),comm="";
@@ -1275,6 +1282,8 @@ async function enregistrerJoueur(){
 async function saveFirestore(rec){if(!currentClub?.id)return;try{await db.collection("clubs").doc(currentClub.id).collection("reponses").add({...rec,timestamp:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){console.error("Firestore:",e);}}
 async function refreshFirestoreData(){
   if(!currentUser||!currentTeam)return;
+  // Recharger le club pour avoir la liste joueurs à jour
+  await chargerClub();
   const st=document.getElementById("sheetsStatus");if(st)st.textContent="Chargement...";
   try{
     const snap=await db.collection("clubs").doc(currentUser.uid).collection("reponses").where("equipe","==",currentTeam.id).orderBy("timestamp","asc").get();
@@ -1297,7 +1306,11 @@ function sauvegarderLocal(){localStorage.setItem(STORAGE_LOCAL,JSON.stringify(en
 function chargerLocal(){const d=localStorage.getItem(STORAGE_LOCAL);if(!d)return[];try{const p=JSON.parse(d);return Array.isArray(p)?p:[];}catch(e){return[];}}
 function resetDonnees(){if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?"))return;enregistrementsLocal=[];localStorage.removeItem(STORAGE_LOCAL);majListeJoueursLocal();resetForm(true);alert("Historique tablette effacé.");}
 function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl");if(!ul)return;ul.innerHTML="";enregistrementsLocal.forEach((r,i)=>{const li=document.createElement("li");li.textContent=`${i+1}. ${r.joueur} — ${r.pourcentage}% ${r.seance?"|"+r.seance:""} ${r.envoye?"🟢":"🔴"}`;li.className=r.zoneClass;ul.appendChild(li);});}
-function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;resetDouleurs();if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
+function resetForm(cr){const f=document.getElementById("fatigueForm");
+  // Reset manuel des champs (div au lieu de form)
+  f.querySelectorAll("select").forEach(s=>{if(s.options.length>0)s.selectedIndex=0;});
+  f.querySelectorAll("input[type='date']").forEach(i=>initDateSeance());
+  f.querySelectorAll("input[type='text'],textarea").forEach(i=>i.value="");if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;resetDouleurs();if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
 async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp&&!playerMode)rp.style.display="flex";sessionStorage.setItem("rpe_coach","1");await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";sessionStorage.removeItem("rpe_coach");}}
