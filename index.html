@@ -562,10 +562,7 @@ body.player-mode .app-body{justify-content:center;}
           <label for="douleurZone">Douleurs :</label>
           <input type="text" id="douleurZone" name="douleurZone" placeholder="Ex : ischios droit, cheville gauche..."/>
         </div>
-        <div class="field-row">
-          <label for="commentaire">Commentaire :</label>
-          <textarea id="commentaire" name="commentaire" placeholder="Comment tu te sens, remarque pour le staff..."></textarea>
-        </div>
+
 
         <div class="form-actions">
           <button type="button" class="btn-enregistrer" onclick="enregistrerJoueur()">Enregistrer</button>
@@ -858,7 +855,7 @@ async function enregistrerJoueur(){
   const val={};for(const c of champs){const v=form[c.name].value;if(!v&&c.name!=="recuperation")return alert('Réponds à : "'+c.label+'" (1 à 5).');val[c.name]=v;}
   const recNA=val.recuperation==="N/A",rNum=recNA?0:Number(val.recuperation||0);
   const som=Number(val.sommeil),ali=Number(val.alimentation),fph=Number(val.fatigue_physique),fme=Number(val.fatigue_mentale);
-  const doul=document.getElementById("douleurZone").value.trim(),comm=document.getElementById("commentaire").value.trim();
+  const doul=document.getElementById("douleurZone").value.trim(),comm="";
   const total=rNum+som+ali+fph+fme,denom=recNA?20:25,pct=Math.round((total/denom)*100);
   const{zoneTexte,zoneClass}=computeZone(pct);
   const rec={date:new Date().toLocaleString(),joueur,seance,equipe:currentTeam?.id||"Seniors",clubId:currentClub?.id||"",recuperation:recNA?"N/A":rNum,sommeil:som,alimentation:ali,fatigue_physique:fph,fatigue_mentale:fme,total,pourcentage:pct,zone:zoneTexte,zoneClass,douleurZone:doul,commentaire:comm,naMatch:recNA,envoye:false};
