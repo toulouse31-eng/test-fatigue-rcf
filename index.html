@@ -498,7 +498,7 @@ body.player-mode .app-body{justify-content:center;padding:0;}
           <label>Joueur :</label>
           <span id="joueurDisplayName" style="font-weight:700;color:var(--vert2);font-size:17px;"></span>
         </div>
-        <div class="field-row coach-only" id="rowAddPlayer" style="display:none;">
+        <div class="field-row" id="rowAddPlayer" style="display:none;">
           <input type="text" id="newPlayerInput" placeholder="Ajouter un joueur..." style="flex:1;"/>
           <button type="button" onclick="addPlayer()" style="padding:9px 14px;font-size:13px;border-radius:8px;border:none;background:var(--vert);color:var(--noir);cursor:pointer;font-weight:700;">+ Ajouter</button>
         </div>
@@ -821,10 +821,10 @@ async function initApp(){
   document.getElementById("currentTeamLabel").textContent=currentTeam?.nom||"—";
   document.getElementById("appSubtitle").textContent=(currentClub?.nom||"")+" — "+(currentTeam?.nom||"");
   if(!playerMode){
-    document.getElementById("rowAddPlayer").style.display="flex";
     const pin=await assurerPin(currentTeam.id);afficherPin(pin);
     majAvatar();
   }
+  document.getElementById("rowAddPlayer").style.display="none";
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
   if(!playerMode)refreshFirestoreData();
 }
@@ -895,7 +895,7 @@ function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl
 function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
-async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
+async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp&&!playerMode)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
 function exportPDF(){
   const data=getVizData(),keys=getKeysSorted();
   const dateKey=keys[keys.length-1]||null;
