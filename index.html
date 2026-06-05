@@ -132,7 +132,8 @@ body.player-mode .player-banner{display:flex;}
 
 /* ===== APP BODY ===== */
 .app-body{background:transparent;padding:20px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;box-sizing:border-box;}
-#appContent{background:var(--noir);}
+#appContent{background:#0f1a0f;}
+body.coach-mode #appContent{background:#1c2e1c !important;}
 .sync-bar{font-size:12px;padding:4px 16px;min-height:20px;color:var(--gris);}
 .sync-bar.ok{color:var(--vert2);}
 .sync-bar.err{color:#cc0000;}
@@ -189,7 +190,7 @@ body.coach-mode .local-list{display:block;}
 .coach-only{display:none;}
 body.coach-mode .coach-only{display:block;}
 .stats-title{font-weight:700;color:var(--vert);font-size:14px;margin-bottom:8px;}
-.stats-line{font-size:12px;color:var(--gris);margin-bottom:4px;}
+.stats-line{font-size:12px;color:#b8d0b8;margin-bottom:4px;}
 .stats-indice{margin-top:8px;padding:10px;border-radius:10px;text-align:center;font-weight:700;font-size:13px;background:var(--noir3);color:var(--vert);}
 .stats-indice.indice-vert{background:#1a3a1a;color:#88dd55;}
 .stats-indice.indice-jaune{background:#3a3a00;color:#ffdd55;}
@@ -200,7 +201,7 @@ body.coach-mode .coach-only{display:block;}
 .bar-container{margin-top:10px;}
 .bar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
 .bar-label{width:90px;font-size:11px;color:var(--gris);white-space:nowrap;}
-.bar-bg{flex:1;background:var(--noir3);border-radius:999px;overflow:hidden;height:8px;}
+.bar-bg{flex:1;background:#2a3f2a;border-radius:999px;overflow:hidden;height:8px;}
 .bar-fill{height:8px;}
 .bar-val{font-size:11px;color:var(--gris);width:14px;text-align:right;}
 .stats-header-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
@@ -226,7 +227,7 @@ body.coach-mode .stats-section{display:block;}
 body.coach-mode .app-body{align-items:flex-start;padding:20px 24px;}
 .stats-section h2{font-size:16px;color:var(--vert);margin-bottom:12px;}
 .sheets-status{font-size:11px;color:var(--gris);text-align:center;margin-bottom:8px;}
-.alert-card{background:var(--noir3);border-radius:10px;padding:12px;border:1px solid #3a3a00;margin-bottom:12px;}
+.alert-card{background:#1e3010;border-radius:10px;padding:12px;border:1px solid #4a6a2a;margin-bottom:12px;}
 .alert-card h3{font-size:13px;color:#ffdd55;margin-bottom:6px;}
 .alert-list{padding-left:16px;font-size:12px;color:var(--gris);}
 .alert-list li{margin-bottom:4px;}
@@ -315,7 +316,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 }
 
 /* Splash screen pendant chargement Firebase */
-#splashScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f1a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity .3s ease;}
+#splashScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f1a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99999;transition:opacity .4s ease;}
 #splashScreen.hidden{opacity:0;pointer-events:none;}
 .splash-logo{width:90px;height:90px;border-radius:16px;background:#1a2a1a;border:2px solid #243224;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 .splash-logo img{width:100%;height:100%;object-fit:contain;}
@@ -933,8 +934,15 @@ auth.onAuthStateChanged(async user=>{
       renderTeamScreen();
     }
   } else if(!playerMode){showScreen("loginScreen");}
-  const splash=document.getElementById("splashScreen");
-  if(splash){splash.classList.add("hidden");setTimeout(()=>splash.style.display="none",350);}
+  // Ne cacher le splash qu'après restauration complète du mode coach
+  const splashEl=document.getElementById("splashScreen");
+  const savedCoachCheck=sessionStorage.getItem("rpe_coach");
+  if(savedCoachCheck){
+    // Attendre que le mode coach soit restauré avant de cacher le splash
+    setTimeout(()=>{if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}},600);
+  } else {
+    if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}
+  }
 });
 
 // ===== CLUB =====
