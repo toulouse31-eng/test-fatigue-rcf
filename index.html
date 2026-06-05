@@ -1102,14 +1102,7 @@ auth.onAuthStateChanged(async user=>{
           const txtEl=btn?.querySelector(".tbadge-coach-text");
           if(btn)btn.classList.add("coach-on");
           if(txtEl)txtEl.textContent="Mode coach ON";
-          // Forcer masquage liste joueurs
-          const rp=document.getElementById("rowAddPlayer");
-          if(rp)rp.style.display="none";
-          const ci=document.getElementById("coachInterface");
-          if(ci){ci.style.display="none";ci.style.visibility="hidden";}
-          // Forcer affichage stats-card
-          const sc=document.querySelector(".stats-card");
-          if(sc)sc.style.display="block";
+          appliquerModeAffichage();
           await refreshFirestoreData();
           setTimeout(forceResizeAllCharts,200);
         },100);
@@ -1245,6 +1238,7 @@ function lancerModeJoueur(){
   document.getElementById("appSubtitle").textContent=(currentClub?.nom||"")+" — "+(currentTeam?.nom||"");
   if(currentClub?.logoBase64) majLogoPartout(currentClub.logoBase64);
   enregistrementsLocal=chargerLocal();initDateSeance();
+  appliquerModeAffichage();
 }
 function quitterModeJoueur(){playerMode=false;currentPlayer=null;document.body.classList.remove("player-mode");document.getElementById("rowJoueurSelect").style.display="flex";document.getElementById("rowJoueurDisplay").style.display="none";showPlayerPick();}
 
@@ -1279,10 +1273,10 @@ async function initApp(){
   document.getElementById("rowAddPlayer").style.display="none";
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
   if(!playerMode){
-    // Nettoyer l'URL des params de formulaire
     if(location.search && !location.search.includes("club=")) {
       history.replaceState(null,"",location.pathname);
     }
+    appliquerModeAffichage();
     refreshFirestoreData();
   }
 }
@@ -1518,8 +1512,8 @@ async function refreshFirestoreData(){
     if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
   }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
   buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();
-  // Interface coach : toujours reconstruire après chargement des données
   buildCoachInterface();
+  appliquerModeAffichage();
 }
 function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
 
@@ -1538,25 +1532,56 @@ function resetForm(cr){const f=document.getElementById("fatigueForm");
   f.querySelectorAll("input[type='text'],textarea").forEach(i=>i.value="");if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;resetDouleurs();if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
-async function toggleModeCoach(){
-  const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");
-  const ci=document.getElementById("coachInterface");
-  body.classList.toggle("coach-mode");
-  const txtEl=btn?.querySelector(".tbadge-coach-text");
-  if(body.classList.contains("coach-mode")){
-    btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");
-    if(txtEl)txtEl.textContent="Mode coach ON";
-    if(rp)rp.style.display="none";
-    if(ci)ci.style.display="none";
-    sessionStorage.setItem("rpe_coach","1");
-    await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);
-  }else{
-    btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");
-    if(txtEl)txtEl.textContent="Mode coach OFF";
-    if(rp)rp.style.display="none";
+
+// ===== GESTION AFFICHAGE SELON MODE =====
+function appliquerModeAffichage(){
+  const isCoachOn = document.body.classList.contains("coach-mode");
+  const isPlayerMode = playerMode;
+  
+  const ci = document.getElementById("coachInterface");       // Liste joueurs
+  const sc = document.querySelector(".stats-card");            // Synthèse rapide
+  const ss = document.getElementById("stats-equipe");         // Stats équipe
+  const fc = document.getElementById("formCard");             // Formulaire joueur
+  const sb = document.getElementById("syncStatusBar");
+
+  if(isPlayerMode){
+    // MODE JOUEUR : formulaire uniquement
+    if(ci) ci.style.display="none";
+    if(sc) sc.style.display="none";
+    if(ss) ss.style.display="none";
+    if(fc) fc.style.display="flex";
+  } else if(isCoachOn){
+    // MODE COACH ON : stats uniquement
+    if(ci) ci.style.display="none";
+    if(sc) sc.style.display="block";
+    if(ss) ss.style.display="block";
+    if(fc) fc.style.display="none";
+  } else {
+    // MODE COACH OFF : liste joueurs uniquement
     if(ci){ci.style.display="flex";ci.style.flexDirection="column";}
-    sessionStorage.removeItem("rpe_coach");
+    if(sc) sc.style.display="none";
+    if(ss) ss.style.display="none";
+    if(fc) fc.style.display="none";
   }
+}
+
+async function toggleModeCoach(){
+  const btn=document.getElementById("modeCoachBtn");
+  const txtEl=btn?.querySelector(".tbadge-coach-text");
+  document.body.classList.toggle("coach-mode");
+  const isOn=document.body.classList.contains("coach-mode");
+  if(btn)btn.classList.toggle("coach-on",isOn);
+  btn?.setAttribute("aria-pressed",isOn?"true":"false");
+  if(txtEl)txtEl.textContent=isOn?"Mode coach ON":"Mode coach OFF";
+  if(isOn){
+    sessionStorage.setItem("rpe_coach","1");
+    await refreshFirestoreData();
+    setTimeout(forceResizeAllCharts,120);
+  } else {
+    sessionStorage.removeItem("rpe_coach");
+    buildCoachInterface();
+  }
+  appliquerModeAffichage();
 }
 function exportPDF(){
   const data=getVizData(),keys=getKeysSorted();
