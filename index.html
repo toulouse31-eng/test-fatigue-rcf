@@ -220,7 +220,26 @@ body.coach-mode .coach-only{display:block;}
     <div class="top-actions">
       <span class="team-badge" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></span>
       <button type="button" id="modeCoachBtn" class="mode-toggle-btn" onclick="toggleModeCoach()" aria-pressed="false">Mode coach OFF</button>
-      <button class="logout-btn" onclick="doLogout()">Déco</button>
+      <div style="position:relative;" id="avatarWrapper">
+        <div id="avatarBtn" onclick="toggleAvatarMenu()" style="width:36px;height:36px;border-radius:50%;background:#2f7ccc;color:#fff;font-size:13px;font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid rgba(255,255,255,0.4);font-family:Arial,sans-serif;user-select:none;" title="Mon compte">
+          <span id="avatarInitials">?</span>
+        </div>
+        <div id="avatarMenu" style="display:none;position:absolute;right:0;top:44px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:200px;z-index:999;overflow:hidden;font-family:Arial,sans-serif;">
+          <div style="padding:12px 14px;border-bottom:1px solid #f0f0f0;">
+            <div id="menuClubNom" style="font-size:14px;font-weight:bold;color:#2f7ccc;"></div>
+            <div id="menuCoachEmail" style="font-size:11px;color:#888;margin-top:2px;"></div>
+          </div>
+          <div onclick="backToTeamSelect();toggleAvatarMenu();" style="padding:10px 14px;font-size:13px;color:#2f4f6f;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f9ff'" onmouseout="this.style.background='transparent'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h1M20 12h1M12 3v1M12 20v1M5.6 5.6l.7.7M17.7 17.7l.7.7M5.6 18.4l.7-.7M17.7 6.3l.7-.7"/></svg>
+            Changer d'équipe
+          </div>
+          <div style="height:1px;background:#f0f0f0;margin:0 14px;"></div>
+          <div onclick="doLogout()" style="padding:10px 14px;font-size:13px;color:#b30000;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='transparent'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Se d&#233;connecter
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div id="syncStatusBar" class="sync-status"></div>
@@ -312,7 +331,7 @@ body.coach-mode .coach-only{display:block;}
         <div style="font-size:13px;font-weight:bold;color:#2f4f6f;margin-bottom:6px;">🔗 Lien joueurs :</div>
         <div class="pin-share-box">
           <div>Code PIN : <span class="pin-display" id="coachPinDisplay">——</span></div>
-          <div class="pin-link" id="coachPinLink">—</div>
+          <div class="pin-link" id="coachPinLink" style="display:none;">—</div>
           <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
             <button class="pin-copy-btn" onclick="copierLienJoueur()">📋 Copier le lien</button>
             <button class="pin-copy-btn" style="background:#0f8f66;" onclick="regenererPin()">🔄 Nouveau PIN</button>
@@ -563,7 +582,7 @@ async function initApp(){
     const pin=await assurerPin(currentTeam.id);afficherPinCoach(pin);
   }
   enregistrementsLocal=chargerLocal();majListeJoueursLocal();initDateSeance();
-  if(!playerMode)refreshFirestoreData();
+  if(!playerMode){refreshFirestoreData();majAvatar();}
 }
 </script>
 <script>
@@ -677,6 +696,30 @@ function buildFicheSeanceSelect(){const select=document.getElementById("ficheSea
 function exportFicheIndivPDF(){const sel=document.getElementById("sparklineSelect");const ficheSelect=document.getElementById("ficheSeanceSelect");const joueur=sel?.value;const dateKey=ficheSelect?.value;if(!joueur){alert("Sélectionne un joueur.");return;}const data=getVizData();const rowsJoueur=data.filter(r=>r.joueur===joueur&&(!dateKey||getSeanceKey(r)===dateKey));const last=rowsJoueur.slice(-1)[0];if(!last){alert("Pas de données pour ce joueur/cette séance.");return;}const fmtNote=v=>v!=null&&v!==""?v+"/5":"-";const{zoneTexte,zoneClass}=computeZone(Number(last.pourcentage)||0);const historique=getLastNRecordsForPlayer(joueur,5);let html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Fiche ${joueur}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:auto;}h1{color:#2f7ccc;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:13px;}th{background:#e3f1ff;}.zone-vert-fonce{background:#b7f0c4;color:#145c2e;}.zone-vert-clair{background:#d5f7dd;color:#1f7f3f;}.zone-jaune{background:#fff8c2;color:#8a7400;}.zone-orange{background:#ffe0b8;color:#8a4b06;}.zone-rouge{background:#f8d7da;color:#721c24;}</style></head><body><h1>Fiche bien-être — ${joueur}</h1><p>Séance : <strong>${last.seance||"-"}</strong></p><div class="${zoneClass}" style="padding:10px;border-radius:8px;margin:12px 0;font-size:16px;font-weight:bold;text-align:center;">Score : ${last.total}/${last.naMatch?20:25} (${last.pourcentage}%) — ${zoneTexte}</div><table><thead><tr><th>Récupération</th><th>Sommeil</th><th>Alimentation</th><th>Fatigue phy.</th><th>Fatigue men.</th></tr></thead><tbody><tr><td>${last.naMatch?"N/A":fmtNote(last.recuperation)}</td><td>${fmtNote(last.sommeil)}</td><td>${fmtNote(last.alimentation)}</td><td>${fmtNote(last.fatigue_physique)}</td><td>${fmtNote(last.fatigue_mentale)}</td></tr></tbody></table>`;if(last.douleurZone)html+=`<p><strong>Douleurs :</strong> ${last.douleurZone}</p>`;if(last.commentaire)html+=`<p><strong>Commentaire :</strong> ${last.commentaire}</p>`;if(historique.length){html+=`<h2>Historique (5 dernières séances)</h2><table><thead><tr><th>Date</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>%</th></tr></thead><tbody>`;historique.forEach(h=>{html+=`<tr><td>${formatDateKey(h._dateKey||getSeanceKey(h))}</td><td>${h.naMatch?"N/A":fmtNote(h.recuperation)}</td><td>${fmtNote(h.sommeil)}</td><td>${fmtNote(h.alimentation)}</td><td>${fmtNote(h.fatigue_physique)}</td><td>${fmtNote(h.fatigue_mentale)}</td><td>${h.total||"-"}</td><td>${h.pourcentage||0}%</td></tr>`;});html+=`</tbody></table>`;}html+=`</body></html>`;const w=window.open("","_blank");if(!w){alert("Popup bloquée ?");return;}w.document.open();w.document.write(html);w.document.close();w.focus();w.print();}
 
 window.addEventListener("resize",()=>{if(document.body.classList.contains("coach-mode"))forceResizeAllCharts();});
+
+function toggleAvatarMenu(){
+  const menu=document.getElementById("avatarMenu");
+  if(!menu)return;
+  menu.style.display=menu.style.display==="none"?"block":"none";
+}
+document.addEventListener("click",function(e){
+  const wrapper=document.getElementById("avatarWrapper");
+  if(wrapper&&!wrapper.contains(e.target)){
+    const menu=document.getElementById("avatarMenu");
+    if(menu)menu.style.display="none";
+  }
+});
+function majAvatar(){
+  const initEl=document.getElementById("avatarInitials");
+  const nomEl=document.getElementById("menuClubNom");
+  const emailEl=document.getElementById("menuCoachEmail");
+  if(!currentClub||!currentUser)return;
+  const nom=currentClub.nom||"";
+  const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
+  if(initEl)initEl.textContent=initiales;
+  if(nomEl)nomEl.textContent=nom;
+  if(emailEl)emailEl.textContent=currentUser.email||"";
+}
 window.addEventListener("DOMContentLoaded",()=>{const params=new URLSearchParams(location.search);const clubId=params.get("club");const teamId=params.get("team");if(clubId&&teamId){chargerClubJoueur(clubId,teamId);}else{showScreen("loginScreen");}});
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(err=>console.log("Erreur SW:",err));}</script>
