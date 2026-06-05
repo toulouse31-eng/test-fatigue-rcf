@@ -1223,7 +1223,6 @@ async function initApp(){
     if(location.search && !location.search.includes("club=")) {
       history.replaceState(null,"",location.pathname);
     }
-    chargerLogoClub();
     refreshFirestoreData();
   }
 }
@@ -1284,6 +1283,8 @@ async function refreshFirestoreData(){
   if(!currentUser||!currentTeam)return;
   // Recharger le club pour avoir la liste joueurs à jour
   await chargerClub();
+  // Charger le logo
+  if(typeof chargerLogoClub==="function") chargerLogoClub();
   const st=document.getElementById("sheetsStatus");if(st)st.textContent="Chargement...";
   try{
     const snap=await db.collection("clubs").doc(currentUser.uid).collection("reponses").where("equipe","==",currentTeam.id).orderBy("timestamp","asc").get();
