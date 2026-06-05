@@ -1103,7 +1103,9 @@ auth.onAuthStateChanged(async user=>{
           if(btn)btn.classList.add("coach-on");
           if(txtEl)txtEl.textContent="Mode coach ON";
           const rp=document.getElementById("rowAddPlayer");
-          if(rp)rp.style.display="flex";
+          if(rp)rp.style.display="none";
+          const ci=document.getElementById("coachInterface");
+          if(ci)ci.style.display="none";
           await refreshFirestoreData();
           setTimeout(forceResizeAllCharts,200);
         },100);
@@ -1531,7 +1533,26 @@ function resetForm(cr){const f=document.getElementById("fatigueForm");
   f.querySelectorAll("input[type='text'],textarea").forEach(i=>i.value="");if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;resetDouleurs();if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
-async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp&&!playerMode)rp.style.display="flex";sessionStorage.setItem("rpe_coach","1");await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";sessionStorage.removeItem("rpe_coach");}}
+async function toggleModeCoach(){
+  const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");
+  const ci=document.getElementById("coachInterface");
+  body.classList.toggle("coach-mode");
+  const txtEl=btn?.querySelector(".tbadge-coach-text");
+  if(body.classList.contains("coach-mode")){
+    btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");
+    if(txtEl)txtEl.textContent="Mode coach ON";
+    if(rp)rp.style.display="none";
+    if(ci)ci.style.display="none";
+    sessionStorage.setItem("rpe_coach","1");
+    await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);
+  }else{
+    btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");
+    if(txtEl)txtEl.textContent="Mode coach OFF";
+    if(rp)rp.style.display="none";
+    if(ci){ci.style.display="flex";ci.style.flexDirection="column";}
+    sessionStorage.removeItem("rpe_coach");
+  }
+}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";sessionStorage.removeItem("rpe_coach");}}
 function exportPDF(){
   const data=getVizData(),keys=getKeysSorted();
   const dateKey=keys[keys.length-1]||null;
