@@ -82,19 +82,40 @@ body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:va
 .pick-err{color:#ff6b6b;font-size:13px;display:none;}
 
 /* ===== TOP BAR APP ===== */
-.app-topbar{background:var(--noir2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--vert);}
-.app-topbar-left{display:flex;align-items:center;gap:10px;}
-.topbar-logos{display:flex;align-items:center;gap:6px;}
-.logo-rpe-sm{width:34px;height:34px;border-radius:7px;background:var(--vert);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.app-topbar{background:var(--noir2);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--vert);gap:8px;min-height:52px;}
+.app-topbar-left{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.topbar-logos{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.logo-rpe-sm{width:30px;height:30px;border-radius:6px;background:var(--vert);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .logo-rpe-sm img{width:100%;height:100%;object-fit:contain;}
-.logo-club-sm{width:34px;height:34px;border-radius:7px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #3a5a3a;}
+.logo-club-sm{width:30px;height:30px;border-radius:6px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #3a5a3a;flex-shrink:0;}
 .logo-club-sm img{width:100%;height:100%;object-fit:contain;}
-.logo-sep{width:1px;height:22px;background:#3a5a3a;}
-.app-titles{display:flex;flex-direction:column;}
-.app-name{font-size:15px;font-weight:900;color:#fff;}
+.logo-sep{width:1px;height:20px;background:#3a5a3a;flex-shrink:0;}
+.app-titles{display:flex;flex-direction:column;min-width:0;}
+.app-name{font-size:14px;font-weight:900;color:#fff;white-space:nowrap;}
 .app-name span{color:var(--vert);}
-.app-club-name{font-size:10px;color:var(--gris);}
-.topbar-right{display:flex;align-items:center;gap:6px;}
+.app-club-name{font-size:10px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.topbar-right{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+
+/* BADGES COMPACTS MOBILE */
+.tbadge{padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;border:1.5px solid var(--vert);background:transparent;color:var(--vert);cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;}
+.tbadge:hover{background:var(--vert3);}
+.tbadge.active{background:var(--vert);color:var(--noir);}
+.tbadge.coach-on{background:var(--vert);color:var(--noir);}
+
+/* Sur mobile : cacher le texte "Mode coach OFF/ON", garder juste l'icône */
+@media(max-width:600px){
+  .app-club-name{display:none;}
+  .tbadge-coach-text{display:none;}
+  .tbadge-coach-icon{display:inline;}
+  .app-topbar{padding:6px 10px;}
+  .logo-rpe-sm,.logo-club-sm{width:26px;height:26px;}
+  .app-name{font-size:13px;}
+  .tbadge{padding:4px 8px;font-size:10px;}
+}
+@media(min-width:601px){
+  .tbadge-coach-icon{display:none;}
+  .tbadge-coach-text{display:inline;}
+}
 
 /* BADGES UNIFORMES option A */
 .tbadge{padding:6px 13px;border-radius:999px;font-size:11px;font-weight:700;border:1.5px solid var(--vert);background:transparent;color:var(--vert);cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;}
@@ -386,7 +407,10 @@ body.player-mode #modeCoachBtn{display:none;}
     </div>
     <div class="topbar-right">
       <button class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></button>
-      <button class="tbadge" id="modeCoachBtn" onclick="toggleModeCoach()" aria-pressed="false">Mode coach OFF</button>
+      <button class="tbadge" id="modeCoachBtn" onclick="toggleModeCoach()" aria-pressed="false">
+        <span class="tbadge-coach-icon">🏆</span>
+        <span class="tbadge-coach-text">Mode coach OFF</span>
+      </button>
       <!-- Avatar menu -->
       <div style="position:relative;" id="avatarWrapper">
         <button class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
@@ -802,7 +826,7 @@ function majListeJoueursLocal(){const ul=document.getElementById("listeJoueursUl
 function resetForm(cr){const f=document.getElementById("fatigueForm");f.reset();if(!playerMode){rowAutre.style.display="none";inputAutre.value="";}document.querySelectorAll(".scale button").forEach(b=>b.classList.remove("active"));document.querySelectorAll('input[type="hidden"]').forEach(i=>i.value="");if(recupNA)recupNA.checked=false;if(!cr)initDateSeance();if(cr){const r=document.getElementById("resultat");r.textContent="";r.className="result-box";}}
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
-async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");btn.textContent="Mode coach ON";if(rp)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");btn.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
+async function toggleModeCoach(){const body=document.body,btn=document.getElementById("modeCoachBtn"),rp=document.getElementById("rowAddPlayer");body.classList.toggle("coach-mode");const txtEl=btn.querySelector(".tbadge-coach-text");if(body.classList.contains("coach-mode")){btn.classList.add("coach-on");btn.setAttribute("aria-pressed","true");if(txtEl)txtEl.textContent="Mode coach ON";if(rp)rp.style.display="flex";await refreshFirestoreData();setTimeout(forceResizeAllCharts,120);}else{btn.classList.remove("coach-on");btn.setAttribute("aria-pressed","false");if(txtEl)txtEl.textContent="Mode coach OFF";if(rp)rp.style.display="none";}}
 function exportPDF(){
   const data=getVizData(),keys=getKeysSorted();
   const dateKey=keys[keys.length-1]||null;
