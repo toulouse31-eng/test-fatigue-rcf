@@ -136,7 +136,7 @@ body.player-mode .player-banner{display:flex;}
 /* ===== APP BODY ===== */
 .app-body{background:transparent;padding:20px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;box-sizing:border-box;}
 #appContent{background:#0f1a0f;}
-body.coach-mode #appContent{background:#f0f5ea !important;}
+
 .sync-bar{font-size:12px;padding:4px 16px;min-height:20px;color:var(--gris);}
 .sync-bar.ok{color:var(--vert2);}
 .sync-bar.err{color:#cc0000;}
@@ -193,6 +193,9 @@ body.coach-mode .local-list{display:block;}
 .stats-card{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;flex:1 1 100%;max-width:1100px;width:calc(100% - 48px);margin:0 auto;font-size:13px;align-self:flex-start;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 .coach-only{display:none;}
 body.coach-mode .coach-only{display:block;}
+/* Stats card visible seulement en mode coach ON */
+.stats-card{display:none;}
+body.coach-mode .stats-card{display:block;}
 .stats-title{font-weight:700;color:#3a6a1a;font-size:14px;margin-bottom:8px;}
 .stats-line{font-size:12px;color:#2a4a2a;margin-bottom:4px;}
 .stats-indice{margin-top:8px;padding:10px;border-radius:10px;text-align:center;font-weight:700;font-size:13px;background:#f0f5ea;color:#3a6a1a;border:1px solid #c8ddb0;}
@@ -229,7 +232,6 @@ body.coach-mode .coach-only{display:block;}
 .stats-section{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 48px);display:none;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 body.coach-mode .stats-section{display:block;}
 body.coach-mode .app-body{align-items:center;padding:20px 24px;flex-direction:column;}
-@media(max-width:700px){body.coach-mode .app-body{padding:0;}}
 .stats-section h2{font-size:16px;color:#3a6a1a;margin-bottom:12px;}
 .sheets-status{font-size:11px;color:#8aaa7a;text-align:center;margin-bottom:8px;}
 .alert-card{background:#fffbe6;border-radius:10px;padding:12px;border:1px solid #ffe082;margin-bottom:12px;}
