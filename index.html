@@ -249,15 +249,15 @@ body.coach-mode .stats-section{display:block;}
 body.player-mode .coach-only{display:none !important;}
 body.player-mode #modeCoachBtn{display:none;}
 body.player-mode .form-card{flex:1 1 100%;max-width:100%;}
-body.player-mode .app-body{justify-content:center;}
+body.player-mode .app-body{justify-content:center;padding:0;}
 
 /* RESPONSIVE */
 @media(max-width:700px){
   .stats-grid{flex-direction:column;}
-  .app-body{flex-direction:column;padding:12px;}
+  .app-body{flex-direction:column;padding:0;gap:0;}
+  .form-card{padding:16px;border-radius:0;border-left:none;border-right:none;box-shadow:none;flex:1 1 100%;max-width:100%;width:100%;}
   .scale button{font-size:16px;padding:11px 0;}
-  .form-card{padding:16px;}
-  .stats-card{flex:1 1 auto;max-width:100%;}
+  .stats-card{flex:1 1 auto;max-width:100%;border-radius:0;border-left:none;border-right:none;}
 }
 @media(max-width:900px){
   .stats-card{flex:0 0 auto;max-width:100%;width:100%;}
