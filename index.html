@@ -385,17 +385,17 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .top-zone-val{font-size:11px;font-weight:700;color:#3a5a3a;min-width:20px;text-align:right;}
 
 /* ===== INTERFACE COACH ===== */
-.coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:0 auto;width:calc(100% - 48px);box-sizing:border-box;overflow:hidden;}
+.coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:0 auto;width:calc(100% - 48px);box-sizing:border-box;}
 .coach-interface h2{font-size:18px;color:#3a6a1a;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .coach-add-row{display:flex;gap:8px;margin-bottom:16px;width:100%;box-sizing:border-box;}
 .coach-add-row input{flex:1;min-width:0;padding:10px 14px;font-size:14px;border-radius:10px;border:1.5px solid #c8ddb0;background:#f8fbf4;color:#1a2a1a;box-sizing:border-box;}
 .coach-add-row input:focus{outline:none;border-color:#8dc63f;}
 .coach-add-row button{flex-shrink:0;padding:10px 16px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
 .coach-add-row button:hover{background:#6aaa1e;}
-.joueurs-grid{display:flex;flex-direction:column;gap:4px;}
-.joueur-row{display:grid;grid-template-columns:0px 10px 1fr 90px 110px 44px;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;}
+.joueurs-grid{display:flex;flex-direction:column;gap:4px;width:100%;}
+.joueur-row{display:grid;grid-template-columns:0px 10px 1fr auto 120px 52px;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;width:100%;box-sizing:border-box;}
 .joueur-row:hover{background:#f4fbf0;border-color:#c8ddb0;}
-.joueur-row.select-mode{grid-template-columns:22px 10px 1fr 90px 110px 44px;cursor:pointer;}
+.joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 120px 52px;cursor:pointer;}
 .joueur-row.selected-for-delete{background:#fff0f0 !important;border-color:#ffaaaa !important;}
 .joueur-checkbox{height:18px;border-radius:4px;border:2px solid #c8ddb0;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;width:0;opacity:0;}
 .select-mode .joueur-checkbox{width:18px;opacity:1;}
@@ -424,7 +424,15 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1;min-width:90px;text-align:center;}
 .coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;}
 .coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
-@media(max-width:600px){.joueur-row{grid-template-columns:0px 10px 1fr 110px 36px;}.joueur-row.select-mode{grid-template-columns:22px 10px 1fr 110px 36px;}.joueur-score{display:none;}}
+@media(max-width:600px){
+  .joueur-row{grid-template-columns:0px 10px 1fr auto 100px;gap:6px;padding:8px 10px;}
+  .joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 100px;}
+  .joueur-date{display:none;}
+}
+@media(max-width:400px){
+  .joueur-zone{font-size:10px;padding:2px 6px;width:90px;}
+  .joueur-score{font-size:10px;}
+}
 
 
 /* ===== UPLOAD LOGO CLUB ===== */
@@ -1723,16 +1731,17 @@ async function buildCoachInterface(){
     const dotClass = rec ? (ZONE_DOT[rec.zoneClass]||"dot-gris") : "dot-gris";
     const zoneInfo = rec ? (ZONE_LABEL[rec.zoneClass]||["—","#f0f0f0","#666"]) : null;
     const denom = rec ? (rec.naMatch?20:25) : 25;
-    const scoreText = rec ? `${rec.total||"?"}/${denom} (${rec.pourcentage||0}%)${rec.naMatch?" · N'a pas joué":""}` : "Pas encore répondu";
+    const scoreText = rec ? `${rec.total||"?"}/${denom} (${rec.pourcentage||0}%)` : "—";
     const dateText = rec ? (() => {const d=getDFromS(rec.seance)||new Date(rec.date);return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;})() : "";
 
     const row = document.createElement("div");
     row.className = "joueur-row";
     row.dataset.nom = nom;
+    const naText = rec?.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;"> (n'a pas joué)</span>' : '';
     row.innerHTML = `
       <div class="joueur-checkbox"><span class="joueur-checkbox-tick">✓</span></div>
       <div class="joueur-dot ${dotClass}"></div>
-      <div class="joueur-nom">${nom}</div>
+      <div class="joueur-nom">${nom}${naText}</div>
       <div class="joueur-score">${scoreText}</div>
       ${zoneInfo ? `<div class="joueur-zone" style="background:${zoneInfo[1]};color:${zoneInfo[2]};">${zoneInfo[0]}</div>` : '<div class="joueur-zone" style="background:#f0f0f0;color:#888;">—</div>'}
       <div class="joueur-date">${dateText}</div>
