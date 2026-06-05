@@ -1455,8 +1455,9 @@ async function paramsDelEquipe(name){
 function sauvegarderLocal(){localStorage.setItem(STORAGE_LOCAL,JSON.stringify(enregistrementsLocal));}
 function chargerLocal(){const d=localStorage.getItem(STORAGE_LOCAL);if(!d)return[];try{const p=JSON.parse(d);return Array.isArray(p)?p:[];}catch(e){return[];}}
 function resetDonnees(){if(!confirm("Supprimer toutes les réponses TABLETTE (local) ?"))return;enregistrementsLocal=[];localStorage.removeItem(STORAGE_LOCAL);majListeJoueursLocal();resetForm(true);alert("Historique tablette effacé.");}
-</script>
-<script>
+
+
+
 // ===== LOGIQUE MÉTIER =====
 const selJoueur=document.getElementById("joueurSelect"),rowAutre=document.getElementById("rowAutre"),inputAutre=document.getElementById("joueurAutre"),recupNA=document.getElementById("recupNA");
 if(recupNA)recupNA.addEventListener("change",()=>{
@@ -2106,7 +2107,8 @@ window.addEventListener("DOMContentLoaded",()=>{
   // Le chargement joueur est géré dans onAuthStateChanged
   // qui se déclenche une fois Firebase initialisé
 });
-</script>
-<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(e=>console.log("SW err:",e));}</script>
+
+
+if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(e=>console.log("SW err:",e));}</script>
 </body>
 </html>
