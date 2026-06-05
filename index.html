@@ -387,36 +387,45 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 /* ===== INTERFACE COACH ===== */
 .coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:0 auto;width:calc(100% - 48px);box-sizing:border-box;overflow:hidden;}
 .coach-interface h2{font-size:18px;color:#3a6a1a;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-.coach-add-row{display:flex;gap:8px;margin-bottom:20px;width:100%;box-sizing:border-box;}
-.coach-add-row input{flex:1;min-width:0;padding:11px 14px;font-size:15px;border-radius:10px;border:1.5px solid #c8ddb0;background:#f8fbf4;color:#1a2a1a;box-sizing:border-box;}
+.coach-add-row{display:flex;gap:8px;margin-bottom:16px;width:100%;box-sizing:border-box;}
+.coach-add-row input{flex:1;min-width:0;padding:10px 14px;font-size:14px;border-radius:10px;border:1.5px solid #c8ddb0;background:#f8fbf4;color:#1a2a1a;box-sizing:border-box;}
 .coach-add-row input:focus{outline:none;border-color:#8dc63f;}
-.coach-add-row button{flex-shrink:0;padding:11px 16px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
+.coach-add-row button{flex-shrink:0;padding:10px 16px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
 .coach-add-row button:hover{background:#6aaa1e;}
-.joueurs-grid{display:flex;flex-direction:column;gap:8px;}
-.joueur-row{display:grid;grid-template-columns:14px 1fr auto auto auto;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:1px solid #e8f0e0;background:#f8fbf4;transition:background .15s;}
-.joueur-row:hover{background:#f0f8e8;}
-.joueur-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
-.dot-vert-fonce{background:#2a8a4a;}
-.dot-vert-clair{background:#4aaa6a;}
-.dot-jaune{background:#ccaa00;}
-.dot-orange{background:#cc6600;}
-.dot-rouge{background:#cc0000;}
-.dot-gris{background:#aaa;}
+.joueurs-grid{display:flex;flex-direction:column;gap:4px;}
+.joueur-row{display:grid;grid-template-columns:0px 10px 1fr 90px 110px 44px;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;}
+.joueur-row:hover{background:#f4fbf0;border-color:#c8ddb0;}
+.joueur-row.select-mode{grid-template-columns:22px 10px 1fr 90px 110px 44px;cursor:pointer;}
+.joueur-row.selected-for-delete{background:#fff0f0 !important;border-color:#ffaaaa !important;}
+.joueur-checkbox{height:18px;border-radius:4px;border:2px solid #c8ddb0;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;width:0;opacity:0;}
+.select-mode .joueur-checkbox{width:18px;opacity:1;}
+.selected-for-delete .joueur-checkbox{background:#cc0000;border-color:#cc0000;}
+.joueur-checkbox-tick{color:#fff;font-size:11px;font-weight:900;display:none;}
+.selected-for-delete .joueur-checkbox-tick{display:block;}
+.joueur-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-vert-fonce{background:#2a8a4a;}.dot-vert-clair{background:#4aaa6a;}.dot-jaune{background:#ccaa00;}.dot-orange{background:#cc6600;}.dot-rouge{background:#cc0000;}.dot-gris{background:#bbb;}
 .joueur-nom{font-size:14px;font-weight:600;color:#1a2a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.joueur-score{font-size:11px;color:#5a8a5a;white-space:nowrap;}
-.joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;width:120px;}
-.joueur-date{font-size:11px;color:#8aaa7a;white-space:nowrap;text-align:right;}
-.joueur-delete{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:2px 4px;line-height:1;transition:color .15s;justify-self:end;}
-.joueur-delete:hover{color:#cc0000;}
-@media(max-width:600px){
-  .joueur-row{grid-template-columns:14px 1fr auto auto;}
-  .joueur-score{display:none;}
-}
+.joueur-score{font-size:11px;color:#8aaa7a;white-space:nowrap;text-align:right;}
+.joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;}
+.joueur-date{font-size:11px;color:#aac0aa;white-space:nowrap;text-align:right;}
+.select-bar{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#fff5f5;border-radius:10px;border:1px solid #ffcccc;margin-bottom:10px;animation:slideIn .2s ease;}
+.select-bar.active{display:flex;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.select-bar-text{font-size:13px;color:#cc0000;font-weight:600;}
+.select-bar-actions{display:flex;gap:8px;}
+.btn-delete-sel{padding:7px 16px;border-radius:8px;border:none;background:#cc0000;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-delete-sel:hover{background:#aa0000;}
+.btn-cancel-sel{padding:7px 14px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#666;font-size:13px;cursor:pointer;}
+.btn-manage{padding:7px 14px;font-size:12px;font-weight:600;border-radius:8px;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-manage:hover{border-color:#cc0000;color:#cc0000;}
+.btn-manage.active{border-color:#cc0000;color:#cc0000;background:#fff5f5;}
 .coach-empty{text-align:center;padding:32px;color:#8aaa7a;font-size:14px;}
-.coach-stats-row{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
-.coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1;min-width:100px;text-align:center;}
+.coach-stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1;min-width:90px;text-align:center;}
 .coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;}
 .coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
+@media(max-width:600px){.joueur-row{grid-template-columns:0px 10px 1fr 110px 36px;}.joueur-row.select-mode{grid-template-columns:22px 10px 1fr 110px 36px;}.joueur-score{display:none;}}
+
 </style>
 </head>
 <body>
@@ -587,10 +596,18 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <div class="coach-interface" id="coachInterface" style="display:none;">
       <h2>
         <span>👥 Joueurs — <span id="coachTeamName"></span></span>
-        <span style="font-size:13px;color:#8aaa7a;" id="coachLastUpdate"></span>
+        <button class="btn-manage" id="btnManageJoueurs" onclick="toggleSelectMode()">🗑️ Gérer</button>
       </h2>
       <!-- Stats rapides -->
       <div class="coach-stats-row" id="coachStatsRow"></div>
+      <!-- Barre de sélection (cachée par défaut) -->
+      <div class="select-bar" id="selectBar">
+        <span class="select-bar-text" id="selectBarText">0 joueur sélectionné</span>
+        <div class="select-bar-actions">
+          <button class="btn-cancel-sel" onclick="toggleSelectMode()">Annuler</button>
+          <button class="btn-delete-sel" onclick="supprimerSelection()">🗑️ Supprimer</button>
+        </div>
+      </div>
       <!-- Ajouter joueur -->
       <div class="coach-add-row">
         <input type="text" id="coachNewPlayer" placeholder="Prénom du joueur à ajouter..." maxlength="40"/>
@@ -1466,14 +1483,16 @@ async function buildCoachInterface(){
 
     const row = document.createElement("div");
     row.className = "joueur-row";
+    row.dataset.nom = nom;
     row.innerHTML = `
+      <div class="joueur-checkbox"><span class="joueur-checkbox-tick">✓</span></div>
       <div class="joueur-dot ${dotClass}"></div>
       <div class="joueur-nom">${nom}</div>
       <div class="joueur-score">${scoreText}</div>
       ${zoneInfo ? `<div class="joueur-zone" style="background:${zoneInfo[1]};color:${zoneInfo[2]};">${zoneInfo[0]}</div>` : '<div class="joueur-zone" style="background:#f0f0f0;color:#888;">—</div>'}
       <div class="joueur-date">${dateText}</div>
-      <button class="joueur-delete" type="button" onclick="coachDeletePlayer('${nom.replace(/'/g,"\'")}')">×</button>
     `;
+    row.addEventListener("click", ()=>toggleJoueurSelect(row));
     grid.appendChild(row);
   });
 
@@ -1486,6 +1505,60 @@ async function buildCoachInterface(){
     return (order[da]??9)-(order[db]??9);
   });
   rows.forEach(r=>grid.appendChild(r));
+}
+
+// ===== MODE SÉLECTION SUPPRESSION =====
+let selectModeActive = false;
+
+function toggleSelectMode(){
+  selectModeActive = !selectModeActive;
+  const rows = document.querySelectorAll(".joueur-row");
+  const bar = document.getElementById("selectBar");
+  const btn = document.getElementById("btnManageJoueurs");
+  rows.forEach(r=>{
+    if(selectModeActive) r.classList.add("select-mode");
+    else { r.classList.remove("select-mode","selected-for-delete"); }
+  });
+  if(bar) bar.classList.toggle("active", selectModeActive);
+  if(btn) btn.classList.toggle("active", selectModeActive);
+  majSelectBar();
+}
+
+function toggleJoueurSelect(row){
+  if(!selectModeActive) return;
+  row.classList.toggle("selected-for-delete");
+  majSelectBar();
+}
+
+function majSelectBar(){
+  const selected = document.querySelectorAll(".selected-for-delete");
+  const text = document.getElementById("selectBarText");
+  const btn = document.querySelector(".btn-delete-sel");
+  const n = selected.length;
+  if(text) text.textContent = n===0 ? "Sélectionne des joueurs à supprimer" : n===1 ? "1 joueur sélectionné" : `${n} joueurs sélectionnés`;
+  if(btn) btn.disabled = n===0;
+  if(btn) btn.style.opacity = n===0 ? "0.4" : "1";
+}
+
+async function supprimerSelection(){
+  const selected = [...document.querySelectorAll(".selected-for-delete")];
+  if(!selected.length) return;
+  const noms = selected.map(r=>r.dataset.nom);
+  const msg = noms.length===1
+    ? `Supprimer ${noms[0]} de l'équipe ?`
+    : `Supprimer ces ${noms.length} joueurs ?
+${noms.join(", ")}`;
+  if(!confirm(msg)) return;
+  const team = currentTeam?.id;
+  if(!team||!currentClub) return;
+  noms.forEach(nom=>{ currentClub.players[team]=currentClub.players[team].filter(j=>j!==nom); });
+  await db.collection("clubs").doc(currentUser.uid).update({["players."+team]:currentClub.players[team]});
+  await chargerJoueursEquipe(team);
+  selectModeActive = false;
+  const bar=document.getElementById("selectBar");if(bar)bar.classList.remove("active");
+  const btn=document.getElementById("btnManageJoueurs");if(btn)btn.classList.remove("active");
+  await buildCoachInterface();
+  setSyncStatus(`✅ ${noms.length} joueur(s) supprimé(s)`,"ok");
 }
 
 async function coachAddPlayer(){
@@ -1505,16 +1578,7 @@ async function coachAddPlayer(){
   setSyncStatus("✅ "+name+" ajouté !","ok");
 }
 
-async function coachDeletePlayer(nom){
-  if(!confirm(`Supprimer ${nom} de l'équipe ?`)) return;
-  const team = currentTeam?.id;
-  if(!team||!currentClub) return;
-  currentClub.players[team] = currentClub.players[team].filter(j=>j!==nom);
-  await db.collection("clubs").doc(currentUser.uid).update({["players."+team]:currentClub.players[team]});
-  await chargerJoueursEquipe(team);
-  await buildCoachInterface();
-  setSyncStatus("✅ "+nom+" supprimé","ok");
-}
+
 
 // ===== LOGIQUE DOULEURS PAR ZONE =====
 let zonesSelectionnees = {}; // {zoneName: intensite}
