@@ -2143,6 +2143,7 @@ window.addEventListener("DOMContentLoaded",()=>{
 });
 
 
-if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").then(()=>console.log("SW ok")).catch(e=>console.log("SW err:",e));}</script>
+// Désactiver le Service Worker pour éviter les problèmes de cache
+if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>{r.unregister();console.log("SW désactivé");});});}</script>
 </body>
 </html>
