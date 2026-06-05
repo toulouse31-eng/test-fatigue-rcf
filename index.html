@@ -186,7 +186,7 @@ body.coach-mode .local-list{display:block;}
 .local-list li{margin-bottom:4px;padding:3px 6px;border-radius:6px;font-size:13px;}
 
 /* ===== STATS CARD (coach) ===== */
-.stats-card{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:16px;flex:0 0 360px;max-width:380px;font-size:13px;align-self:flex-start;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
+.stats-card{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;flex:1 1 100%;max-width:1100px;width:calc(100% - 48px);margin:0 auto;font-size:13px;align-self:flex-start;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 .coach-only{display:none;}
 body.coach-mode .coach-only{display:block;}
 .stats-title{font-weight:700;color:#3a6a1a;font-size:14px;margin-bottom:8px;}
@@ -224,7 +224,7 @@ body.coach-mode .coach-only{display:block;}
 /* ===== SECTION STATS ÉQUIPE ===== */
 .stats-section{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 48px);display:none;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 body.coach-mode .stats-section{display:block;}
-body.coach-mode .app-body{align-items:flex-start;padding:20px 24px;}
+body.coach-mode .app-body{align-items:center;padding:20px 24px;flex-direction:column;}
 .stats-section h2{font-size:16px;color:#3a6a1a;margin-bottom:12px;}
 .sheets-status{font-size:11px;color:#8aaa7a;text-align:center;margin-bottom:8px;}
 .alert-card{background:#fffbe6;border-radius:10px;padding:12px;border:1px solid #ffe082;margin-bottom:12px;}
@@ -234,7 +234,7 @@ body.coach-mode .app-body{align-items:flex-start;padding:20px 24px;}
 .alert-tag{font-weight:700;padding:1px 6px;border-radius:999px;margin-right:4px;font-size:10px;}
 .alert-orange{background:#3a2000;color:#ffaa55;}
 .alert-rouge{background:#3a0000;color:#ff6b6b;}
-.stats-grid{display:flex;flex-wrap:wrap;gap:16px;max-width:900px;}
+.stats-grid{display:flex;flex-wrap:wrap;gap:16px;width:100%;}
 .chart-card{flex:1 1 260px;}
 .chart-card h3{font-size:13px;color:#3a5a3a;text-align:center;margin-bottom:6px;}
 .chart-wrap{position:relative;width:100%;height:220px;background:#f5fbf0;border-radius:10px;overflow:hidden;border:1px solid #c8ddb0;}
@@ -254,7 +254,6 @@ body.player-mode .form-card{flex:1 1 100%;max-width:100%;}
 body.player-mode .app-body{justify-content:center;padding:0;}
 /* Mode coach ON : cacher le formulaire */
 body.coach-mode .form-card{display:none;}
-body.coach-mode .stats-card{flex:1 1 100%;max-width:100%;}
 body.coach-mode #appContent{background:#1e2e1e !important;}
 
 /* RESPONSIVE */
@@ -335,8 +334,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .corps-vue{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .corps-vue-label{font-size:10px;color:#8aaa7a;text-transform:uppercase;letter-spacing:1px;}
 .corps-svg{width:120px;cursor:pointer;}
-.corps-svg .zone{fill:#e8f5e9;stroke:#c8ddb0;stroke-width:1.5;transition:fill .15s,stroke .15s;}
-.corps-svg .zone:hover{fill:#c8ddb0;stroke:#8dc63f;}
+.corps-svg .zone{fill:#d8efd8;stroke:#8dc63f;stroke-width:1.5;transition:fill .15s,stroke .15s;}
+.corps-svg .zone:hover{fill:#b8dfb8;stroke:#5a9a1a;}
 .corps-svg .zone.gene{fill:#fff3cd;stroke:#ffc107;}
 .corps-svg .zone.douleur{fill:#ffe0b2;stroke:#ff9800;}
 .corps-svg .zone.vive{fill:#ffcdd2;stroke:#f44336;}
@@ -825,7 +824,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <h3>Carte des douleurs équipe</h3>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
         <label style="font-size:12px;color:var(--gris);">Période :</label>
-        <select id="douleurPeriode" style="background:var(--noir2);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);" onchange="buildDouleurDashboard()">
+        <select id="douleurPeriode" style="background:#fff;border:1.5px solid #c8ddb0;border-radius:6px;padding:5px 10px;font-size:12px;color:#2a4a1a;" onchange="buildDouleurDashboard()">
           <option value="7">7 derniers jours</option>
           <option value="30" selected>30 derniers jours</option>
           <option value="90">3 derniers mois</option>
@@ -1472,7 +1471,7 @@ function buildHeatmapSVG(svgId, zonesList, zoneCounts) {
   svg.innerHTML = "";
   zonesList.forEach(({zone, el, attrs}) => {
     const counts = zoneCounts[zone] || {total:0, gene:0, douleur:0, vive:0};
-    let fill = "#1a2a1a", stroke = "#2a3f2a";
+    let fill = "#d8efd8", stroke = "#8dc63f";
     if (counts.vive > 0)    { fill="#ffcdd2"; stroke="#f44336"; }
     else if (counts.douleur>0){ fill="#ffe0b2"; stroke="#ff9800"; }
     else if (counts.gene > 0){ fill="#fff3cd"; stroke="#ffc107"; }
