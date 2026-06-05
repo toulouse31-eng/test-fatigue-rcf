@@ -912,12 +912,15 @@ auth.onAuthStateChanged(async user=>{
   const urlClub=params.get("club");
   const urlTeam=params.get("team");
 
+  console.log("onAuthStateChanged user:", user?.email||"null", "urlClub:", urlClub, "urlTeam:", urlTeam, "playerMode:", playerMode);
   if(urlClub&&urlTeam&&!playerMode){
-    // Mode joueur via lien : charger le club maintenant que Firebase est prêt
+    console.log("→ Mode joueur URL détecté, chargement club...");
     if(!currentClub){
       await chargerClubJoueur(urlClub,urlTeam);
+    } else {
+      console.log("currentClub déjà chargé:", currentClub.nom);
     }
-    return; // Ne pas continuer vers le flow coach
+    return;
   }
 
   if(user){
@@ -1002,21 +1005,24 @@ function copierLienJoueur(){const l=document.getElementById("coachPinLink");if(!
 // ===== ACCÈS JOUEUR =====
 function goToPlayerEntry(){const p=new URLSearchParams(location.search);const c=p.get("club"),t=p.get("team");if(c&&t)chargerClubJoueur(c,t);else{showScreen("pinScreen");document.getElementById("pinTeamLabel").textContent="Entre le code PIN";}}
 async function chargerClubJoueur(clubId,teamId){
+  console.log("chargerClubJoueur START", clubId, teamId);
   try{
+    console.log("Firestore query...");
     const d=await db.collection("clubs").doc(clubId).get();
+    console.log("Firestore result:", d.exists, d.data());
     if(!d.exists){alert("Club introuvable.");showScreen("loginScreen");document.body.classList.add("rpe-ready");return;}
     currentClub={id:clubId,...d.data()};
     if(!currentClub.pins)currentClub.pins={};
     currentTeam={id:teamId,nom:teamId};
+    console.log("currentClub chargé:", currentClub.nom, "pins:", currentClub.pins);
     document.getElementById("pinTeamLabel").textContent=(currentClub.nom||"")+" — "+teamId;
     document.getElementById("pinTeamHint").textContent="Entre le code PIN fourni par ton coach";
     showScreen("pinScreen");
-    // Cacher le splash
     const splash=document.getElementById("splashScreen");
     if(splash){splash.classList.add("hidden");setTimeout(()=>splash.style.display="none",350);}
     document.body.classList.add("rpe-ready");
   }
-  catch(e){console.error(e);alert("Erreur de connexion.");showScreen("loginScreen");document.body.classList.add("rpe-ready");}
+  catch(e){console.error("Erreur chargerClubJoueur:",e);alert("Erreur : "+e.message);showScreen("loginScreen");document.body.classList.add("rpe-ready");}
 }
 function pinNext(input,nextId){
   // Garder uniquement les chiffres
