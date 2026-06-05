@@ -618,6 +618,11 @@ body.player-mode .app-body{justify-content:center;padding:0;}
               <svg class="corps-svg" id="corpsSvgAvant" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
                 <!-- Tête -->
                 <ellipse class="zone" data-zone="Tête" cx="60" cy="18" rx="16" ry="18"/>
+                <!-- Visage : yeux, nez, bouche (non cliquables) -->
+                <circle cx="55" cy="15" r="2" fill="#8aaa7a" pointer-events="none"/>
+                <circle cx="65" cy="15" r="2" fill="#8aaa7a" pointer-events="none"/>
+                <ellipse cx="60" cy="21" rx="1" ry="1.5" fill="#8aaa7a" pointer-events="none"/>
+                <path d="M55 25 Q60 28 65 25" stroke="#8aaa7a" stroke-width="1.5" fill="none" pointer-events="none"/>
                 <!-- Cou -->
                 <rect class="zone" data-zone="Cou" x="52" y="34" width="16" height="10" rx="4"/>
                 <!-- Épaule gauche -->
@@ -667,6 +672,10 @@ body.player-mode .app-body{justify-content:center;padding:0;}
               <svg class="corps-svg" id="corpsSvgArriere" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
                 <!-- Tête arrière -->
                 <ellipse class="zone" data-zone="Tête (arrière)" cx="60" cy="18" rx="16" ry="18"/>
+                <!-- Cheveux (non cliquables) -->
+                <path d="M44 16 Q46 4 60 2 Q74 4 76 16" stroke="#8aaa7a" stroke-width="3" fill="#c8ddb0" pointer-events="none"/>
+                <path d="M44 16 Q43 10 46 8" stroke="#8aaa7a" stroke-width="2" fill="none" pointer-events="none"/>
+                <path d="M76 16 Q77 10 74 8" stroke="#8aaa7a" stroke-width="2" fill="none" pointer-events="none"/>
                 <!-- Nuque -->
                 <rect class="zone" data-zone="Nuque" x="52" y="34" width="16" height="10" rx="4"/>
                 <!-- Trapèze gauche -->
@@ -719,11 +728,11 @@ body.player-mode .app-body{justify-content:center;padding:0;}
           <div class="intensite-title">Niveau de douleur</div>
           <div class="intensite-zone-name" id="intensiteZoneName"></div>
           <div class="intensite-btns">
-            <button class="intensite-btn gene" onclick="selectionnerIntensité('gene')">🟡 Gêne — ça passe</button>
-            <button class="intensite-btn douleur" onclick="selectionnerIntensité('douleur')">🟠 Douleur — c'est gênant</button>
-            <button class="intensite-btn vive" onclick="selectionnerIntensité('vive')">🔴 Fort — j'ai vraiment mal</button>
+            <button type="button" class="intensite-btn gene" onclick="selectionnerIntensité('gene')">🟡 Gêne — ça passe</button>
+            <button type="button" class="intensite-btn douleur" onclick="selectionnerIntensité('douleur')">🟠 Douleur — c'est gênant</button>
+            <button type="button" class="intensite-btn vive" onclick="selectionnerIntensité('vive')">🔴 Fort — j'ai vraiment mal</button>
           </div>
-          <button class="intensite-btn-cancel" onclick="fermerPopupIntensité()">Annuler</button>
+          <button type="button" class="intensite-btn-cancel" onclick="fermerPopupIntensité()">Annuler</button>
         </div>
 
 
