@@ -134,10 +134,10 @@ body.player-mode .player-banner{display:flex;}
 .player-banner button{padding:4px 10px;font-size:12px;border-radius:999px;border:1px solid #2a3f2a;background:transparent;cursor:pointer;color:var(--gris);}
 
 /* ===== APP BODY ===== */
-.app-body{background:transparent;padding:20px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;box-sizing:border-box;}
+.app-body{background:transparent;padding:0;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%;box-sizing:border-box;}
 #appContent{background:#0f1a0f;}
 
-.sync-bar{font-size:12px;padding:4px 16px;min-height:20px;color:var(--gris);}
+.sync-bar{font-size:12px;padding:0 16px;min-height:0;color:var(--gris);}
 .sync-bar.ok{color:var(--vert2);}
 .sync-bar.err{color:#cc0000;}
 
@@ -267,7 +267,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 #statsLayout{display:none;}
 
 /* ===== LAYOUT MODE STATS : 2 colonnes ===== */
-.stats-layout{display:flex;gap:20px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;padding:4px 24px 20px;box-sizing:border-box;}
+.stats-layout{display:flex;gap:20px;align-items:flex-start;width:100%;max-width:1100px;margin:12px auto 0;padding:0 24px 20px;box-sizing:border-box;}
 .stats-layout-left{flex:1 1 0;min-width:0;}
 .stats-layout-right{flex:0 0 340px;min-width:280px;max-width:380px;position:sticky;top:12px;}
 @media(max-width:900px){
@@ -400,7 +400,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .top-zone-val{font-size:11px;font-weight:700;color:#3a5a3a;min-width:20px;text-align:right;}
 
 /* ===== INTERFACE COACH ===== */
-.coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:0 auto;width:calc(100% - 48px);box-sizing:border-box;}
+.coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:16px auto 0;width:calc(100% - 48px);box-sizing:border-box;}
 /* Stats row aligned with joueurs grid */
 .coach-stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:nowrap;width:100%;}
 .coach-interface h2{font-size:18px;color:#3a6a1a;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
