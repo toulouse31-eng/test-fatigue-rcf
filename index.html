@@ -111,17 +111,21 @@ body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:va
   .app-club-name{display:none;}
   .tbadge-coach-text{display:none;}
   .tbadge-coach-icon{display:inline;}
+  /* Cacher les textes des onglets, garder icônes */
+  .tbadge-label{display:none;}
+  .tbadge-team-text{display:none;}
   .app-topbar{padding:5px 8px;}
   .logo-rpe-sm,.logo-club-sm{width:24px;height:24px;}
   .app-name{font-size:12px;}
-  /* Onglets ultra-compacts sur mobile */
-  .tbadge{padding:3px 6px;font-size:9px;border-width:1px;border-radius:6px;}
-  .topbar-right{gap:3px;}
+  .tbadge{padding:5px 8px;font-size:12px;border-width:1px;border-radius:6px;}
+  .topbar-right{gap:4px;}
   .app-topbar-inner{gap:4px;}
 }
 @media(min-width:601px){
   .tbadge-coach-icon{display:none;}
   .tbadge-coach-text{display:inline;}
+  .tbadge-label{display:inline;}
+  .tbadge-team-text{display:inline;}
 }
 
 /* BADGES UNIFORMES option A */
@@ -413,26 +417,19 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-add-row button{flex-shrink:0;padding:10px 16px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
 .coach-add-row button:hover{background:#6aaa1e;}
 .joueurs-grid{display:flex;flex-direction:column;gap:4px;width:100%;}
-.joueur-row{display:grid;grid-template-columns:0px 1fr 52px;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;width:100%;box-sizing:border-box;}
+
+/* ===== JOUEUR ROW — DESKTOP ===== */
+.joueur-row{display:grid;grid-template-columns:0px 10px 1fr auto 130px 52px;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;width:100%;box-sizing:border-box;}
 .joueur-row:hover{background:#f4fbf0;border-color:#c8ddb0;}
-.joueur-row.select-mode{grid-template-columns:22px 1fr 52px;cursor:pointer;}
-.joueur-row-line1{display:flex;align-items:center;gap:8px;min-width:0;}
-.joueur-row-line2{display:flex;align-items:center;gap:8px;margin-top:0;}
-/* Sur desktop : les 2 lignes côte à côte via sous-grille */
-@media(min-width:601px){
-  .joueur-row{grid-template-columns:0px 10px 1fr auto 130px 52px;}
-  .joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 130px 52px;}
-  .joueur-row-line1{display:contents;}
-  .joueur-row-line2{display:contents;}
-  .joueur-date{white-space:nowrap;text-align:right;font-size:11px;color:#aac0aa;}
-  .joueur-score{white-space:nowrap;text-align:right;font-size:11px;color:#8aaa7a;}
-  .joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;}
-  .joueur-nom .na-text{display:inline;font-size:10px;color:#aaa;font-weight:400;margin-left:4px;}
-  .joueur-nom .noresp-text{display:inline;font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;}
-}
+.joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 130px 52px;cursor:pointer;}
 .joueur-row.selected-for-delete{background:#fff0f0 !important;border-color:#ffaaaa !important;}
 .joueur-row.pas-repondu{background:#fffdf0;border-color:#ffe082;}
 .joueur-row.pas-repondu:hover{background:#fff8e1;border-color:#ffca28;}
+
+/* Sur desktop : line1/line2 disparaissent, les enfants s'affichent dans la grille */
+.joueur-row-line1{display:contents;}
+.joueur-row-line2{display:contents;}
+
 .joueur-checkbox{height:18px;border-radius:4px;border:2px solid #c8ddb0;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;width:0;opacity:0;}
 .select-mode .joueur-checkbox{width:18px;opacity:1;}
 .selected-for-delete .joueur-checkbox{background:#cc0000;border-color:#cc0000;}
@@ -440,12 +437,43 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .selected-for-delete .joueur-checkbox-tick{display:block;}
 .joueur-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .dot-vert-fonce{background:#2a8a4a;}.dot-vert-clair{background:#4aaa6a;}.dot-jaune{background:#ccaa00;}.dot-orange{background:#cc6600;}.dot-rouge{background:#cc0000;}.dot-gris{background:#bbb;}
-.joueur-nom{font-size:14px;font-weight:600;color:#1a2a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.joueur-nom .na-text{font-size:10px;color:#aaa;font-weight:400;margin-left:4px;white-space:nowrap;}
-.joueur-nom .noresp-text{font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;white-space:nowrap;}
+.joueur-nom{font-size:14px;font-weight:600;color:#1a2a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.joueur-nom .na-text{font-size:10px;color:#aaa;font-weight:400;margin-left:4px;}
+.joueur-nom .noresp-text{font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;}
 .joueur-score{font-size:11px;color:#8aaa7a;white-space:nowrap;text-align:right;}
-.joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;}
+.joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis;}
 .joueur-date{font-size:11px;color:#aac0aa;white-space:nowrap;text-align:right;}
+
+/* ===== JOUEUR ROW — MOBILE ===== */
+@media(max-width:600px){
+  .joueur-row{
+    display:flex;flex-direction:column;
+    gap:0;padding:8px 10px;
+  }
+  /* Réactiver les wrappers ligne */
+  .joueur-row-line1{display:flex;align-items:center;gap:6px;width:100%;min-width:0;}
+  .joueur-row-line2{display:flex;align-items:center;gap:6px;width:100%;margin-top:4px;padding-left:16px;}
+  /* Checkbox caché sur mobile sauf mode select */
+  .joueur-row .joueur-checkbox{display:none;}
+  .joueur-row.select-mode .joueur-checkbox{display:flex;width:18px;opacity:1;}
+  /* Textes sous le nom */
+  .joueur-nom .na-text{display:block;font-size:9px;margin-left:0;margin-top:1px;}
+  .joueur-nom .noresp-text{display:block;font-size:9px;margin-left:0;margin-top:1px;}
+  /* Ligne 1 : dot + nom (flex:1) + date */
+  .joueur-dot{flex-shrink:0;}
+  .joueur-nom{flex:1;white-space:normal;}
+  .joueur-date{font-size:10px;margin-left:auto;flex-shrink:0;}
+  /* Ligne 2 : score + zone */
+  .joueur-score{font-size:11px;flex-shrink:0;white-space:nowrap;}
+  .joueur-zone{font-size:10px;padding:2px 8px;flex:1;text-align:center;max-width:140px;}
+  /* Stats compactes */
+  .coach-stat-num{font-size:18px;}
+  .coach-stat-box{padding:8px 10px;}
+}
+@media(max-width:400px){
+  .joueur-zone{font-size:9px;padding:2px 5px;}
+}
+
 .select-bar{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#fff5f5;border-radius:10px;border:1px solid #ffcccc;margin-bottom:10px;animation:slideIn .2s ease;}
 .select-bar.active{display:flex;}
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
@@ -461,32 +489,6 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1 1 0;min-width:0;text-align:center;}
 .coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;}
 .coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
-
-/* Mobile : ligne joueur sur 2 lignes */
-@media(max-width:600px){
-  .joueur-row{
-    display:flex;flex-direction:column;align-items:stretch;
-    gap:4px;padding:10px 12px;
-  }
-  .joueur-row .joueur-checkbox{display:none;}
-  .joueur-row.select-mode .joueur-checkbox{display:flex;width:18px;opacity:1;}
-  /* Ligne 1 : dot + nom + date */
-  .joueur-row-line1{display:flex;align-items:center;gap:8px;}
-  /* Ligne 2 : score + zone */
-  .joueur-row-line2{display:flex;align-items:center;gap:8px;margin-top:2px;}
-  .joueur-nom .na-text{display:block;font-size:9px;color:#aaa;margin-left:0;margin-top:1px;}
-  .joueur-nom .noresp-text{display:block;font-size:9px;color:#cc8800;margin-left:0;margin-top:1px;}
-  .joueur-date{font-size:10px;color:#aac0aa;margin-left:auto;flex-shrink:0;}
-  .joueur-score{font-size:11px;color:#8aaa7a;flex-shrink:0;}
-  .joueur-zone{font-size:10px;padding:2px 8px;flex:1;text-align:center;}
-  .coach-stat-num{font-size:18px;}
-  .coach-stat-box{padding:8px 10px;}
-  .coach-add-row{flex-wrap:wrap;}
-  .coach-add-row input{width:100%;}
-}
-@media(max-width:400px){
-  .joueur-zone{font-size:9px;padding:2px 5px;}
-}
 
 
 /* ===== BOUTON WHATSAPP ===== */
@@ -701,9 +703,9 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       </div>
     </div>
     <div class="topbar-right">
-      <button type="button" class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></button>
-      <button type="button" class="tbadge active" id="tabEquipe" onclick="switchTab('equipe')">👥 Équipe</button>
-      <button type="button" class="tbadge" id="tabStats" onclick="switchTab('stats')">📊 Stats</button>
+      <button type="button" class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span class="tbadge-team-text" id="currentTeamLabel">—</span></button>
+      <button type="button" class="tbadge active" id="tabEquipe" onclick="switchTab('equipe')"><span class="tbadge-icon">👥</span><span class="tbadge-label"> Équipe</span></button>
+      <button type="button" class="tbadge" id="tabStats" onclick="switchTab('stats')"><span class="tbadge-icon">📊</span><span class="tbadge-label"> Stats</span></button>
       <!-- Avatar menu -->
       <div style="position:relative;" id="avatarWrapper">
         <button type="button" class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
