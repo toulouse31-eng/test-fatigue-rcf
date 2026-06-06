@@ -247,7 +247,7 @@ body.coach-mode .app-body{align-items:center;padding:20px 24px;flex-direction:co
 .sparkline-row label{font-size:12px;color:var(--gris);}
 .sparkline-row select{background:var(--noir2);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);flex:1;}
 .sparkline-wrap{width:100%;height:180px;position:relative;}
-#sparklineCanvas{width:100%;height:100%;display:block;border-radius:8px;background:#f0f8e8;}
+#sparklineCanvas{width:100%;height:100%;display:block;border-radius:8px;background:#f9fdf5;}
 
 /* BODY player mode */
 body.player-mode .coach-only{display:none !important;}
@@ -267,7 +267,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 #statsLayout{display:none;}
 
 /* ===== LAYOUT MODE STATS : 2 colonnes ===== */
-.stats-layout{display:flex;gap:20px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;padding:20px 24px;box-sizing:border-box;}
+.stats-layout{display:flex;gap:20px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;padding:12px 24px 20px;box-sizing:border-box;}
 .stats-layout-left{flex:1 1 0;min-width:0;}
 .stats-layout-right{flex:0 0 340px;min-width:280px;max-width:380px;position:sticky;top:12px;}
 @media(max-width:900px){
@@ -794,7 +794,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
                 <!-- Épaule gauche -->
                 <ellipse class="zone" data-zone="Épaule droit" cx="32" cy="52" rx="12" ry="10"/>
                 <!-- Épaule droite -->
-                <ellipse class="zone" data-zone="Épaule gauchee" cx="88" cy="52" rx="12" ry="10"/>
+                <ellipse class="zone" data-zone="Épaule gauche" cx="88" cy="52" rx="12" ry="10"/>
                 <!-- Torse/pec -->
                 <rect class="zone" data-zone="Torse" x="40" y="44" width="40" height="36" rx="6"/>
                 <!-- Abdominaux -->
@@ -812,7 +812,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
                 <!-- Cuisse gauche -->
                 <rect class="zone" data-zone="Cuisse droit" x="38" y="126" width="19" height="38" rx="6"/>
                 <!-- Cuisse droite -->
-                <rect class="zone" data-zone="Cuisse gauchee" x="63" y="126" width="19" height="38" rx="6"/>
+                <rect class="zone" data-zone="Cuisse gauche" x="63" y="126" width="19" height="38" rx="6"/>
                 <!-- Genou gauche -->
                 <rect class="zone" data-zone="Genou droit" x="39" y="166" width="17" height="14" rx="5"/>
                 <!-- Genou droit -->
@@ -824,7 +824,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
                 <!-- Cheville gauche -->
                 <rect class="zone" data-zone="Cheville droit" x="40" y="220" width="15" height="10" rx="4"/>
                 <!-- Cheville droite -->
-                <rect class="zone" data-zone="Cheville gauchee" x="65" y="220" width="15" height="10" rx="4"/>
+                <rect class="zone" data-zone="Cheville gauche" x="65" y="220" width="15" height="10" rx="4"/>
                 <!-- Pied gauche -->
                 <ellipse class="zone" data-zone="Pied droit" cx="47" cy="238" rx="11" ry="7"/>
                 <!-- Pied droit -->
@@ -1718,8 +1718,13 @@ function getDlbl(r){const d=getDFromS(r.seance)||new Date(r.date);if(isNaN(d.get
 function getLastN(joueur,n){const data=getVizData(),rows=data.filter(r=>r.joueur===joueur);if(!rows.length)return[];const bk={};rows.forEach(r=>{const k=getSKey(r);if(!k)return;const d=getDFromS(r.seance)||new Date(r.date);if(!bk[k])bk[k]=r;else{const d0=getDFromS(bk[k].seance)||new Date(bk[k].date);if(d>d0)bk[k]=r;}});let l=Object.entries(bk).map(([k,rec])=>({...rec,_dk:k}));l.sort((a,b)=>new Date(a._dk)-new Date(b._dk));return l.slice(-n);}
 function getTeamAvg(n){const data=getVizData(),rows=[...data];rows.sort((a,b)=>{const da=getDFromS(a.seance)||new Date(a.date),db=getDFromS(b.seance)||new Date(b.date);return da-db;});const last=rows.slice(-n);if(!last.length)return null;return last.reduce((s,r)=>s+(Number(r.pourcentage)||0),0)/last.length;}
 function resizeSparklineCanvas(){const c=document.getElementById("sparklineCanvas"),w=document.querySelector(".sparkline-wrap");if(!c||!w)return;const ratio=window.devicePixelRatio||1,rect=w.getBoundingClientRect(),wi=rect.width>10?rect.width:320,hi=rect.height>10?rect.height:200;c.width=wi*ratio;c.height=hi*ratio;c.getContext("2d").setTransform(ratio,0,0,ratio,0,0);}
-function drawZones(ctx,pL,pT,pW,pH){[[0,52,"#3a0000"],[52,64,"#3a2000"],[64,76,"#3a3a00"],[76,88,"#1a3a1a"],[88,100,"#0d3a1a"]].forEach(([f,t,col])=>{const yTop=pT+pH*(1-t/100),yBot=pT+pH*(1-f/100);ctx.fillStyle=col;ctx.fillRect(pL,yTop,pW,yBot-yTop);});}
-function drawSparkline(pts,avg){const c=document.getElementById("sparklineCanvas"),e=document.getElementById("sparklineEmpty");if(!c)return;const ctx=c.getContext("2d"),w=c.width/(window.devicePixelRatio||1),h=c.height/(window.devicePixelRatio||1);ctx.clearRect(0,0,w,h);if(!pts||!pts.length){if(e)e.style.display="block";ctx.fillStyle="#6a8a6a";ctx.font="13px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Aucune donnée",w/2,h/2);return;}if(e)e.style.display="none";const pL=48,pR=12,pT=24,pB=40,pW=w-pL-pR,pH=h-pT-pB;drawZones(ctx,pL,pT,pW,pH);const sx=pW/Math.max(pts.length-1,1),toXY=(v,i)=>({x:pL+i*sx,y:pT+pH*(1-v/100)}),pp=pts.map((p,i)=>toXY(p.value,i));if(avg!=null){const ya=pT+pH*(1-avg/100);ctx.save();ctx.strokeStyle="#6a8a6a";ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pL,ya);ctx.lineTo(w-pR,ya);ctx.stroke();ctx.restore();ctx.fillStyle="#6a8a6a";ctx.font="10px Arial";ctx.textAlign="left";ctx.textBaseline="bottom";ctx.fillText("Moy: "+Math.round(avg)+"%",pL+3,ya-2);}ctx.beginPath();ctx.moveTo(pp[0].x,pp[0].y);pp.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.strokeStyle="#8dc63f";ctx.lineWidth=2.5;ctx.setLineDash([]);ctx.stroke();pp.forEach((p,i)=>{const v=pts[i].value;let col="#8dc63f";if(v<52)col="#ff4444";else if(v<64)col="#ff9900";else if(v<76)col="#ffdd55";else if(v<88)col="#88dd55";ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.fillStyle="#f4f8f0";ctx.font="10px Arial";ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(v+"%",p.x,p.y-7);});ctx.fillStyle="#6a8a6a";ctx.font="10px Arial";ctx.textAlign="center";ctx.textBaseline="top";pts.forEach((p,i)=>ctx.fillText(p.label,pp[i].x,pT+pH+5));}
+function drawZones(ctx,pL,pT,pW,pH){[[0,52,"#fde8e8"],[52,64,"#fef3e2"],[64,76,"#fefce8"],[76,88,"#e8f5e9"],[88,100,"#d0f0d8"]].forEach(([f,t,col])=>{const yTop=pT+pH*(1-t/100),yBot=pT+pH*(1-f/100);ctx.fillStyle=col;ctx.fillRect(pL,yTop,pW,yBot-yTop);});}
+function drawSparkline(pts,avg){const c=document.getElementById("sparklineCanvas"),e=document.getElementById("sparklineEmpty");if(!c)return;const ctx=c.getContext("2d"),w=c.width/(window.devicePixelRatio||1),h=c.height/(window.devicePixelRatio||1);ctx.clearRect(0,0,w,h);if(!pts||!pts.length){if(e)e.style.display="block";ctx.fillStyle="#6a8a6a";ctx.font="13px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Aucune donnée",w/2,h/2);return;}if(e)e.style.display="none";const pL=48,pR=12,pT=24,pB=40,pW=w-pL-pR,pH=h-pT-pB;drawZones(ctx,pL,pT,pW,pH);// Grille
+ctx.strokeStyle="rgba(0,0,0,0.08)";ctx.lineWidth=1;ctx.setLineDash([]);[0,25,50,75,100].forEach(g=>{const y=pT+pH*(1-g/100);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+pW,y);ctx.stroke();ctx.fillStyle="#555";ctx.font="10px Arial";ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText(g+"%",pL-4,y);});const sx=pW/Math.max(pts.length-1,1),toXY=(v,i)=>({x:pL+i*sx,y:pT+pH*(1-v/100)}),pp=pts.map((p,i)=>toXY(p.value,i));if(avg!=null){const ya=pT+pH*(1-avg/100);ctx.save();ctx.strokeStyle="#888";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pL,ya);ctx.lineTo(pL+pW,ya);ctx.stroke();ctx.restore();ctx.fillStyle="#555";ctx.font="10px Arial";ctx.textAlign="left";ctx.textBaseline="bottom";ctx.fillText("Moy: "+Math.round(avg)+"%",pL+3,ya-2);}// Ligne
+ctx.beginPath();ctx.moveTo(pp[0].x,pp[0].y);pp.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.strokeStyle="#3a8a1a";ctx.lineWidth=2.5;ctx.setLineDash([]);ctx.stroke();// Points
+pp.forEach((p,i)=>{const v=pts[i].value;let col="#3a8a1a";if(v<52)col="#cc2222";else if(v<64)col="#cc6600";else if(v<76)col="#aa8800";else if(v<88)col="#5a9a1a";ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();// Label %
+ctx.fillStyle="#222";ctx.font="bold 10px Arial";ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(v+"%",p.x,p.y-8);});// Labels dates
+ctx.fillStyle="#555";ctx.font="10px Arial";ctx.textAlign="center";ctx.textBaseline="top";pts.forEach((p,i)=>ctx.fillText(p.label,pp[i].x,pT+pH+5));}
 function drawSparklineNow(){const sel=document.getElementById("sparklineSelect"),rng=document.getElementById("sparklineRange"),joueur=sel?.value,n=Number(rng?.value||5);if(!joueur){drawSparkline([]);return;}const recs=getLastN(joueur,n),pts=recs.map(r=>({value:Number(r.pourcentage)||0,label:getDlbl(r)})),avg=getTeamAvg(n);resizeSparklineCanvas();drawSparkline(pts,avg);}
 function buildSparklineSelect(){const sel=document.getElementById("sparklineSelect");if(!sel)return;const data=getVizData(),joueurs=[...new Set(data.map(r=>r.joueur))].filter(Boolean).sort(),prev=sel.value;sel.innerHTML="";joueurs.forEach(j=>sel.appendChild(Object.assign(document.createElement("option"),{value:j,textContent:j})));if(prev&&joueurs.includes(prev))sel.value=prev;sel.addEventListener("change",drawSparklineNow);document.getElementById("sparklineRange")?.addEventListener("change",drawSparklineNow);drawSparklineNow();buildFicheSelect();}
 function buildFicheSelect(){const s=document.getElementById("ficheSeanceSelect");if(!s)return;const k=getKeysSorted();s.innerHTML="";k.slice().reverse().forEach(x=>s.appendChild(Object.assign(document.createElement("option"),{value:x,textContent:fmtKey(x)})));}
@@ -1912,7 +1917,7 @@ const ZONES_AVANT = [
   {zone:"Tête", el:"ellipse", attrs:{cx:60,cy:18,rx:16,ry:18}},
   {zone:"Cou", el:"rect", attrs:{x:52,y:34,w:16,h:10,rx:4}},
   {zone:"Épaule gauche", el:"ellipse", attrs:{cx:32,cy:52,rx:12,ry:10}},
-  {zone:"Épaule droite", el:"ellipse", attrs:{cx:88,cy:52,rx:12,ry:10}},
+  {zone:"Épaule droit", el:"ellipse", attrs:{cx:88,cy:52,rx:12,ry:10}},
   {zone:"Torse", el:"rect", attrs:{x:40,y:44,w:40,h:36,rx:6}},
   {zone:"Abdominaux", el:"rect", attrs:{x:42,y:80,w:36,h:24,rx:4}},
   {zone:"Bras gauche", el:"rect", attrs:{x:18,y:62,w:13,h:30,rx:6}},
@@ -1921,13 +1926,13 @@ const ZONES_AVANT = [
   {zone:"Avant-bras droit", el:"rect", attrs:{x:94,y:94,w:12,h:28,rx:5}},
   {zone:"Hanche / bassin", el:"rect", attrs:{x:38,y:104,w:44,h:20,rx:4}},
   {zone:"Cuisse gauche", el:"rect", attrs:{x:38,y:126,w:19,h:38,rx:6}},
-  {zone:"Cuisse droite", el:"rect", attrs:{x:63,y:126,w:19,h:38,rx:6}},
+  {zone:"Cuisse droit", el:"rect", attrs:{x:63,y:126,w:19,h:38,rx:6}},
   {zone:"Genou gauche", el:"rect", attrs:{x:39,y:166,w:17,h:14,rx:5}},
   {zone:"Genou droit", el:"rect", attrs:{x:64,y:166,w:17,h:14,rx:5}},
   {zone:"Tibia gauche", el:"rect", attrs:{x:40,y:182,w:15,h:36,rx:5}},
   {zone:"Tibia droit", el:"rect", attrs:{x:65,y:182,w:15,h:36,rx:5}},
   {zone:"Cheville gauche", el:"rect", attrs:{x:40,y:220,w:15,h:10,rx:4}},
-  {zone:"Cheville droite", el:"rect", attrs:{x:65,y:220,w:15,h:10,rx:4}},
+  {zone:"Cheville droit", el:"rect", attrs:{x:65,y:220,w:15,h:10,rx:4}},
   {zone:"Pied gauche", el:"ellipse", attrs:{cx:47,cy:238,rx:11,ry:7}},
   {zone:"Pied droit", el:"ellipse", attrs:{cx:73,cy:238,rx:11,ry:7}},
 ];
@@ -2034,7 +2039,7 @@ function supprimerZone(zone) {
 function majInputDouleur() {
   const input = document.getElementById("douleurZone");
   if (!input) return;
-  const parts = Object.entries(zonesSelectionnees).map(([z,i]) => `${z}(${i})`);
+  const parts = Object.entries(zonesSelectionnees).map(([z,i]) => `${z} (${i})`);
   input.value = parts.join(", ");
 }
 
