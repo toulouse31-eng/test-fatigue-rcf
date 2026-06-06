@@ -1708,7 +1708,7 @@ h2{font-size:15px;color:#3a6a1a;margin:16px 0 8px;}
 
   if(alertes.length){
     html+=`<div class="section"><h2>Alertes joueurs</h2>`;
-    alertes.forEach(a=>{html+=`<div class="alert-item"><span class="tag ${a.zoneClass==="zone-rouge"?"tag-rouge":"tag-orange"}">${a.zoneClass==="zone-rouge"?"ROUGE":"ORANGE"}</span><strong>${a.joueur}</strong> — ${a.pourcentage}%${a.douleurZone?" | Douleurs : "+a.douleurZone:""}${a.commentaire?" | "+a.commentaire:""}</div>`;});
+    alertes.forEach(a=>{html+=`<div class="alert-item"><span class="tag ${a.zoneClass==="zone-rouge"?"tag-rouge":"tag-orange"}">${a.zoneClass==="zone-rouge"?"ROUGE":"ORANGE"}</span><strong>${a.joueur}</strong> — ${a.pourcentage}%${a.douleurZone?" | Douleurs : "+formatDouleur(a.douleurZone):""}${a.commentaire?" | "+a.commentaire:""}</div>`;});
     html+=`</div>`;
   }
 
@@ -1760,7 +1760,24 @@ let ssBound=false;
 function buildStatsSeanceSelect(){const s=document.getElementById("statsSeanceSelect");if(!s)return;const k=getKeysSorted();s.innerHTML="";if(!k.length){s.appendChild(Object.assign(document.createElement("option"),{value:"",textContent:"Aucune séance"}));majStats();return;}k.forEach(x=>s.appendChild(Object.assign(document.createElement("option"),{value:x,textContent:fmtKey(x)})));s.value=k[k.length-1];if(!ssBound){s.addEventListener("change",majStats);ssBound=true;}majStats();}
 
 function getAlertesDuJour(sk){const data=getVizData();if(!data.length)return{dk:null,alertes:[]};const keys=getKeysSorted();if(!keys.length)return{dk:null,alertes:[]};const dk=sk||keys[keys.length-1];const rows=data.filter(r=>getSKey(r)===dk);const lbp={};rows.forEach(r=>{const d=getDFromS(r.seance)||new Date(r.date),k=r.joueur;if(!lbp[k])lbp[k]=r;else{const d0=getDFromS(lbp[k].seance)||new Date(lbp[k].date);if(d>d0)lbp[k]=r;}});const alertes=Object.values(lbp).filter(r=>r.zoneClass==="zone-orange"||r.zoneClass==="zone-rouge").map(r=>({joueur:r.joueur,pourcentage:r.pourcentage,zoneClass:r.zoneClass,zone:r.zone,douleurZone:r.douleurZone||"",commentaire:r.commentaire||""}));return{dk,alertes};}
-function majAlertes(){const card=document.getElementById("alertesDuJourCard"),dl=document.getElementById("alertDateLabel"),listEl=document.getElementById("alertList"),sel=document.getElementById("alertSeanceSelect");if(!card||!dl||!listEl||!sel)return;const{dk,alertes}=getAlertesDuJour(sel.value||null);listEl.innerHTML="";if(!dk){dl.textContent="Pas de séance.";return;}dl.textContent="Séance : "+fmtKey(dk);if(!alertes.length){const li=document.createElement("li");li.textContent="Aucun joueur en alerte.";listEl.appendChild(li);return;}alertes.forEach(a=>{const li=document.createElement("li");const tag=document.createElement("span");tag.className="alert-tag "+(a.zoneClass==="zone-orange"?"alert-orange":"alert-rouge");tag.textContent=a.zoneClass==="zone-orange"?"ORANGE":"ROUGE";li.appendChild(tag);const txt=document.createElement("span");let d=`${a.joueur} — ${a.pourcentage}%`;if(a.douleurZone)d+=` | ${a.douleurZone}`;if(a.commentaire)d+=` | ${a.commentaire}`;txt.textContent=" "+d;li.appendChild(txt);listEl.appendChild(li);});}
+// Nettoie les données douleur (ancien format) pour l'affichage
+function formatDouleur(str){
+  if(!str)return"";
+  return str
+    // Ajouter espace avant parenthèse si manquant : "Zone(vive)" → "Zone (vive)"
+    .replace(/([^\s])\((\w+)\)/g,"$1 ($2)")
+    // Corriger doubles "e" : "gauchee" → "gauche", "droitee" → "droite"
+    .replace(/gauchee/gi,"gauche")
+    .replace(/droitee/gi,"droite")
+    // Corriger "droit" → "droite" dans les zones (Cheville droit → Cheville droite)
+    .replace(/\b(Cheville|Cuisse|Genou|Tibia|Pied|Bras|Avant-bras|Épaule|Epaule)\s+droit\b/gi,(m,z)=>z+" droite")
+    // Traduire les intensités en français lisible
+    .replace(/\(vive\)/gi,"(douleur vive)")
+    .replace(/\(douleur\)/gi,"(douleur)")
+    .replace(/\(gene\)/gi,"(gêne)");
+}
+
+function majAlertes(){const card=document.getElementById("alertesDuJourCard"),dl=document.getElementById("alertDateLabel"),listEl=document.getElementById("alertList"),sel=document.getElementById("alertSeanceSelect");if(!card||!dl||!listEl||!sel)return;const{dk,alertes}=getAlertesDuJour(sel.value||null);listEl.innerHTML="";if(!dk){dl.textContent="Pas de séance.";return;}dl.textContent="Séance : "+fmtKey(dk);if(!alertes.length){const li=document.createElement("li");li.textContent="Aucun joueur en alerte.";listEl.appendChild(li);return;}alertes.forEach(a=>{const li=document.createElement("li");const tag=document.createElement("span");tag.className="alert-tag "+(a.zoneClass==="zone-orange"?"alert-orange":"alert-rouge");tag.textContent=a.zoneClass==="zone-orange"?"ORANGE":"ROUGE";li.appendChild(tag);const txt=document.createElement("span");let d=`${a.joueur} — ${a.pourcentage}%`;if(a.douleurZone)d+=` | ${formatDouleur(a.douleurZone)}`;if(a.commentaire)d+=` | ${a.commentaire}`;txt.textContent=" "+d;li.appendChild(txt);listEl.appendChild(li);});}
 let asBound=false;
 function buildAlertSeanceSelect(){const s=document.getElementById("alertSeanceSelect");if(!s)return;const k=getKeysSorted();s.innerHTML="";if(!k.length){s.appendChild(Object.assign(document.createElement("option"),{value:"",textContent:"Aucune séance"}));majAlertes();return;}k.forEach(x=>s.appendChild(Object.assign(document.createElement("option"),{value:x,textContent:fmtKey(x)})));s.value=k[k.length-1];if(!asBound){s.addEventListener("change",majAlertes);asBound=true;}majAlertes();}
 
