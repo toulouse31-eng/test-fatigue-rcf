@@ -682,7 +682,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       </div>
 
       <!-- Ajouter joueur -->
-      <div class="coach-add-row">
+      <div class="coach-add-row" id="coachAddRow">
         <input type="text" id="coachNewPlayer" placeholder="Prénom du joueur à ajouter..." maxlength="40"/>
         <button type="button" onclick="coachAddPlayer()">+ Ajouter</button>
       </div>
@@ -1500,6 +1500,8 @@ async function refreshFirestoreData(){
     if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
   }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
   buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();
+  // Reconstruire l'interface coach avec les nouvelles données
+  if(currentTab==="equipe") buildCoachInterface();
   appliquerModeAffichage();
 }
 function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
@@ -1560,12 +1562,22 @@ function appliquerModeAffichage(){
     if(sc) sc.style.display="block";
     if(ss) ss.style.display="block";
     if(fc) fc.style.display="none";
+    // Cacher champ ajouter et grille joueurs en stats
+    const addRow=document.getElementById("coachAddRow");
+    const grid=document.getElementById("joueursGrid");
+    if(addRow) addRow.style.display="none";
+    if(grid) grid.style.display="none";
   } else {
     // Onglet équipe
     if(ci){ci.style.display="flex";ci.style.flexDirection="column";}
     if(sc) sc.style.display="none";
     if(ss) ss.style.display="none";
     if(fc) fc.style.display="none";
+    // Réafficher champ ajouter et grille
+    const addRow=document.getElementById("coachAddRow");
+    const grid=document.getElementById("joueursGrid");
+    if(addRow) addRow.style.display="flex";
+    if(grid) grid.style.display="flex";
   }
 }
 
@@ -1729,7 +1741,7 @@ async function buildCoachInterface(){
 
   // Titre
   const teamNameEl = document.getElementById("coachTeamName");
-  if(teamNameEl) teamNameEl.textContent = currentTeam.nom||"—";
+  if(teamNameEl) teamNameEl.textContent = currentTeam?.nom||currentTeam?.id||"—";
 
   // Dernier état par joueur
   const lastByPlayer = {};
