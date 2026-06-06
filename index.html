@@ -290,10 +290,12 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
   .app-body{flex-direction:column;padding:0;gap:0;}
   .form-card{padding:16px;border-radius:0;border-left:none;border-right:none;box-shadow:none;flex:1 1 100%;max-width:100%;width:100%;}
   .scale button{font-size:16px;padding:11px 0;}
-  .coach-interface{border-radius:0;border-left:none;border-right:none;box-shadow:none;width:100%;margin:0;padding:16px;}
-  .coach-stats-row{gap:6px;flex-wrap:wrap;}
-  .coach-stat-box{padding:8px 10px;min-width:60px;}
-  .coach-stat-num{font-size:18px;}
+  .coach-interface{border-radius:0;border-left:none;border-right:none;box-shadow:none;width:100%;margin:0;padding:12px;}
+  /* 2x2 sur mobile */
+  .coach-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-wrap:unset;}
+  .coach-stat-box{padding:10px 8px;min-width:0;}
+  .coach-stat-num{font-size:20px;}
+  .coach-stat-label{font-size:10px;white-space:normal;line-height:1.2;}
   .joueur-row{padding:8px 10px;}
   .stats-layout .stats-section,.stats-layout .stats-card{border-radius:0;border-left:none;border-right:none;box-shadow:none;}
 }
@@ -1937,10 +1939,22 @@ async function buildCoachInterface(){
       return keys.length ? fmtKey(keys[keys.length-1]) : "—";
     })() : "—";
     statsRow.innerHTML = `
-      <div class="coach-stat-box"><div class="coach-stat-num">${total}</div><div class="coach-stat-label">Joueurs</div></div>
-      <div class="coach-stat-box"><div class="coach-stat-num">${avecReponse}</div><div class="coach-stat-label">Réponses reçues</div></div>
-      <div class="coach-stat-box" style="${enAlerte>0?'background:#fff0f0;border-color:#ffaaaa;':''}"><div class="coach-stat-num" style="${enAlerte>0?'color:#cc0000;':''}">${enAlerte}</div><div class="coach-stat-label">En alerte</div></div>
-      <div class="coach-stat-box"><div class="coach-stat-num" style="font-size:13px;line-height:1.3;">${lastDate}</div><div class="coach-stat-label">Dernière séance</div></div>
+      <div class="coach-stat-box">
+        <div class="coach-stat-num">${total}</div>
+        <div class="coach-stat-label">Joueurs</div>
+      </div>
+      <div class="coach-stat-box">
+        <div class="coach-stat-num">${avecReponse}</div>
+        <div class="coach-stat-label">Réponses reçues</div>
+      </div>
+      <div class="coach-stat-box" style="${enAlerte>0?'background:#fff0f0;border-color:#ffaaaa;':''}">
+        <div class="coach-stat-num" style="${enAlerte>0?'color:#cc0000;':''}">${enAlerte}</div>
+        <div class="coach-stat-label">En alerte</div>
+      </div>
+      <div class="coach-stat-box">
+        <div class="coach-stat-num" style="font-size:13px;line-height:1.3;">${lastDate}</div>
+        <div class="coach-stat-label">Dernière séance</div>
+      </div>
     `;
   }
 
@@ -1980,6 +1994,11 @@ async function buildCoachInterface(){
     row.dataset.nom = nom;
     const naText = rec && rec.naMatch ? '<span class="na-text">n\'a pas joué le dernier match</span>' : '';
     const noRespText = pasRepondu ? '<span class="noresp-text">⏳ pas répondu</span>' : '';
+    const SCORE_COLOR = {
+      "zone-vert-fonce":"#2a8a4a","zone-vert-clair":"#4aaa6a",
+      "zone-jaune":"#aa8800","zone-orange":"#cc6600","zone-rouge":"#cc0000"
+    };
+    const scoreColor = rec ? (SCORE_COLOR[rec.zoneClass]||"#6a8a6a") : "#bbb";
     const zoneLabel = zoneInfo ? zoneInfo[0] : "En attente";
     const zoneStyle = zoneInfo ? `background:${zoneInfo[1]};color:${zoneInfo[2]};` : "background:#fff8e1;color:#cc8800;";
     const scoreTooltip = rec ? `Score: ${rec.total||"?"}/${denom} — ${rec.pourcentage||0}%` : "Pas de réponse";
@@ -1991,7 +2010,7 @@ async function buildCoachInterface(){
         <div class="joueur-date" data-tooltip="${dateText||'—'}">${dateText||'—'}</div>
       </div>
       <div class="joueur-row-line2">
-        <div class="joueur-score" data-tooltip="${scoreTooltip}">${scoreText}</div>
+        <div class="joueur-score" style="color:${scoreColor};font-weight:600;" data-tooltip="${scoreTooltip}">${scoreText}</div>
         <div class="joueur-zone" style="${zoneStyle}" data-tooltip="${zoneLabel}">${zoneLabel}</div>
       </div>
     `;
