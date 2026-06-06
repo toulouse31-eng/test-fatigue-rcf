@@ -690,9 +690,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <div class="joueurs-grid" id="joueursGrid">
         <div class="coach-empty">Aucun joueur dans cette équipe.<br>Ajoute le premier joueur ci-dessus.</div>
       </div>
-      <div style="margin-top:16px;font-size:12px;color:#8aaa7a;text-align:center;">
-        Passe en <strong>Mode coach ON</strong> pour voir les statistiques complètes et le dashboard.
-      </div>
+
     </div>
 
     <!-- FORMULAIRE JOUEUR (caché pour le coach) -->
@@ -940,7 +938,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <div class="stats-line" id="statsNbJoueurs">Joueurs : 0</div>
       <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
       <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
-      <div class="stats-line" id="statsNonMatch">Sans match : -</div>
+
       <div class="stats-indice" id="statsIndiceBox"><div id="statsIndiceLabel">Indice bien-être : -</div></div>
       <div class="stats-reco" id="statsRecoSeance">Recommandation : -</div>
       <div class="stats-alertes"><strong style="color:var(--gris);">Alertes :</strong><br><span id="statsAlertesListe">-</span></div>
@@ -1266,8 +1264,8 @@ async function initApp(){
     const te=document.getElementById("tabEquipe"),ts=document.getElementById("tabStats");
     if(te)te.classList.toggle("active",currentTab==="equipe");
     if(ts)ts.classList.toggle("active",currentTab==="stats");
-    if(currentTab==="stats") refreshFirestoreData();
-    else buildCoachInterface();
+    // Toujours charger les données Firestore (nécessaire pour les stats joueurs dans les deux onglets)
+    refreshFirestoreData();
   }
 }
 function majAvatar(){
@@ -1536,11 +1534,10 @@ function switchTab(tab){
   if(te) te.classList.toggle("active", tab==="equipe");
   if(ts) ts.classList.toggle("active", tab==="stats");
   // Charger les stats si besoin
+  // Charger les données dans les deux cas
+  refreshFirestoreData();
   if(tab==="stats"){
-    refreshFirestoreData();
     setTimeout(forceResizeAllCharts, 150);
-  } else {
-    buildCoachInterface();
   }
 }
 
