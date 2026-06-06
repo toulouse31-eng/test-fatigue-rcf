@@ -111,10 +111,13 @@ body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:va
   .app-club-name{display:none;}
   .tbadge-coach-text{display:none;}
   .tbadge-coach-icon{display:inline;}
-  .app-topbar{padding:6px 10px;}
-  .logo-rpe-sm,.logo-club-sm{width:26px;height:26px;}
-  .app-name{font-size:13px;}
-  .tbadge{padding:4px 8px;font-size:10px;}
+  .app-topbar{padding:5px 8px;}
+  .logo-rpe-sm,.logo-club-sm{width:24px;height:24px;}
+  .app-name{font-size:12px;}
+  /* Onglets ultra-compacts sur mobile */
+  .tbadge{padding:3px 6px;font-size:9px;border-width:1px;border-radius:6px;}
+  .topbar-right{gap:3px;}
+  .app-topbar-inner{gap:4px;}
 }
 @media(min-width:601px){
   .tbadge-coach-icon{display:none;}
@@ -410,9 +413,23 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-add-row button{flex-shrink:0;padding:10px 16px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
 .coach-add-row button:hover{background:#6aaa1e;}
 .joueurs-grid{display:flex;flex-direction:column;gap:4px;width:100%;}
-.joueur-row{display:grid;grid-template-columns:0px 10px 1fr auto 120px 52px;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;width:100%;box-sizing:border-box;}
+.joueur-row{display:grid;grid-template-columns:0px 1fr 52px;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;width:100%;box-sizing:border-box;}
 .joueur-row:hover{background:#f4fbf0;border-color:#c8ddb0;}
-.joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 120px 52px;cursor:pointer;}
+.joueur-row.select-mode{grid-template-columns:22px 1fr 52px;cursor:pointer;}
+.joueur-row-line1{display:flex;align-items:center;gap:8px;min-width:0;}
+.joueur-row-line2{display:flex;align-items:center;gap:8px;margin-top:0;}
+/* Sur desktop : les 2 lignes côte à côte via sous-grille */
+@media(min-width:601px){
+  .joueur-row{grid-template-columns:0px 10px 1fr auto 130px 52px;}
+  .joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 130px 52px;}
+  .joueur-row-line1{display:contents;}
+  .joueur-row-line2{display:contents;}
+  .joueur-date{white-space:nowrap;text-align:right;font-size:11px;color:#aac0aa;}
+  .joueur-score{white-space:nowrap;text-align:right;font-size:11px;color:#8aaa7a;}
+  .joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;}
+  .joueur-nom .na-text{display:inline;font-size:10px;color:#aaa;font-weight:400;margin-left:4px;}
+  .joueur-nom .noresp-text{display:inline;font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;}
+}
 .joueur-row.selected-for-delete{background:#fff0f0 !important;border-color:#ffaaaa !important;}
 .joueur-row.pas-repondu{background:#fffdf0;border-color:#ffe082;}
 .joueur-row.pas-repondu:hover{background:#fff8e1;border-color:#ffca28;}
@@ -424,6 +441,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .joueur-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .dot-vert-fonce{background:#2a8a4a;}.dot-vert-clair{background:#4aaa6a;}.dot-jaune{background:#ccaa00;}.dot-orange{background:#cc6600;}.dot-rouge{background:#cc0000;}.dot-gris{background:#bbb;}
 .joueur-nom{font-size:14px;font-weight:600;color:#1a2a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.joueur-nom .na-text{font-size:10px;color:#aaa;font-weight:400;margin-left:4px;white-space:nowrap;}
+.joueur-nom .noresp-text{font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;white-space:nowrap;}
 .joueur-score{font-size:11px;color:#8aaa7a;white-space:nowrap;text-align:right;}
 .joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;}
 .joueur-date{font-size:11px;color:#aac0aa;white-space:nowrap;text-align:right;}
@@ -442,14 +461,31 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1 1 0;min-width:0;text-align:center;}
 .coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;}
 .coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
+
+/* Mobile : ligne joueur sur 2 lignes */
 @media(max-width:600px){
-  .joueur-row{grid-template-columns:0px 10px 1fr auto 100px;gap:6px;padding:8px 10px;}
-  .joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 100px;}
-  .joueur-date{display:none;}
+  .joueur-row{
+    display:flex;flex-direction:column;align-items:stretch;
+    gap:4px;padding:10px 12px;
+  }
+  .joueur-row .joueur-checkbox{display:none;}
+  .joueur-row.select-mode .joueur-checkbox{display:flex;width:18px;opacity:1;}
+  /* Ligne 1 : dot + nom + date */
+  .joueur-row-line1{display:flex;align-items:center;gap:8px;}
+  /* Ligne 2 : score + zone */
+  .joueur-row-line2{display:flex;align-items:center;gap:8px;margin-top:2px;}
+  .joueur-nom .na-text{display:block;font-size:9px;color:#aaa;margin-left:0;margin-top:1px;}
+  .joueur-nom .noresp-text{display:block;font-size:9px;color:#cc8800;margin-left:0;margin-top:1px;}
+  .joueur-date{font-size:10px;color:#aac0aa;margin-left:auto;flex-shrink:0;}
+  .joueur-score{font-size:11px;color:#8aaa7a;flex-shrink:0;}
+  .joueur-zone{font-size:10px;padding:2px 8px;flex:1;text-align:center;}
+  .coach-stat-num{font-size:18px;}
+  .coach-stat-box{padding:8px 10px;}
+  .coach-add-row{flex-wrap:wrap;}
+  .coach-add-row input{width:100%;}
 }
 @media(max-width:400px){
-  .joueur-zone{font-size:10px;padding:2px 6px;width:90px;}
-  .joueur-score{font-size:10px;}
+  .joueur-zone{font-size:9px;padding:2px 5px;}
 }
 
 
@@ -1919,15 +1955,19 @@ async function buildCoachInterface(){
     const row = document.createElement("div");
     row.className = "joueur-row" + (pasRepondu ? " pas-repondu" : "");
     row.dataset.nom = nom;
-    const naText = rec && rec.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:4px;">n\'a pas joué le dernier match</span>' : '';
-    const noRespText = pasRepondu ? '<span style="font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;">⏳ pas répondu</span>' : '';
+    const naText = rec && rec.naMatch ? '<span class="na-text">n\'a pas joué le dernier match</span>' : '';
+    const noRespText = pasRepondu ? '<span class="noresp-text">⏳ pas répondu</span>' : '';
     row.innerHTML = `
       <div class="joueur-checkbox"><span class="joueur-checkbox-tick">✓</span></div>
-      <div class="joueur-dot ${dotClass}"></div>
-      <div class="joueur-nom">${nom}${naText}${noRespText}</div>
-      <div class="joueur-score">${scoreText}</div>
-      ${zoneInfo ? `<div class="joueur-zone" style="background:${zoneInfo[1]};color:${zoneInfo[2]};">${zoneInfo[0]}</div>` : '<div class="joueur-zone" style="background:#fff8e1;color:#cc8800;font-size:11px;">En attente</div>'}
-      <div class="joueur-date">${dateText}</div>
+      <div class="joueur-row-line1">
+        <div class="joueur-dot ${dotClass}"></div>
+        <div class="joueur-nom">${nom}${naText}${noRespText}</div>
+        <div class="joueur-date">${dateText}</div>
+      </div>
+      <div class="joueur-row-line2">
+        <div class="joueur-score">${scoreText}</div>
+        ${zoneInfo ? `<div class="joueur-zone" style="background:${zoneInfo[1]};color:${zoneInfo[2]};">${zoneInfo[0]}</div>` : '<div class="joueur-zone" style="background:#fff8e1;color:#cc8800;font-size:11px;">En attente</div>'}
+      </div>
     `;
     row.addEventListener("click", ()=>toggleJoueurSelect(row));
     grid.appendChild(row);
