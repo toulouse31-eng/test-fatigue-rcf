@@ -2391,6 +2391,8 @@ function importerAlertes(){
   const msg=importes>0?`✅ ${importes} entrée(s) importée(s)${ignores>0?" ("+ignores+" déjà en suivi)":"."}`:`Tous les joueurs sont déjà en suivi.`;
   setSyncStatus(msg,"ok");
 }
+
+function exportKineCSV(){
   if(!kineSuivis.length){alert("Aucun suivi à exporter.");return;}
   const headers=["Joueur","Zone","Intensité","Date","Statut","Notes"];
   const rows=kineSuivis.map(k=>[k.joueur,k.zone,k.intensite,k.date,k.statut,k.notes||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(","));
