@@ -873,7 +873,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
                 <!-- Nuque -->
                 <rect class="zone" data-zone="Nuque" x="52" y="34" width="16" height="10" rx="4"/>
                 <!-- Trapèze gauche -->
-                <ellipse class="zone" data-zone="Trapèze droit" cx="32" cy="50" rx="12" ry="10"/>
+                <ellipse class="zone" data-zone="Trapèze droite" cx="32" cy="50" rx="12" ry="10"/>
                 <!-- Trapèze droit -->
                 <ellipse class="zone" data-zone="Trapèze gauche" cx="88" cy="50" rx="12" ry="10"/>
                 <!-- Haut du dos -->
@@ -881,31 +881,31 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
                 <!-- Lombaires -->
                 <rect class="zone" data-zone="Lombaires" x="42" y="68" width="36" height="20" rx="4"/>
                 <!-- Fessier gauche -->
-                <ellipse class="zone" data-zone="Fessier droit" cx="50" cy="104" rx="13" ry="12"/>
+                <ellipse class="zone" data-zone="Fessier droite" cx="50" cy="104" rx="13" ry="12"/>
                 <!-- Fessier droit -->
                 <ellipse class="zone" data-zone="Fessier gauche" cx="70" cy="104" rx="13" ry="12"/>
                 <!-- Bras gauche arr -->
-                <rect class="zone" data-zone="Bras droit (arr.)" x="18" y="62" width="13" height="30" rx="6"/>
+                <rect class="zone" data-zone="Bras droite (arr.)" x="18" y="62" width="13" height="30" rx="6"/>
                 <!-- Bras droit arr -->
                 <rect class="zone" data-zone="Bras gauche (arr.)" x="89" y="62" width="13" height="30" rx="6"/>
                 <!-- Ischios gauche -->
-                <rect class="zone" data-zone="Ischios droit" x="38" y="118" width="19" height="36" rx="6"/>
+                <rect class="zone" data-zone="Ischios droite" x="38" y="118" width="19" height="36" rx="6"/>
                 <!-- Ischios droit -->
                 <rect class="zone" data-zone="Ischios gauche" x="63" y="118" width="19" height="36" rx="6"/>
                 <!-- Creux du genou gauche -->
-                <rect class="zone" data-zone="Creux genou droit" x="39" y="156" width="17" height="14" rx="5"/>
+                <rect class="zone" data-zone="Creux genou droite" x="39" y="156" width="17" height="14" rx="5"/>
                 <!-- Creux du genou droit -->
                 <rect class="zone" data-zone="Creux genou gauche" x="64" y="156" width="17" height="14" rx="5"/>
                 <!-- Mollet gauche -->
-                <rect class="zone" data-zone="Mollet droit" x="40" y="172" width="15" height="38" rx="5"/>
+                <rect class="zone" data-zone="Mollet droite" x="40" y="172" width="15" height="38" rx="5"/>
                 <!-- Mollet droit -->
                 <rect class="zone" data-zone="Mollet gauche" x="65" y="172" width="15" height="38" rx="5"/>
                 <!-- Tendon Achille gauche -->
-                <rect class="zone" data-zone="Tendon Achille droit" x="41" y="212" width="13" height="10" rx="4"/>
+                <rect class="zone" data-zone="Tendon Achille droite" x="41" y="212" width="13" height="10" rx="4"/>
                 <!-- Tendon Achille droit -->
                 <rect class="zone" data-zone="Tendon Achille gauche" x="66" y="212" width="13" height="10" rx="4"/>
                 <!-- Talon gauche -->
-                <ellipse class="zone" data-zone="Talon droit" cx="47" cy="230" rx="9" ry="7"/>
+                <ellipse class="zone" data-zone="Talon droite" cx="47" cy="230" rx="9" ry="7"/>
                 <!-- Talon droit -->
                 <ellipse class="zone" data-zone="Talon gauche" cx="73" cy="230" rx="9" ry="7"/>
               </svg>
@@ -1764,14 +1764,11 @@ function getAlertesDuJour(sk){const data=getVizData();if(!data.length)return{dk:
 function formatDouleur(str){
   if(!str)return"";
   return str
-    // Ajouter espace avant parenthèse si manquant : "Zone(vive)" → "Zone (vive)"
     .replace(/([^\s])\((\w+)\)/g,"$1 ($2)")
-    // Corriger doubles "e" : "gauchee" → "gauche", "droitee" → "droite"
     .replace(/gauchee/gi,"gauche")
     .replace(/droitee/gi,"droite")
-    // Corriger "droit" → "droite" dans les zones (Cheville droit → Cheville droite)
-    .replace(/\b(Cheville|Cuisse|Genou|Tibia|Pied|Bras|Avant-bras|Épaule|Epaule)\s+droit\b/gi,(m,z)=>z+" droite")
-    // Traduire les intensités en français lisible
+    // "droit" seul en fin de mot → "droite" (Cheville droit, Mollet droit, etc.)
+    .replace(/\bdroit\b/gi,"droite")
     .replace(/\(vive\)/gi,"(douleur vive)")
     .replace(/\(douleur\)/gi,"(douleur)")
     .replace(/\(gene\)/gi,"(gêne)");
@@ -2014,23 +2011,23 @@ const ZONES_ARRIERE = [
   {zone:"Tête (arrière)", el:"ellipse", attrs:{cx:60,cy:18,rx:16,ry:18}},
   {zone:"Nuque", el:"rect", attrs:{x:52,y:34,w:16,h:10,rx:4}},
   {zone:"Trapèze gauche", el:"ellipse", attrs:{cx:32,cy:50,rx:12,ry:10}},
-  {zone:"Trapèze droit", el:"ellipse", attrs:{cx:88,cy:50,rx:12,ry:10}},
+  {zone:"Trapèze droite", el:"ellipse", attrs:{cx:88,cy:50,rx:12,ry:10}},
   {zone:"Haut du dos", el:"rect", attrs:{x:40,y:44,w:40,h:22,rx:5}},
   {zone:"Lombaires", el:"rect", attrs:{x:42,y:68,w:36,h:20,rx:4}},
   {zone:"Fessier gauche", el:"ellipse", attrs:{cx:50,cy:104,rx:13,ry:12}},
-  {zone:"Fessier droit", el:"ellipse", attrs:{cx:70,cy:104,rx:13,ry:12}},
+  {zone:"Fessier droite", el:"ellipse", attrs:{cx:70,cy:104,rx:13,ry:12}},
   {zone:"Bras gauche (arr.)", el:"rect", attrs:{x:18,y:62,w:13,h:30,rx:6}},
-  {zone:"Bras droit (arr.)", el:"rect", attrs:{x:89,y:62,w:13,h:30,rx:6}},
+  {zone:"Bras droite (arr.)", el:"rect", attrs:{x:89,y:62,w:13,h:30,rx:6}},
   {zone:"Ischios gauche", el:"rect", attrs:{x:38,y:118,w:19,h:36,rx:6}},
-  {zone:"Ischios droit", el:"rect", attrs:{x:63,y:118,w:19,h:36,rx:6}},
+  {zone:"Ischios droite", el:"rect", attrs:{x:63,y:118,w:19,h:36,rx:6}},
   {zone:"Creux genou gauche", el:"rect", attrs:{x:39,y:156,w:17,h:14,rx:5}},
-  {zone:"Creux genou droit", el:"rect", attrs:{x:64,y:156,w:17,h:14,rx:5}},
+  {zone:"Creux genou droite", el:"rect", attrs:{x:64,y:156,w:17,h:14,rx:5}},
   {zone:"Mollet gauche", el:"rect", attrs:{x:40,y:172,w:15,h:38,rx:5}},
-  {zone:"Mollet droit", el:"rect", attrs:{x:65,y:172,w:15,h:38,rx:5}},
+  {zone:"Mollet droite", el:"rect", attrs:{x:65,y:172,w:15,h:38,rx:5}},
   {zone:"Tendon Achille gauche", el:"rect", attrs:{x:41,y:212,w:13,h:10,rx:4}},
-  {zone:"Tendon Achille droit", el:"rect", attrs:{x:66,y:212,w:13,h:10,rx:4}},
+  {zone:"Tendon Achille droite", el:"rect", attrs:{x:66,y:212,w:13,h:10,rx:4}},
   {zone:"Talon gauche", el:"ellipse", attrs:{cx:47,cy:230,rx:9,ry:7}},
-  {zone:"Talon droit", el:"ellipse", attrs:{cx:73,cy:230,rx:9,ry:7}},
+  {zone:"Talon droite", el:"ellipse", attrs:{cx:73,cy:230,rx:9,ry:7}},
 ];
 
 const INTENSITE_COLORS = {
@@ -2213,25 +2210,6 @@ function buildHeatmapSVG(svgId, zonesList, zoneCounts) {
     shape.setAttribute("stroke", stroke);
     shape.setAttribute("stroke-width", "1.5");
     svg.appendChild(shape);
-
-    // Afficher le nombre de signalements sur la zone blessée
-    if (counts.total > 0) {
-      const cx = el==="ellipse" ? attrs.cx : (attrs.x + attrs.w/2);
-      const cy = el==="ellipse" ? attrs.cy : (attrs.y + attrs.h/2);
-      const circle = document.createElementNS(ns,"circle");
-      circle.setAttribute("cx", cx); circle.setAttribute("cy", cy);
-      circle.setAttribute("r", "5");
-      circle.setAttribute("fill", counts.vive>0?"#f44336":counts.douleur>0?"#ff9800":"#ffc107");
-      circle.setAttribute("stroke","#fff"); circle.setAttribute("stroke-width","1");
-      svg.appendChild(circle);
-      const txt = document.createElementNS(ns,"text");
-      txt.setAttribute("x", cx); txt.setAttribute("y", cy+1);
-      txt.setAttribute("text-anchor","middle"); txt.setAttribute("dominant-baseline","middle");
-      txt.setAttribute("font-size","5"); txt.setAttribute("font-weight","bold");
-      txt.setAttribute("fill","#fff"); txt.setAttribute("pointer-events","none");
-      txt.textContent = counts.total;
-      svg.appendChild(txt);
-    }
   });
 
   // Ajouter visage (face avant) ou cheveux (face arrière) par-dessus
