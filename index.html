@@ -1792,6 +1792,8 @@ function appliquerModeAffichage(){
     if(ci) ci.style.display="none";
     if(sl) sl.style.display="flex";
     if(fc) fc.style.display="none";
+    const tabs = document.getElementById("statsMobileTabs");
+    if(tabs) delete tabs.dataset.initialized;
     setTimeout(initStatsMobileTabs, 50);
   } else {
     // Onglet équipe
@@ -2476,22 +2478,38 @@ function switchStatsMobileTab(side){
 function initStatsMobileTabs(){
   const tabs = document.getElementById("statsMobileTabs");
   if(!tabs) return;
-  // Afficher les onglets seulement sur mobile
   const isMobile = window.innerWidth <= 900;
   tabs.style.display = isMobile ? "flex" : "none";
-  if(isMobile){
-    // Réinitialiser sur onglet gauche par défaut
-    switchStatsMobileTab("left");
-  } else {
-    // Desktop : tout afficher
+  if(!isMobile){
+    // Desktop : tout afficher, pas d'onglets
     const left = document.getElementById("statsLayoutLeft");
     const right = document.getElementById("statsLayoutRight");
     if(left) left.classList.remove("stats-mobile-hidden");
     if(right) right.classList.remove("stats-mobile-hidden");
   }
+  // Sur mobile : ne PAS réinitialiser l'onglet actif si déjà initialisé
+  if(isMobile && !tabs.dataset.initialized){
+    tabs.dataset.initialized = "1";
+    switchStatsMobileTab("left");
+  }
 }
 
-window.addEventListener("resize", initStatsMobileTabs);
+window.addEventListener("resize", ()=>{
+  // Ne recalculer que si on passe vraiment desktop↔mobile
+  const isMobile = window.innerWidth <= 900;
+  const tabs = document.getElementById("statsMobileTabs");
+  if(!tabs) return;
+  const wasShown = tabs.style.display !== "none";
+  if(isMobile !== wasShown) initStatsMobileTabs();
+  else if(!isMobile){
+    // Repasser en desktop : tout afficher
+    const left = document.getElementById("statsLayoutLeft");
+    const right = document.getElementById("statsLayoutRight");
+    if(left) left.classList.remove("stats-mobile-hidden");
+    if(right) right.classList.remove("stats-mobile-hidden");
+    tabs.style.display = "none";
+  }
+});
 function notifierEquipeWhatsApp(){
   const bar = document.getElementById("notifBar");
   if(bar.style.display !== "none"){fermerNotifBar();return;}
