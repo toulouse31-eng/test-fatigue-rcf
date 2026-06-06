@@ -414,6 +414,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .joueur-row:hover{background:#f4fbf0;border-color:#c8ddb0;}
 .joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 120px 52px;cursor:pointer;}
 .joueur-row.selected-for-delete{background:#fff0f0 !important;border-color:#ffaaaa !important;}
+.joueur-row.pas-repondu{background:#fffdf0;border-color:#ffe082;}
+.joueur-row.pas-repondu:hover{background:#fff8e1;border-color:#ffca28;}
 .joueur-checkbox{height:18px;border-radius:4px;border:2px solid #c8ddb0;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;width:0;opacity:0;}
 .select-mode .joueur-checkbox{width:18px;opacity:1;}
 .selected-for-delete .joueur-checkbox{background:#cc0000;border-color:#cc0000;}
@@ -1907,6 +1909,7 @@ async function buildCoachInterface(){
 
   joueurs.forEach(nom => {
     const rec = lastByPlayer[nom];
+    const pasRepondu = !rec;
     const dotClass = rec ? (ZONE_DOT[rec.zoneClass]||"dot-gris") : "dot-gris";
     const zoneInfo = rec ? (ZONE_LABEL[rec.zoneClass]||["—","#f0f0f0","#666"]) : null;
     const denom = rec ? (rec.naMatch?20:25) : 25;
@@ -1914,28 +1917,32 @@ async function buildCoachInterface(){
     const dateText = rec ? (() => {const d=getDFromS(rec.seance)||new Date(rec.date);return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;})() : "";
 
     const row = document.createElement("div");
-    row.className = "joueur-row";
+    row.className = "joueur-row" + (pasRepondu ? " pas-repondu" : "");
     row.dataset.nom = nom;
-    const naText = rec && rec.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;"> (N/A)</span>' : '';
+    const naText = rec && rec.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:4px;">n\'a pas joué</span>' : '';
+    const noRespText = pasRepondu ? '<span style="font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;">⏳ pas répondu</span>' : '';
     row.innerHTML = `
       <div class="joueur-checkbox"><span class="joueur-checkbox-tick">✓</span></div>
       <div class="joueur-dot ${dotClass}"></div>
-      <div class="joueur-nom">${nom}${naText}</div>
+      <div class="joueur-nom">${nom}${naText}${noRespText}</div>
       <div class="joueur-score">${scoreText}</div>
-      ${zoneInfo ? `<div class="joueur-zone" style="background:${zoneInfo[1]};color:${zoneInfo[2]};">${zoneInfo[0]}</div>` : '<div class="joueur-zone" style="background:#f0f0f0;color:#888;">—</div>'}
+      ${zoneInfo ? `<div class="joueur-zone" style="background:${zoneInfo[1]};color:${zoneInfo[2]};">${zoneInfo[0]}</div>` : '<div class="joueur-zone" style="background:#fff8e1;color:#cc8800;font-size:11px;">En attente</div>'}
       <div class="joueur-date">${dateText}</div>
     `;
     row.addEventListener("click", ()=>toggleJoueurSelect(row));
     grid.appendChild(row);
   });
 
-  // Trier : alertes en premier
+  // Trier : alertes en premier, pas répondu à la fin
   const rows = [...grid.querySelectorAll(".joueur-row")];
-  const order = {"dot-rouge":0,"dot-orange":1,"dot-jaune":2,"dot-gris":3,"dot-vert-clair":4,"dot-vert-fonce":5};
+  const order = {"dot-rouge":0,"dot-orange":1,"dot-jaune":2,"dot-vert-clair":3,"dot-vert-fonce":4,"dot-gris":5};
   rows.sort((a,b)=>{
     const da = a.querySelector(".joueur-dot").className.split(" ")[1];
     const db = b.querySelector(".joueur-dot").className.split(" ")[1];
-    return (order[da]??9)-(order[db]??9);
+    // "pas répondu" toujours en dernier
+    const pa = a.classList.contains("pas-repondu") ? 10 : (order[da]??9);
+    const pb = b.classList.contains("pas-repondu") ? 10 : (order[db]??9);
+    return pa - pb;
   });
   rows.forEach(r=>grid.appendChild(r));
 }
