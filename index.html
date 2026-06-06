@@ -258,11 +258,13 @@ body.player-mode .app-body{justify-content:center;padding:0;gap:0;}
 body.coach-mode .coach-only{display:block;}
 /* Mode coach ON : cacher le formulaire */
 body.coach-mode .form-card{display:none;}
-body:not(.coach-mode):not(.player-mode) #coachInterface{display:flex !important;flex-direction:column;}
-body:not(.coach-mode):not(.player-mode) #formCard{display:none !important;}
 body.player-mode #coachInterface{display:none !important;}
 body.player-mode #formCard{display:flex !important;flex-direction:column;}
 body.coach-mode #appContent{background:#1e2e1e !important;}
+/* Par défaut : tout caché, géré par JS via appliquerModeAffichage() */
+#coachInterface{display:none;}
+#formCard{display:none;}
+#statsLayout{display:none;}
 
 /* ===== LAYOUT MODE STATS : 2 colonnes ===== */
 .stats-layout{display:flex;gap:20px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;padding:20px 24px;box-sizing:border-box;}
