@@ -628,10 +628,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     </div>
     <div class="topbar-right">
       <button type="button" class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span id="currentTeamLabel">—</span></button>
-      <button type="button" class="tbadge" id="modeCoachBtn" onclick="toggleModeCoach()" aria-pressed="false">
-        <span class="tbadge-coach-icon">Coach</span>
-        <span class="tbadge-coach-text">Mode coach OFF</span>
-      </button>
+      <button type="button" class="tbadge active" id="tabEquipe" onclick="switchTab('equipe')">👥 Équipe</button>
+      <button type="button" class="tbadge" id="tabStats" onclick="switchTab('stats')">📊 Stats</button>
       <!-- Avatar menu -->
       <div style="position:relative;" id="avatarWrapper">
         <button type="button" class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
@@ -1089,7 +1087,8 @@ auth.onAuthStateChanged(async user=>{
     currentUser=user;
     await chargerClub();
     const savedTeam=sessionStorage.getItem("rpe_team");
-    const savedCoach=sessionStorage.getItem("rpe_coach");
+    const savedTab=sessionStorage.getItem("rpe_tab");
+    if(savedTab) currentTab=savedTab;
     if(savedTeam&&(currentClub.teams||[]).includes(savedTeam)){
       currentTeam={id:savedTeam,nom:savedTeam};
       await chargerJoueursEquipe(savedTeam);
@@ -1097,14 +1096,17 @@ auth.onAuthStateChanged(async user=>{
       initApp();
       if(savedCoach){
         setTimeout(async()=>{
-          document.body.classList.add("coach-mode");
-          const btn=document.getElementById("modeCoachBtn");
-          const txtEl=btn?.querySelector(".tbadge-coach-text");
-          if(btn)btn.classList.add("coach-on");
-          if(txtEl)txtEl.textContent="Mode coach ON";
+          if(currentTab==="stats"){
+            await refreshFirestoreData();
+            setTimeout(forceResizeAllCharts,200);
+          } else {
+            buildCoachInterface();
+          }
           appliquerModeAffichage();
-          await refreshFirestoreData();
-          setTimeout(forceResizeAllCharts,200);
+          // Mettre à jour les onglets visuellement
+          const te=document.getElementById("tabEquipe"),ts=document.getElementById("tabStats");
+          if(te)te.classList.toggle("active",currentTab==="equipe");
+          if(ts)ts.classList.toggle("active",currentTab==="stats");
         },100);
       }
     } else {
@@ -1146,7 +1148,7 @@ function renderTeamScreen(){
   }
 }
 async function selectTeam(n){currentTeam={id:n,nom:n};sessionStorage.setItem("rpe_team",n);await chargerJoueursEquipe(n);showScreen("appContent");initApp();}
-function backToTeamSelect(){if(playerMode)return;currentTeam=null;sessionStorage.removeItem("rpe_team");showScreen("teamScreen");renderTeamScreen();}
+function backToTeamSelect(){if(playerMode)return;currentTeam=null;sessionStorage.removeItem("rpe_team");sessionStorage.removeItem("rpe_tab");currentTab="equipe";showScreen("teamScreen");renderTeamScreen();}
 function toggleAddTeam(){const r=document.getElementById("teamAddRow");r.style.display=r.style.display==="none"?"flex":"none";}
 async function addTeam(){
   const i=document.getElementById("newTeamInput"),n=i.value.trim();if(!n)return;
@@ -1276,8 +1278,15 @@ async function initApp(){
     if(location.search && !location.search.includes("club=")) {
       history.replaceState(null,"",location.pathname);
     }
+    const savedTab=sessionStorage.getItem("rpe_tab");
+    if(savedTab) currentTab=savedTab;
     appliquerModeAffichage();
-    refreshFirestoreData();
+    // Mettre à jour les onglets visuellement
+    const te=document.getElementById("tabEquipe"),ts=document.getElementById("tabStats");
+    if(te)te.classList.toggle("active",currentTab==="equipe");
+    if(ts)ts.classList.toggle("active",currentTab==="stats");
+    if(currentTab==="stats") refreshFirestoreData();
+    else buildCoachInterface();
   }
 }
 function majAvatar(){
@@ -1512,8 +1521,6 @@ async function refreshFirestoreData(){
     if(st)st.textContent=`${enregistrementsSheets.length} réponses chargées`;
   }catch(e){console.warn("Firestore fallback GS:",e.message);enregistrementsSheets=await chargerGSBackup();if(st)st.textContent=`${enregistrementsSheets.length} réponses (Google Sheets)`;}
   buildStatsSeanceSelect();buildAlertSeanceSelect();buildSparklineSelect();buildTop5Charts();buildDouleurDashboard();
-  await buildCoachInterface();
-  // Appliquer le mode EN DERNIER après que tout soit construit
   appliquerModeAffichage();
 }
 function setSyncStatus(msg,type){const el=document.getElementById("syncStatusBar");if(!el)return;el.textContent=msg;el.className="sync-bar "+(type||"");setTimeout(()=>{el.textContent="";el.className="sync-bar";},5000);}
@@ -1534,31 +1541,49 @@ function resetForm(cr){const f=document.getElementById("fatigueForm");
 
 function forceResizeAllCharts(){resizeC("topFatigueCanvas");resizeC("topFormeCanvas");drawTop5Now();resizeSparklineCanvas();drawSparklineNow();}
 
-// ===== GESTION AFFICHAGE SELON MODE =====
-function appliquerModeAffichage(){
-  const isCoachOn = document.body.classList.contains("coach-mode");
-  const isPlayerMode = playerMode;
-  
-  const ci = document.getElementById("coachInterface");       // Liste joueurs
-  const sc = document.querySelector(".stats-card");            // Synthèse rapide
-  const ss = document.getElementById("stats-equipe");         // Stats équipe
-  const fc = document.getElementById("formCard");             // Formulaire joueur
-  const sb = document.getElementById("syncStatusBar");
+// ===== NAVIGATION PAR ONGLETS =====
+let currentTab = "equipe"; // "equipe" ou "stats"
 
-  if(isPlayerMode){
-    // MODE JOUEUR : formulaire uniquement
+function switchTab(tab){
+  if(playerMode) return;
+  currentTab = tab;
+  sessionStorage.setItem("rpe_tab", tab);
+  appliquerModeAffichage();
+  // Mettre à jour les onglets
+  const te = document.getElementById("tabEquipe");
+  const ts = document.getElementById("tabStats");
+  if(te) te.classList.toggle("active", tab==="equipe");
+  if(ts) ts.classList.toggle("active", tab==="stats");
+  // Charger les stats si besoin
+  if(tab==="stats"){
+    refreshFirestoreData();
+    setTimeout(forceResizeAllCharts, 150);
+  } else {
+    buildCoachInterface();
+  }
+}
+
+function appliquerModeAffichage(){
+  const ci = document.getElementById("coachInterface");
+  const sc = document.querySelector(".stats-card");
+  const ss = document.getElementById("stats-equipe");
+  const fc = document.getElementById("formCard");
+
+  if(playerMode){
     if(ci) ci.style.display="none";
     if(sc) sc.style.display="none";
     if(ss) ss.style.display="none";
     if(fc) fc.style.display="flex";
-  } else if(isCoachOn){
-    // MODE COACH ON : stats uniquement
+    // Cacher onglets
+    const te=document.getElementById("tabEquipe"),ts=document.getElementById("tabStats");
+    if(te)te.style.display="none";if(ts)ts.style.display="none";
+  } else if(currentTab==="stats"){
     if(ci) ci.style.display="none";
     if(sc) sc.style.display="block";
     if(ss) ss.style.display="block";
     if(fc) fc.style.display="none";
   } else {
-    // MODE COACH OFF : liste joueurs uniquement
+    // Onglet équipe
     if(ci){ci.style.display="flex";ci.style.flexDirection="column";}
     if(sc) sc.style.display="none";
     if(ss) ss.style.display="none";
@@ -1566,24 +1591,7 @@ function appliquerModeAffichage(){
   }
 }
 
-async function toggleModeCoach(){
-  const btn=document.getElementById("modeCoachBtn");
-  const txtEl=btn?.querySelector(".tbadge-coach-text");
-  document.body.classList.toggle("coach-mode");
-  const isOn=document.body.classList.contains("coach-mode");
-  if(btn)btn.classList.toggle("coach-on",isOn);
-  btn?.setAttribute("aria-pressed",isOn?"true":"false");
-  if(txtEl)txtEl.textContent=isOn?"Mode coach ON":"Mode coach OFF";
-  if(isOn){
-    sessionStorage.setItem("rpe_coach","1");
-    await refreshFirestoreData();
-    setTimeout(forceResizeAllCharts,120);
-  } else {
-    sessionStorage.removeItem("rpe_coach");
-    buildCoachInterface();
-  }
-  appliquerModeAffichage();
-}
+function toggleModeCoach(){} // remplacé par onglets
 function exportPDF(){
   const data=getVizData(),keys=getKeysSorted();
   const dateKey=keys[keys.length-1]||null;
