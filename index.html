@@ -1063,7 +1063,7 @@ async function doRegister(){
     await db.collection("clubs").doc(c.user.uid).set({nom:club,coachEmail:e,teams:[],players:{},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
-function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");sessionStorage.removeItem("rpe_coach");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
+function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
 function tErr(c){return{"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court.","auth/invalid-credential":"Email ou mot de passe incorrect."}[c]||"Erreur : "+c;}
 
 auth.onAuthStateChanged(async user=>{
@@ -1094,21 +1094,7 @@ auth.onAuthStateChanged(async user=>{
       await chargerJoueursEquipe(savedTeam);
       showScreen("appContent");
       initApp();
-      if(savedCoach){
-        setTimeout(async()=>{
-          if(currentTab==="stats"){
-            await refreshFirestoreData();
-            setTimeout(forceResizeAllCharts,200);
-          } else {
-            buildCoachInterface();
-          }
-          appliquerModeAffichage();
-          // Mettre à jour les onglets visuellement
-          const te=document.getElementById("tabEquipe"),ts=document.getElementById("tabStats");
-          if(te)te.classList.toggle("active",currentTab==="equipe");
-          if(ts)ts.classList.toggle("active",currentTab==="stats");
-        },100);
-      }
+
     } else {
       showScreen("teamScreen");
       renderTeamScreen();
@@ -1118,12 +1104,7 @@ auth.onAuthStateChanged(async user=>{
   }
 
   const splashEl=document.getElementById("splashScreen");
-  const savedCoachCheck=sessionStorage.getItem("rpe_coach");
-  if(savedCoachCheck){
-    setTimeout(()=>{if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}},600);
-  } else {
-    if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}
-  }
+  if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}
 });
 
 // ===== CLUB =====
