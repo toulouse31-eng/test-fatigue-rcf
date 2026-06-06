@@ -24,7 +24,8 @@
   --vert-fort:#005522; --vert-fort-bg:#c0ecc8; --vert-fort-border:#55bb77;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:var(--blanc);}
+html{overflow-x:hidden;}
+body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:var(--blanc);overflow-x:hidden;max-width:100vw;}
 
 /* ===== ÉCRANS ===== */
 .screen{display:none;min-height:100vh;}
@@ -401,19 +402,19 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .heatmap-corps{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
 .heatmap-vue{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .heatmap-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;}
-.top-zones{margin-top:4px;max-height:280px;overflow-y:auto;padding-right:6px;}
+.top-zones{margin-top:4px;max-height:280px;overflow-y:auto;padding-right:2px;}
 .top-zones::-webkit-scrollbar{width:4px;}
 .top-zones::-webkit-scrollbar-track{background:#f0f8e8;border-radius:4px;}
 .top-zones::-webkit-scrollbar-thumb{background:#c8ddb0;border-radius:4px;}
 .top-zones::-webkit-scrollbar-thumb:hover{background:#8dc63f;}
-.top-zone-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;max-width:320px;}
-.top-zone-name{font-size:12px;color:#3a5a3a;width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.top-zone-bar-bg{width:160px;flex:none;background:#e0ecd0;border-radius:999px;height:8px;}
+.top-zone-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;width:100%;box-sizing:border-box;}
+.top-zone-name{font-size:12px;color:#3a5a3a;width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-zone-bar-bg{flex:1;min-width:40px;background:#e0ecd0;border-radius:999px;height:8px;overflow:hidden;}
 .top-zone-bar-fill{height:8px;border-radius:999px;background:#f44336;}
-.top-zone-val{font-size:11px;font-weight:700;color:#3a5a3a;min-width:20px;text-align:right;}
+.top-zone-val{font-size:11px;font-weight:700;color:#3a5a3a;width:16px;flex-shrink:0;text-align:right;}
 
 /* ===== INTERFACE COACH ===== */
-.coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:16px auto 0;width:calc(100% - 48px);box-sizing:border-box;}
+.coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:16px auto 0;width:calc(100% - 48px);box-sizing:border-box;overflow-x:hidden;}
 /* Stats row aligned with joueurs grid */
 .coach-stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:nowrap;width:100%;}
 /* Stats card dans le nouveau layout */
