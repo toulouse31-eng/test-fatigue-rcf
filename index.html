@@ -511,6 +511,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-empty{text-align:center;padding:32px;color:#8aaa7a;font-size:14px;}
 .coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 12px;flex:1 1 0;min-width:0;text-align:center;overflow:hidden;}
 .coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.coach-stat-date{font-size:16px;font-weight:900;color:#1a2a1a;line-height:1.2;text-align:center;}
 .coach-stat-label{font-size:10px;color:#8aaa7a;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 
@@ -1952,7 +1953,7 @@ async function buildCoachInterface(){
         <div class="coach-stat-label">En alerte</div>
       </div>
       <div class="coach-stat-box">
-        <div class="coach-stat-num" style="font-size:13px;line-height:1.3;color:#1a2a1a;font-weight:800;">${lastDate}</div>
+        <div class="coach-stat-date">${lastDate}</div>
         <div class="coach-stat-label">Dernière séance</div>
       </div>
     `;
