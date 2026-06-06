@@ -401,7 +401,11 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .heatmap-corps{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
 .heatmap-vue{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .heatmap-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;}
-.top-zones{margin-top:12px;}
+.top-zones{margin-top:4px;max-height:280px;overflow-y:auto;padding-right:6px;}
+.top-zones::-webkit-scrollbar{width:4px;}
+.top-zones::-webkit-scrollbar-track{background:#f0f8e8;border-radius:4px;}
+.top-zones::-webkit-scrollbar-thumb{background:#c8ddb0;border-radius:4px;}
+.top-zones::-webkit-scrollbar-thumb:hover{background:#8dc63f;}
 .top-zone-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;max-width:320px;}
 .top-zone-name{font-size:12px;color:#3a5a3a;width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .top-zone-bar-bg{width:160px;flex:none;background:#e0ecd0;border-radius:999px;height:8px;}
@@ -957,15 +961,44 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
               <svg class="corps-svg" id="corpsSvgArriere" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
                 <!-- Tête arrière -->
                 <ellipse class="zone" data-zone="Tête (arrière)" cx="60" cy="18" rx="16" ry="18"/>
-                <!-- Cheveux améliorés -->
-                <ellipse cx="60" cy="10" rx="14" ry="10" fill="#7aaa6a" opacity="0.7" pointer-events="none"/>
-                <path d="M44 18 Q42 8 48 3 Q54 -1 60 0 Q66 -1 72 3 Q78 8 76 18" fill="#7aaa6a" opacity="0.85" pointer-events="none"/>
-                <path d="M44 18 Q41 22 43 28" stroke="#5a8a5a" stroke-width="2.5" fill="none" stroke-linecap="round" pointer-events="none"/>
-                <path d="M76 18 Q79 22 77 28" stroke="#5a8a5a" stroke-width="2.5" fill="none" stroke-linecap="round" pointer-events="none"/>
-                <path d="M52 1 Q50 6 48 12" stroke="#5a8a5a" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6" pointer-events="none"/>
-                <path d="M60 0 Q60 6 60 12" stroke="#5a8a5a" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6" pointer-events="none"/>
-                <path d="M68 1 Q70 6 72 12" stroke="#5a8a5a" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6" pointer-events="none"/>
                 <!-- Nuque -->
+                <rect class="zone" data-zone="Nuque" x="52" y="34" width="16" height="10" rx="4"/>
+                <!-- Trapèze gauche (gauche écran = gauche corps vue de dos) -->
+                <ellipse class="zone" data-zone="Trapèze gauche" cx="32" cy="50" rx="12" ry="10"/>
+                <!-- Trapèze droite -->
+                <ellipse class="zone" data-zone="Trapèze droite" cx="88" cy="50" rx="12" ry="10"/>
+                <!-- Haut du dos -->
+                <rect class="zone" data-zone="Haut du dos" x="40" y="44" width="40" height="22" rx="5"/>
+                <!-- Lombaires -->
+                <rect class="zone" data-zone="Lombaires" x="42" y="68" width="36" height="20" rx="4"/>
+                <!-- Fessier gauche -->
+                <ellipse class="zone" data-zone="Fessier gauche" cx="50" cy="104" rx="13" ry="12"/>
+                <!-- Fessier droite -->
+                <ellipse class="zone" data-zone="Fessier droite" cx="70" cy="104" rx="13" ry="12"/>
+                <!-- Bras gauche arr. -->
+                <rect class="zone" data-zone="Bras gauche (arr.)" x="18" y="62" width="13" height="30" rx="6"/>
+                <!-- Bras droite arr. -->
+                <rect class="zone" data-zone="Bras droite (arr.)" x="89" y="62" width="13" height="30" rx="6"/>
+                <!-- Ischios gauche -->
+                <rect class="zone" data-zone="Ischios gauche" x="38" y="118" width="19" height="36" rx="6"/>
+                <!-- Ischios droite -->
+                <rect class="zone" data-zone="Ischios droite" x="63" y="118" width="19" height="36" rx="6"/>
+                <!-- Creux genou gauche -->
+                <rect class="zone" data-zone="Creux genou gauche" x="39" y="156" width="17" height="14" rx="5"/>
+                <!-- Creux genou droite -->
+                <rect class="zone" data-zone="Creux genou droite" x="64" y="156" width="17" height="14" rx="5"/>
+                <!-- Mollet gauche -->
+                <rect class="zone" data-zone="Mollet gauche" x="40" y="172" width="15" height="38" rx="5"/>
+                <!-- Mollet droite -->
+                <rect class="zone" data-zone="Mollet droite" x="65" y="172" width="15" height="38" rx="5"/>
+                <!-- Tendon Achille gauche -->
+                <rect class="zone" data-zone="Tendon Achille gauche" x="41" y="212" width="13" height="10" rx="4"/>
+                <!-- Tendon Achille droite -->
+                <rect class="zone" data-zone="Tendon Achille droite" x="66" y="212" width="13" height="10" rx="4"/>
+                <!-- Talon gauche -->
+                <ellipse class="zone" data-zone="Talon gauche" cx="47" cy="230" rx="9" ry="7"/>
+                <!-- Talon droite -->
+                <ellipse class="zone" data-zone="Talon droite" cx="73" cy="230" rx="9" ry="7"/>
                 <rect class="zone" data-zone="Nuque" x="52" y="34" width="16" height="10" rx="4"/>
                 <!-- Trapèze gauche -->
                 <ellipse class="zone" data-zone="Trapèze droite" cx="32" cy="50" rx="12" ry="10"/>
@@ -2294,7 +2327,7 @@ function buildDouleurDashboard() {
   // Top zones
   const topZonesList = document.getElementById("topZonesList");
   if (!topZonesList) return;
-  const sorted = Object.entries(zoneCounts).sort((a,b) => b[1].total - a[1].total).slice(0,6);
+  const sorted = Object.entries(zoneCounts).sort((a,b) => b[1].total - a[1].total);
   const maxCount = sorted[0]?.[1].total || 1;
   topZonesList.innerHTML = '<div style="font-size:12px;color:var(--vert);font-weight:700;margin-bottom:8px;">Zones les + touchées</div>';
   if (!sorted.length) {
