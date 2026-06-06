@@ -1919,7 +1919,7 @@ async function buildCoachInterface(){
     const row = document.createElement("div");
     row.className = "joueur-row" + (pasRepondu ? " pas-repondu" : "");
     row.dataset.nom = nom;
-    const naText = rec && rec.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:4px;">n\'a pas joué</span>' : '';
+    const naText = rec && rec.naMatch ? '<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:4px;">n\'a pas joué le dernier match</span>' : '';
     const noRespText = pasRepondu ? '<span style="font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;">⏳ pas répondu</span>' : '';
     row.innerHTML = `
       <div class="joueur-checkbox"><span class="joueur-checkbox-tick">✓</span></div>
