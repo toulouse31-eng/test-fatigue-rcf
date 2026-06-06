@@ -2125,6 +2125,14 @@ function resetDouleurs() {
   if (input) input.value = "";
 }
 
+// Normalise un nom de zone stocké (ancien format) vers le nom canonique actuel
+function normaliserZone(nom) {
+  return nom
+    .replace(/gauchee/gi, "gauche")
+    .replace(/droitee/gi, "droite")
+    .replace(/\bdroit\b/gi, "droite");
+}
+
 // ===== DASHBOARD DOULEURS COACH =====
 function buildDouleurDashboard() {
   const data = getVizData();
@@ -2142,7 +2150,7 @@ function buildDouleurDashboard() {
     zones.forEach(z => {
       // Format: "Zone (intensite)" ou "Zone(intensite)" ou juste "Zone"
       const match = z.match(/^(.+?)\s*\((\w+)\)$/);
-      const zoneName = match ? match[1].trim() : z.trim();
+      const zoneName = normaliserZone(match ? match[1].trim() : z.trim());
       const intensite = match ? match[2] : "douleur";
       if (!zoneCounts[zoneName]) zoneCounts[zoneName] = {total:0, gene:0, douleur:0, vive:0, joueurs:[]};
       zoneCounts[zoneName].total++;
