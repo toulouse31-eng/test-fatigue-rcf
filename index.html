@@ -456,21 +456,29 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .kine-btn:hover{background:#f0f8e8;}
 .kine-panel{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;margin-top:0;box-shadow:0 2px 12px rgba(0,0,0,0.07);display:none;}
 .kine-panel.open{display:block;}
-.kine-panel h3{font-size:15px;color:#3a6a1a;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-.kine-table{width:100%;border-collapse:collapse;font-size:12px;}
-.kine-table th{background:#f0f8e8;color:#3a6a1a;font-weight:700;padding:8px 10px;text-align:left;border-bottom:2px solid #c8ddb0;}
-.kine-table td{padding:7px 10px;border-bottom:1px solid #eef4e8;vertical-align:top;}
+.kine-panel h3{font-size:15px;color:#3a6a1a;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.kine-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:auto;}
+.kine-table th{background:#f0f8e8;color:#3a6a1a;font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid #c8ddb0;white-space:nowrap;}
+.kine-table td{padding:10px 12px;border-bottom:1px solid #eef4e8;vertical-align:middle;}
 .kine-table tr:hover td{background:#f8fbf4;}
-.kine-table select,.kine-table input[type="text"]{background:#f8fbf4;border:1px solid #c8ddb0;border-radius:5px;padding:3px 7px;font-size:11px;color:#1a2a1a;width:100%;}
+.kine-table td:nth-child(1){font-weight:700;color:#1a2a1a;min-width:80px;}
+.kine-table td:nth-child(2){color:#3a5a3a;min-width:130px;}
+.kine-table td:nth-child(3){min-width:90px;text-align:center;}
+.kine-table td:nth-child(4){white-space:nowrap;color:#8aaa7a;min-width:80px;}
+.kine-table td:nth-child(5){min-width:130px;}
+.kine-table td:nth-child(6){min-width:160px;}
+.kine-table select{background:#f8fbf4;border:1px solid #c8ddb0;border-radius:6px;padding:5px 8px;font-size:12px;color:#1a2a1a;width:100%;}
+.kine-table input[type="text"]{background:#f8fbf4;border:1px solid #c8ddb0;border-radius:6px;padding:5px 8px;font-size:12px;color:#1a2a1a;width:100%;}
 .kine-table select:focus,.kine-table input:focus{outline:none;border-color:#8dc63f;}
-.kine-statut{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
-.kine-statut.actif{background:#fde8e8;color:#cc0000;}
-.kine-statut.surveillance{background:#fff3e0;color:#cc6600;}
-.kine-statut.retour{background:#e8f5e9;color:#2a7a2a;}
-.kine-add-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;}
-.kine-add-row select,.kine-add-row input{flex:1;min-width:100px;padding:8px 10px;font-size:13px;border-radius:8px;border:1.5px solid #c8ddb0;background:#f8fbf4;color:#1a2a1a;}
-.kine-add-row button{padding:8px 16px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
-.kine-empty{text-align:center;padding:20px;color:#8aaa7a;font-size:13px;}
+.kine-intensite{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;}
+.kine-intensite.gene{background:#fff8e1;color:#7a5500;}
+.kine-intensite.douleur{background:#fff3e0;color:#7a3000;}
+.kine-intensite.vive{background:#ffebee;color:#7a0000;}
+.kine-add-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center;padding:12px;background:#f8fbf4;border-radius:10px;border:1px solid #eef4e8;}
+.kine-add-row select,.kine-add-row input{flex:1;min-width:100px;padding:9px 12px;font-size:13px;border-radius:8px;border:1.5px solid #c8ddb0;background:#fff;color:#1a2a1a;}
+.kine-add-row button{padding:9px 18px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;white-space:nowrap;}
+.kine-empty{text-align:center;padding:24px;color:#8aaa7a;font-size:13px;}
+.kine-wrap-scroll{overflow-x:auto;}
 .logo-upload-wrap{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 14px;background:#f8fbf4;border-radius:10px;border:1.5px dashed #c8ddb0;}
 .logo-preview-sm{width:44px;height:44px;border-radius:8px;object-fit:contain;background:#fff;border:1px solid #c8ddb0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
 .logo-preview-sm img{width:100%;height:100%;object-fit:contain;}
@@ -2298,30 +2306,33 @@ function renderKineTable(){
   const wrap=document.getElementById("kineTableWrap");
   if(!wrap)return;
   chargerKine();
-  if(!kineSuivis.length){wrap.innerHTML='<div class="kine-empty">Aucun joueur en suivi kiné.<br>Ajoute un blessé ci-dessous.</div>';return;}
-  const statutCol={actif:"#cc0000",surveillance:"#cc6600",retour:"#2a7a2a"};
-  const intensiteLabel={gene:"🟡 Gêne",douleur:"🟠 Douleur",vive:"🔴 Vive"};
-  let html=`<table class="kine-table"><thead><tr>
-    <th>Joueur</th><th>Zone</th><th>Intensité</th><th>Date</th><th>Statut</th><th>Notes</th><th></th>
+  if(!kineSuivis.length){wrap.innerHTML='<div class="kine-empty">Aucun joueur en suivi kiné.<br>Ajoute un blessé ci-dessous ou importe depuis les alertes.</div>';return;}
+  const intensiteLabel={
+    gene:'<span class="kine-intensite gene">🟡 Gêne</span>',
+    douleur:'<span class="kine-intensite douleur">🟠 Douleur</span>',
+    vive:'<span class="kine-intensite vive">🔴 Vive</span>'
+  };
+  let html=`<div class="kine-wrap-scroll"><table class="kine-table"><thead><tr>
+    <th>Joueur</th><th>Zone blessée</th><th>Intensité</th><th>Date</th><th>Statut</th><th>Notes / traitement</th><th></th>
   </tr></thead><tbody>`;
   kineSuivis.forEach((k,i)=>{
     html+=`<tr>
-      <td><strong>${k.joueur}</strong></td>
+      <td>${k.joueur}</td>
       <td>${k.zone}</td>
       <td>${intensiteLabel[k.intensite]||k.intensite}</td>
-      <td style="white-space:nowrap;color:#8aaa7a;">${k.date}</td>
+      <td>${k.date}</td>
       <td>
-        <select onchange="updateKineStatut(${i},this.value)" style="min-width:110px;">
+        <select onchange="updateKineStatut(${i},this.value)">
           <option value="actif" ${k.statut==="actif"?"selected":""}>🔴 Blessé</option>
           <option value="surveillance" ${k.statut==="surveillance"?"selected":""}>🟠 Surveillance</option>
-          <option value="retour" ${k.statut==="retour"?"selected":""}>🟢 Retour</option>
+          <option value="retour" ${k.statut==="retour"?"selected":""}>🟢 Retour jeu</option>
         </select>
       </td>
-      <td><input type="text" value="${k.notes||""}" placeholder="Notes..." onchange="updateKineNotes(${i},this.value)"/></td>
-      <td><button type="button" onclick="supprimerKine(${i})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;" title="Supprimer">×</button></td>
+      <td><input type="text" value="${(k.notes||"").replace(/"/g,"&quot;")}" placeholder="Notes..." onchange="updateKineNotes(${i},this.value)"/></td>
+      <td><button type="button" onclick="supprimerKine(${i})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:18px;line-height:1;" title="Retirer">×</button></td>
     </tr>`;
   });
-  html+=`</tbody></table>`;
+  html+=`</tbody></table></div>`;
   wrap.innerHTML=html;
 }
 
@@ -2347,30 +2358,35 @@ function updateKineNotes(i,val){kineSuivis[i].notes=val;sauvegarderKine();}
 function supprimerKine(i){if(!confirm("Retirer ce joueur du suivi kiné ?"))return;kineSuivis.splice(i,1);sauvegarderKine();renderKineTable();}
 
 function importerAlertes(){
-  // Récupérer les joueurs en alerte (orange/rouge) de la dernière séance
-  const {dk, alertes} = getAlertesDuJour(null);
-  if(!alertes.length){alert("Aucune alerte sur la dernière séance.");return;}
+  // Récupérer TOUS les joueurs de la dernière séance ayant déclaré une douleur
+  const data = getVizData();
+  const keys = getKeysSorted();
+  if(!keys.length){alert("Aucune séance disponible.");return;}
+  const dk = keys[keys.length-1];
+  const rows = data.filter(r=>getSKey(r)===dk);
+
+  // Dernière réponse par joueur
+  const lbp={};
+  rows.forEach(r=>{
+    const k=r.joueur, d=getDFromS(r.seance)||new Date(r.date);
+    if(!lbp[k])lbp[k]=r;
+    else{const d0=getDFromS(lbp[k].seance)||new Date(lbp[k].date);if(d>d0)lbp[k]=r;}
+  });
+
+  // Tous les joueurs avec une douleurZone déclarée
+  const avecDouleur = Object.values(lbp).filter(r=>r.douleurZone&&r.douleurZone.trim());
+  if(!avecDouleur.length){alert("Aucune douleur déclarée sur la dernière séance.");return;}
 
   const today=new Date();
   const dateStr=`${String(today.getDate()).padStart(2,"0")}/${String(today.getMonth()+1).padStart(2,"0")}/${today.getFullYear()}`;
   let importes=0, ignores=0;
 
-  alertes.forEach(a=>{
-    if(!a.douleurZone){
-      // Joueur en alerte sans zone déclarée : ajouter quand même avec zone vide
-      const dejaDedans=kineSuivis.find(k=>k.joueur===a.joueur&&k.statut!=="retour");
-      if(dejaDedans){ignores++;return;}
-      kineSuivis.unshift({joueur:a.joueur,zone:"—",intensite:"douleur",notes:`Alerte ${a.pourcentage}% — pas de zone déclarée`,statut:"actif",date:dateStr,id:Date.now()+Math.random()});
-      importes++;
-      return;
-    }
-    // Parser chaque zone déclarée par le joueur
+  avecDouleur.forEach(a=>{
     const zones=a.douleurZone.split(",").map(s=>s.trim()).filter(Boolean);
     zones.forEach(z=>{
       const match=z.match(/^(.+?)\s*\((\w+)\)$/);
       const zoneName=normaliserZone(match?match[1].trim():z.trim());
       const intensite=match?match[2]:"douleur";
-      // Éviter les doublons : même joueur + même zone déjà en suivi actif
       const dejaDedans=kineSuivis.find(k=>k.joueur===a.joueur&&k.zone===zoneName&&k.statut!=="retour");
       if(dejaDedans){ignores++;return;}
       kineSuivis.unshift({
