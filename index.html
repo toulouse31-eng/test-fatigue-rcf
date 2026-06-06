@@ -2173,13 +2173,13 @@ function buildDouleurDashboard() {
     const col = counts.vive > 0 ? "#f44336" : counts.douleur > 0 ? "#ff9800" : "#ffc107";
     const joueursList = counts.joueurs.length ? counts.joueurs.join(", ") : "";
     topZonesList.innerHTML += `
-      <div class="top-zone-row" style="flex-direction:column;align-items:flex-start;margin-bottom:8px;">
+      <div style="margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:6px;width:100%;">
           <div class="top-zone-name" title="${zone}" style="width:130px;">${zone}</div>
           <div class="top-zone-bar-bg" style="flex:1;"><div class="top-zone-bar-fill" style="width:${pct}%;background:${col};"></div></div>
           <div class="top-zone-val">${counts.total}</div>
         </div>
-        ${joueursList ? `<div style="font-size:10px;color:#888;margin-left:2px;margin-top:2px;">👤 ${joueursList}</div>` : ""}
+        ${joueursList ? `<div style="font-size:10px;color:#888;margin-top:1px;margin-left:2px;">👤 ${joueursList}</div>` : ""}
       </div>`;
   });
 }
@@ -2188,20 +2188,23 @@ function buildHeatmapSVG(svgId, zonesList, zoneCounts) {
   const svg = document.getElementById(svgId);
   if (!svg) return;
   svg.innerHTML = "";
+  const ns = "http://www.w3.org/2000/svg";
+
+  // Dessiner les zones colorées
   zonesList.forEach(({zone, el, attrs}) => {
     const counts = zoneCounts[zone] || {total:0, gene:0, douleur:0, vive:0};
     let fill = "#d8efd8", stroke = "#8dc63f";
-    if (counts.vive > 0)    { fill="#ffcdd2"; stroke="#f44336"; }
+    if (counts.vive > 0)     { fill="#ffcdd2"; stroke="#f44336"; }
     else if (counts.douleur>0){ fill="#ffe0b2"; stroke="#ff9800"; }
     else if (counts.gene > 0){ fill="#fff3cd"; stroke="#ffc107"; }
 
     let shape;
     if (el === "ellipse") {
-      shape = document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+      shape = document.createElementNS(ns,"ellipse");
       shape.setAttribute("cx", attrs.cx); shape.setAttribute("cy", attrs.cy);
       shape.setAttribute("rx", attrs.rx); shape.setAttribute("ry", attrs.ry);
     } else {
-      shape = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      shape = document.createElementNS(ns,"rect");
       shape.setAttribute("x", attrs.x); shape.setAttribute("y", attrs.y);
       shape.setAttribute("width", attrs.w); shape.setAttribute("height", attrs.h);
       shape.setAttribute("rx", attrs.rx || 4);
@@ -2209,11 +2212,56 @@ function buildHeatmapSVG(svgId, zonesList, zoneCounts) {
     shape.setAttribute("fill", fill);
     shape.setAttribute("stroke", stroke);
     shape.setAttribute("stroke-width", "1.5");
-    if (counts.total > 0) {
-      shape.setAttribute("title", `${zone}: ${counts.total} signalement(s)`);
-    }
     svg.appendChild(shape);
+
+    // Afficher le nombre de signalements sur la zone blessée
+    if (counts.total > 0) {
+      const cx = el==="ellipse" ? attrs.cx : (attrs.x + attrs.w/2);
+      const cy = el==="ellipse" ? attrs.cy : (attrs.y + attrs.h/2);
+      const circle = document.createElementNS(ns,"circle");
+      circle.setAttribute("cx", cx); circle.setAttribute("cy", cy);
+      circle.setAttribute("r", "5");
+      circle.setAttribute("fill", counts.vive>0?"#f44336":counts.douleur>0?"#ff9800":"#ffc107");
+      circle.setAttribute("stroke","#fff"); circle.setAttribute("stroke-width","1");
+      svg.appendChild(circle);
+      const txt = document.createElementNS(ns,"text");
+      txt.setAttribute("x", cx); txt.setAttribute("y", cy+1);
+      txt.setAttribute("text-anchor","middle"); txt.setAttribute("dominant-baseline","middle");
+      txt.setAttribute("font-size","5"); txt.setAttribute("font-weight","bold");
+      txt.setAttribute("fill","#fff"); txt.setAttribute("pointer-events","none");
+      txt.textContent = counts.total;
+      svg.appendChild(txt);
+    }
   });
+
+  // Ajouter visage (face avant) ou cheveux (face arrière) par-dessus
+  if (svgId === "heatmapAvant") {
+    // Yeux
+    const mkC = (cx,cy,r,fill)=>{const c=document.createElementNS(ns,"circle");c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r",r);c.setAttribute("fill",fill);c.setAttribute("pointer-events","none");svg.appendChild(c);};
+    mkC(55,14,2.5,"#5a8a5a"); mkC(65,14,2.5,"#5a8a5a");
+    mkC(55,14,1,"#fff"); mkC(65,14,1,"#fff");
+    // Nez
+    const nez=document.createElementNS(ns,"ellipse");
+    nez.setAttribute("cx","60");nez.setAttribute("cy","19");nez.setAttribute("rx","1.2");nez.setAttribute("ry","1.8");
+    nez.setAttribute("fill","#5a8a5a");nez.setAttribute("pointer-events","none");svg.appendChild(nez);
+    // Sourire
+    const sourire=document.createElementNS(ns,"path");
+    sourire.setAttribute("d","M55 24 Q60 28 65 24");
+    sourire.setAttribute("stroke","#5a8a5a");sourire.setAttribute("stroke-width","1.8");
+    sourire.setAttribute("fill","none");sourire.setAttribute("stroke-linecap","round");
+    sourire.setAttribute("pointer-events","none");svg.appendChild(sourire);
+    // Sourcils
+    const mkP=(d)=>{const p=document.createElementNS(ns,"path");p.setAttribute("d",d);p.setAttribute("stroke","#5a8a5a");p.setAttribute("stroke-width","1.5");p.setAttribute("fill","none");p.setAttribute("stroke-linecap","round");p.setAttribute("pointer-events","none");svg.appendChild(p);};
+    mkP("M51 10 Q54 8.5 57 10"); mkP("M63 10 Q66 8.5 69 10");
+  } else if (svgId === "heatmapArriere") {
+    // Cheveux
+    const chev=document.createElementNS(ns,"path");
+    chev.setAttribute("d","M44 18 Q42 8 48 3 Q54 -1 60 0 Q66 -1 72 3 Q78 8 76 18");
+    chev.setAttribute("fill","#7aaa6a");chev.setAttribute("opacity","0.85");
+    chev.setAttribute("pointer-events","none");svg.appendChild(chev);
+    const mkStroke=(d)=>{const p=document.createElementNS(ns,"path");p.setAttribute("d",d);p.setAttribute("stroke","#5a8a5a");p.setAttribute("stroke-width","1.5");p.setAttribute("fill","none");p.setAttribute("stroke-linecap","round");p.setAttribute("opacity","0.6");p.setAttribute("pointer-events","none");svg.appendChild(p);};
+    mkStroke("M52 1 Q50 6 48 12"); mkStroke("M60 0 Q60 6 60 12"); mkStroke("M68 1 Q70 6 72 12");
+  }
 }
 
 // Init au chargement
