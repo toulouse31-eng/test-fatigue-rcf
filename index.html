@@ -278,9 +278,30 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .stats-layout{display:flex;gap:20px;align-items:flex-start;width:100%;max-width:1100px;margin:12px auto 0;padding:0 24px 20px;box-sizing:border-box;}
 .stats-layout-left{flex:1 1 0;min-width:0;}
 .stats-layout-right{flex:0 0 340px;min-width:280px;max-width:380px;position:sticky;top:12px;}
+
+/* Onglets mobile stats — cachés sur desktop */
+.stats-mobile-tabs{display:none;}
+
 @media(max-width:900px){
-  .stats-layout{flex-direction:column;padding:12px 0;}
+  .stats-layout{flex-direction:column;padding:8px 0 20px;}
   .stats-layout-right{flex:1 1 100%;max-width:100%;position:static;}
+
+  /* Onglets mobiles */
+  .stats-mobile-tabs{
+    display:flex;gap:0;margin:0 0 12px;
+    background:#f0f8e8;border-radius:10px;padding:3px;
+    border:1px solid #c8ddb0;
+  }
+  .stats-mobile-tab{
+    flex:1;padding:9px 0;font-size:13px;font-weight:700;
+    border:none;border-radius:8px;cursor:pointer;
+    background:transparent;color:#8aaa7a;transition:all .2s;
+  }
+  .stats-mobile-tab.active{background:#fff;color:#3a6a1a;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+
+  /* Cacher/montrer les panneaux selon onglet actif */
+  .stats-layout-left.stats-mobile-hidden{display:none;}
+  .stats-layout-right.stats-mobile-hidden{display:none;}
 }
 /* Stats section dans le nouveau layout */
 .stats-layout .stats-section{display:block !important;width:100%;max-width:100%;margin:0 0 16px 0;padding:20px;}
@@ -1079,8 +1100,14 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
   <!-- ===== LAYOUT 2 COLONNES MODE STATS ===== -->
   <div class="stats-layout" id="statsLayout" style="display:none;">
 
+    <!-- Onglets mobiles (cachés sur desktop via CSS) -->
+    <div class="stats-mobile-tabs" id="statsMobileTabs" style="width:100%;display:none;">
+      <button class="stats-mobile-tab active" id="tabStatLeft" onclick="switchStatsMobileTab('left')">📊 Statistiques</button>
+      <button class="stats-mobile-tab" id="tabStatRight" onclick="switchStatsMobileTab('right')">⚡ Synthèse</button>
+    </div>
+
     <!-- COLONNE GAUCHE : Stats équipe -->
-    <div class="stats-layout-left">
+    <div class="stats-layout-left" id="statsLayoutLeft">
 
   <!-- SECTION STATS ÉQUIPE -->
   <div class="stats-section" id="stats-equipe" style="display:block !important;">
@@ -1183,7 +1210,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     </div><!-- /stats-layout-left -->
 
     <!-- COLONNE DROITE : Synthèse rapide -->
-    <div class="stats-layout-right">
+    <div class="stats-layout-right" id="statsLayoutRight">
       <div class="stats-card" id="statsCardRight" style="display:block !important;">
         <div class="stats-header-row">
           <div class="stats-title">Synthèse rapide</div>
@@ -1765,6 +1792,7 @@ function appliquerModeAffichage(){
     if(ci) ci.style.display="none";
     if(sl) sl.style.display="flex";
     if(fc) fc.style.display="none";
+    setTimeout(initStatsMobileTabs, 50);
   } else {
     // Onglet équipe
     if(ci){ci.style.display="flex";ci.style.flexDirection="column";}
@@ -2425,7 +2453,45 @@ document.addEventListener("DOMContentLoaded", () => {
 window.addEventListener("resize",()=>{if(document.body.classList.contains("coach-mode"))forceResizeAllCharts();});
 window.addEventListener("DOMContentLoaded",()=>{});
 
-// ===== NOTIFICATIONS WHATSAPP =====
+// ===== ONGLETS MOBILES STATS =====
+function switchStatsMobileTab(side){
+  const left = document.getElementById("statsLayoutLeft");
+  const right = document.getElementById("statsLayoutRight");
+  const tabL = document.getElementById("tabStatLeft");
+  const tabR = document.getElementById("tabStatRight");
+  if(!left||!right) return;
+  if(side==="left"){
+    left.classList.remove("stats-mobile-hidden");
+    right.classList.add("stats-mobile-hidden");
+    tabL.classList.add("active");
+    tabR.classList.remove("active");
+  } else {
+    right.classList.remove("stats-mobile-hidden");
+    left.classList.add("stats-mobile-hidden");
+    tabR.classList.add("active");
+    tabL.classList.remove("active");
+  }
+}
+
+function initStatsMobileTabs(){
+  const tabs = document.getElementById("statsMobileTabs");
+  if(!tabs) return;
+  // Afficher les onglets seulement sur mobile
+  const isMobile = window.innerWidth <= 900;
+  tabs.style.display = isMobile ? "flex" : "none";
+  if(isMobile){
+    // Réinitialiser sur onglet gauche par défaut
+    switchStatsMobileTab("left");
+  } else {
+    // Desktop : tout afficher
+    const left = document.getElementById("statsLayoutLeft");
+    const right = document.getElementById("statsLayoutRight");
+    if(left) left.classList.remove("stats-mobile-hidden");
+    if(right) right.classList.remove("stats-mobile-hidden");
+  }
+}
+
+window.addEventListener("resize", initStatsMobileTabs);
 function notifierEquipeWhatsApp(){
   const bar = document.getElementById("notifBar");
   if(bar.style.display !== "none"){fermerNotifBar();return;}
