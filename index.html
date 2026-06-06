@@ -410,6 +410,10 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:16px auto 0;width:calc(100% - 48px);box-sizing:border-box;}
 /* Stats row aligned with joueurs grid */
 .coach-stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:nowrap;width:100%;}
+/* Stats card dans le nouveau layout */
+.stats-layout .stats-section{display:block !important;width:100%;max-width:100%;margin:0 0 16px 0;padding:20px;}
+/* Stats card dans le nouveau layout */
+.stats-layout .stats-card{display:block !important;width:100%;max-width:100%;margin:0;}
 .coach-interface h2{font-size:18px;color:#3a6a1a;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .coach-add-row{display:flex;gap:8px;margin-bottom:16px;width:100%;box-sizing:border-box;}
 .coach-add-row input{flex:1;min-width:0;padding:10px 14px;font-size:14px;border-radius:10px;border:1.5px solid #c8ddb0;background:#f8fbf4;color:#1a2a1a;box-sizing:border-box;}
@@ -419,9 +423,9 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .joueurs-grid{display:flex;flex-direction:column;gap:4px;width:100%;}
 
 /* ===== JOUEUR ROW — DESKTOP ===== */
-.joueur-row{display:grid;grid-template-columns:0px 10px 1fr auto 130px 52px;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;width:100%;box-sizing:border-box;}
+.joueur-row{display:grid;grid-template-columns:0px 10px minmax(120px,1fr) auto minmax(80px,130px) 50px;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;border:1px solid #eef4e8;background:#fafffe;transition:all .2s;width:100%;box-sizing:border-box;}
 .joueur-row:hover{background:#f4fbf0;border-color:#c8ddb0;}
-.joueur-row.select-mode{grid-template-columns:22px 10px 1fr auto 130px 52px;cursor:pointer;}
+.joueur-row.select-mode{grid-template-columns:22px 10px minmax(120px,1fr) auto minmax(80px,130px) 50px;cursor:pointer;}
 .joueur-row.selected-for-delete{background:#fff0f0 !important;border-color:#ffaaaa !important;}
 .joueur-row.pas-repondu{background:#fffdf0;border-color:#ffe082;}
 .joueur-row.pas-repondu:hover{background:#fff8e1;border-color:#ffca28;}
@@ -440,8 +444,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .joueur-nom{font-size:14px;font-weight:600;color:#1a2a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .joueur-nom .na-text{font-size:10px;color:#aaa;font-weight:400;margin-left:4px;}
 .joueur-nom .noresp-text{font-size:10px;color:#cc8800;font-weight:600;margin-left:4px;}
-.joueur-score{font-size:11px;color:#8aaa7a;white-space:nowrap;text-align:right;}
-.joueur-zone{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis;}
+.joueur-score{font-size:11px;color:#8aaa7a;white-space:nowrap;text-align:left;}
+.joueur-zone{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:600;white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
 .joueur-date{font-size:11px;color:#aac0aa;white-space:nowrap;text-align:right;}
 
 /* ===== JOUEUR ROW — MOBILE ===== */
@@ -486,9 +490,9 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .btn-manage:hover{border-color:#cc0000;color:#cc0000;}
 .btn-manage.active{border-color:#cc0000;color:#cc0000;background:#fff5f5;}
 .coach-empty{text-align:center;padding:32px;color:#8aaa7a;font-size:14px;}
-.coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1 1 0;min-width:0;text-align:center;}
-.coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;}
-.coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
+.coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 12px;flex:1 1 0;min-width:0;text-align:center;overflow:hidden;}
+.coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.coach-stat-label{font-size:10px;color:#8aaa7a;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 
 /* ===== BOUTON WHATSAPP ===== */
@@ -1919,7 +1923,7 @@ async function buildCoachInterface(){
       <div class="coach-stat-box"><div class="coach-stat-num">${total}</div><div class="coach-stat-label">Joueurs</div></div>
       <div class="coach-stat-box"><div class="coach-stat-num">${avecReponse}</div><div class="coach-stat-label">Réponses reçues</div></div>
       <div class="coach-stat-box" style="${enAlerte>0?'background:#fff0f0;border-color:#ffaaaa;':''}"><div class="coach-stat-num" style="${enAlerte>0?'color:#cc0000;':''}">${enAlerte}</div><div class="coach-stat-label">En alerte</div></div>
-      <div class="coach-stat-box"><div class="coach-stat-num" style="font-size:14px;">${lastDate}</div><div class="coach-stat-label">Dernière séance</div></div>
+      <div class="coach-stat-box"><div class="coach-stat-num" style="font-size:13px;line-height:1.3;">${lastDate}</div><div class="coach-stat-label">Dernière séance</div></div>
     `;
   }
 
