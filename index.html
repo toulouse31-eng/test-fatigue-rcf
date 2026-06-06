@@ -1029,7 +1029,10 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
     <div class="kine-panel" id="kinePanel">
       <h3>
         Tableau de suivi des blessés
-        <button type="button" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid #c8ddb0;background:#f8fbf4;color:#5a8a5a;cursor:pointer;" onclick="exportKineCSV()">📥 Export CSV</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1.5px solid #8dc63f;background:#f0f8e8;color:#3a6a1a;cursor:pointer;font-weight:700;" onclick="importerAlertes()">⚡ Importer depuis les alertes</button>
+          <button type="button" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid #c8ddb0;background:#f8fbf4;color:#5a8a5a;cursor:pointer;" onclick="exportKineCSV()">📥 Export CSV</button>
+        </div>
       </h3>
       <div id="kineTableWrap">
         <div class="kine-empty">Aucun joueur en suivi kiné.<br>Ajoute un blessé ci-dessous.</div>
@@ -2343,7 +2346,51 @@ function updateKineStatut(i,val){kineSuivis[i].statut=val;sauvegarderKine();}
 function updateKineNotes(i,val){kineSuivis[i].notes=val;sauvegarderKine();}
 function supprimerKine(i){if(!confirm("Retirer ce joueur du suivi kiné ?"))return;kineSuivis.splice(i,1);sauvegarderKine();renderKineTable();}
 
-function exportKineCSV(){
+function importerAlertes(){
+  // Récupérer les joueurs en alerte (orange/rouge) de la dernière séance
+  const {dk, alertes} = getAlertesDuJour(null);
+  if(!alertes.length){alert("Aucune alerte sur la dernière séance.");return;}
+
+  const today=new Date();
+  const dateStr=`${String(today.getDate()).padStart(2,"0")}/${String(today.getMonth()+1).padStart(2,"0")}/${today.getFullYear()}`;
+  let importes=0, ignores=0;
+
+  alertes.forEach(a=>{
+    if(!a.douleurZone){
+      // Joueur en alerte sans zone déclarée : ajouter quand même avec zone vide
+      const dejaDedans=kineSuivis.find(k=>k.joueur===a.joueur&&k.statut!=="retour");
+      if(dejaDedans){ignores++;return;}
+      kineSuivis.unshift({joueur:a.joueur,zone:"—",intensite:"douleur",notes:`Alerte ${a.pourcentage}% — pas de zone déclarée`,statut:"actif",date:dateStr,id:Date.now()+Math.random()});
+      importes++;
+      return;
+    }
+    // Parser chaque zone déclarée par le joueur
+    const zones=a.douleurZone.split(",").map(s=>s.trim()).filter(Boolean);
+    zones.forEach(z=>{
+      const match=z.match(/^(.+?)\s*\((\w+)\)$/);
+      const zoneName=normaliserZone(match?match[1].trim():z.trim());
+      const intensite=match?match[2]:"douleur";
+      // Éviter les doublons : même joueur + même zone déjà en suivi actif
+      const dejaDedans=kineSuivis.find(k=>k.joueur===a.joueur&&k.zone===zoneName&&k.statut!=="retour");
+      if(dejaDedans){ignores++;return;}
+      kineSuivis.unshift({
+        joueur:a.joueur,
+        zone:zoneName,
+        intensite,
+        notes:`Score ${a.pourcentage}% — séance ${fmtKey(dk)||dateStr}`,
+        statut:"actif",
+        date:dateStr,
+        id:Date.now()+Math.random()
+      });
+      importes++;
+    });
+  });
+
+  sauvegarderKine();
+  renderKineTable();
+  const msg=importes>0?`✅ ${importes} entrée(s) importée(s)${ignores>0?" ("+ignores+" déjà en suivi)":"."}`:`Tous les joueurs sont déjà en suivi.`;
+  setSyncStatus(msg,"ok");
+}
   if(!kineSuivis.length){alert("Aucun suivi à exporter.");return;}
   const headers=["Joueur","Zone","Intensité","Date","Statut","Notes"];
   const rows=kineSuivis.map(k=>[k.joueur,k.zone,k.intensite,k.date,k.statut,k.notes||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(","));
