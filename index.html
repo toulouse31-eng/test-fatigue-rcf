@@ -189,13 +189,9 @@ body.coach-mode .local-list{display:block;}
 .local-list ul{padding-left:16px;margin-top:6px;}
 .local-list li{margin-bottom:4px;padding:3px 6px;border-radius:6px;font-size:13px;}
 
-/* ===== STATS CARD (coach) ===== */
-.stats-card{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;flex:1 1 100%;max-width:1100px;width:calc(100% - 48px);margin:0 auto;font-size:13px;align-self:flex-start;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
-.coach-only{display:none;}
-body.coach-mode .coach-only{display:block;}
-/* Stats card visible seulement en mode coach ON */
-.stats-card{display:none;}
-body.coach-mode .stats-card{display:block;}
+/* Stats card et section : gérés via JS (statsLayout) */
+.stats-card{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;font-size:13px;align-self:flex-start;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
+.stats-section{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 .stats-title{font-weight:700;color:#3a6a1a;font-size:14px;margin-bottom:8px;}
 .stats-line{font-size:12px;color:#2a4a2a;margin-bottom:4px;}
 .stats-indice{margin-top:8px;padding:10px;border-radius:10px;text-align:center;font-weight:700;font-size:13px;background:#f0f5ea;color:#3a6a1a;border:1px solid #c8ddb0;}
@@ -229,8 +225,7 @@ body.coach-mode .stats-card{display:block;}
 .seance-row select{background:var(--noir3);border:1px solid #2a3f2a;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--gris);flex:1;}
 
 /* ===== SECTION STATS ÉQUIPE ===== */
-.stats-section{background:#fff;border-radius:16px;border:1px solid #c8ddb0;padding:20px;margin:0 auto 16px;max-width:1100px;width:calc(100% - 48px);display:none;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
-body.coach-mode .stats-section{display:block;}
+.stats-section{margin-bottom:16px;}
 body.coach-mode .app-body{align-items:center;padding:20px 24px;flex-direction:column;}
 .stats-section h2{font-size:16px;color:#3a6a1a;margin-bottom:12px;}
 .sheets-status{font-size:11px;color:#8aaa7a;text-align:center;margin-bottom:8px;}
@@ -259,31 +254,39 @@ body.player-mode .coach-only{display:none !important;}
 body.player-mode #modeCoachBtn{display:none;}
 body.player-mode .form-card{flex:1 1 100%;max-width:100%;}
 body.player-mode .app-body{justify-content:center;padding:0;gap:0;}
+.coach-only{display:none;}
+body.coach-mode .coach-only{display:block;}
 /* Mode coach ON : cacher le formulaire */
 body.coach-mode .form-card{display:none;}
-body.coach-mode .coach-interface{display:none !important;}
 body:not(.coach-mode):not(.player-mode) #coachInterface{display:flex !important;flex-direction:column;}
 body:not(.coach-mode):not(.player-mode) #formCard{display:none !important;}
 body.player-mode #coachInterface{display:none !important;}
 body.player-mode #formCard{display:flex !important;flex-direction:column;}
 body.coach-mode #appContent{background:#1e2e1e !important;}
 
-/* RESPONSIVE */
+/* ===== LAYOUT MODE STATS : 2 colonnes ===== */
+.stats-layout{display:flex;gap:20px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;padding:20px 24px;box-sizing:border-box;}
+.stats-layout-left{flex:1 1 0;min-width:0;}
+.stats-layout-right{flex:0 0 340px;min-width:280px;max-width:380px;position:sticky;top:12px;}
+@media(max-width:900px){
+  .stats-layout{flex-direction:column;padding:12px 0;}
+  .stats-layout-right{flex:1 1 100%;max-width:100%;position:static;}
+}
+/* Stats section dans le nouveau layout */
+.stats-layout .stats-section{display:block !important;width:100%;max-width:100%;margin:0 0 16px 0;padding:20px;}
+/* Stats card dans le nouveau layout */
+.stats-layout .stats-card{display:block !important;width:100%;max-width:100%;margin:0;}
 @media(max-width:700px){
   .stats-grid{flex-direction:column;}
   .app-body{flex-direction:column;padding:0;gap:0;}
   .form-card{padding:16px;border-radius:0;border-left:none;border-right:none;box-shadow:none;flex:1 1 100%;max-width:100%;width:100%;}
   .scale button{font-size:16px;padding:11px 0;}
-  .stats-card{flex:1 1 auto;max-width:100%;border-radius:0;border-left:none;border-right:none;box-shadow:none;}
   .coach-interface{border-radius:0;border-left:none;border-right:none;box-shadow:none;width:100%;margin:0;padding:16px;}
-  .stats-section{border-radius:0;border-left:none;border-right:none;box-shadow:none;width:100%;margin:0 0 8px 0;}
   .coach-stats-row{gap:6px;flex-wrap:wrap;}
   .coach-stat-box{padding:8px 10px;min-width:60px;}
   .coach-stat-num{font-size:18px;}
   .joueur-row{padding:8px 10px;}
-}
-@media(max-width:900px){
-  .stats-card{flex:0 0 auto;max-width:100%;width:100%;}
+  .stats-layout .stats-section,.stats-layout .stats-card{border-radius:0;border-left:none;border-right:none;box-shadow:none;}
 }
 @media(min-width:900px){
   .form-card{box-shadow:0 4px 24px rgba(0,0,0,0.15);}
@@ -396,6 +399,8 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 
 /* ===== INTERFACE COACH ===== */
 .coach-interface{background:#fff;border-radius:16px;border:1px solid #c8ddb0;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:24px;flex:1 1 100%;max-width:1100px;margin:0 auto;width:calc(100% - 48px);box-sizing:border-box;}
+/* Stats row aligned with joueurs grid */
+.coach-stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:nowrap;width:100%;}
 .coach-interface h2{font-size:18px;color:#3a6a1a;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .coach-add-row{display:flex;gap:8px;margin-bottom:16px;width:100%;box-sizing:border-box;}
 .coach-add-row input{flex:1;min-width:0;padding:10px 14px;font-size:14px;border-radius:10px;border:1.5px solid #c8ddb0;background:#f8fbf4;color:#1a2a1a;box-sizing:border-box;}
@@ -430,8 +435,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .btn-manage:hover{border-color:#cc0000;color:#cc0000;}
 .btn-manage.active{border-color:#cc0000;color:#cc0000;background:#fff5f5;}
 .coach-empty{text-align:center;padding:32px;color:#8aaa7a;font-size:14px;}
-.coach-stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
-.coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1;min-width:90px;text-align:center;}
+.coach-stat-box{background:#f0f8e8;border:1px solid #c8ddb0;border-radius:10px;padding:10px 16px;flex:1 1 0;min-width:0;text-align:center;}
 .coach-stat-num{font-size:22px;font-weight:900;color:#3a6a1a;}
 .coach-stat-label{font-size:11px;color:#8aaa7a;margin-top:2px;}
 @media(max-width:600px){
@@ -913,47 +917,16 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       </div>
     </div>
 
-    <!-- STATS CARD -->
-    <div class="stats-card coach-only">
-      <div class="stats-header-row">
-        <div class="stats-title">Synthèse rapide</div>
-        <button type="button" class="export-btn no-print" onclick="exportPDF()">PDF</button>
-      </div>
-
-      <!-- PIN PARTAGE -->
-      <div class="pin-share-box">
-        <div class="pin-share-label">Lien joueurs</div>
-        <div class="pin-code-display" id="coachPinDisplay">——</div>
-        <div class="pin-link-hidden" id="coachPinLink">—</div>
-        <div class="pin-actions">
-          <button type="button" class="pin-btn" onclick="copierLienJoueur()">📋 Copier le lien</button>
-          <button type="button" class="pin-btn" onclick="regenererPin()">🔄 Nouveau PIN</button>
-        </div>
-      </div>
-
-      <div class="seance-row" style="margin-top:12px;">
-        <label>Séance :</label>
-        <select id="statsSeanceSelect"></select>
-      </div>
-      <div class="stats-line" id="statsNbJoueurs">Joueurs : 0</div>
-      <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
-      <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
-
-      <div class="stats-indice" id="statsIndiceBox"><div id="statsIndiceLabel">Indice bien-être : -</div></div>
-      <div class="stats-reco" id="statsRecoSeance">Recommandation : -</div>
-      <div class="stats-alertes"><strong style="color:var(--gris);">Alertes :</strong><br><span id="statsAlertesListe">-</span></div>
-      <div class="bar-container">
-        <div class="bar-row"><div class="bar-label" style="color:#55dd88;">Très bon</div><div class="bar-bg"><div id="barVFonce" class="bar-fill zone-vert-fonce" style="width:0%"></div></div><div class="bar-val" id="textVFonce">0</div></div>
-        <div class="bar-row"><div class="bar-label" style="color:#88dd55;">Bon état</div><div class="bar-bg"><div id="barVClair" class="bar-fill zone-vert-clair" style="width:0%"></div></div><div class="bar-val" id="textVClair">0</div></div>
-        <div class="bar-row"><div class="bar-label" style="color:#ffdd55;">Léger</div><div class="bar-bg"><div id="barJaune" class="bar-fill zone-jaune" style="width:0%"></div></div><div class="bar-val" id="textJaune">0</div></div>
-        <div class="bar-row"><div class="bar-label" style="color:#ffaa55;">Notable</div><div class="bar-bg"><div id="barOrange" class="bar-fill zone-orange" style="width:0%"></div></div><div class="bar-val" id="textOrange">0</div></div>
-        <div class="bar-row"><div class="bar-label" style="color:#ff6b6b;">Important</div><div class="bar-bg"><div id="barRouge" class="bar-fill zone-rouge" style="width:0%"></div></div><div class="bar-val" id="textRouge">0</div></div>
-      </div>
-    </div>
   </div>
 
+  <!-- ===== LAYOUT 2 COLONNES MODE STATS ===== -->
+  <div class="stats-layout" id="statsLayout" style="display:none;">
+
+    <!-- COLONNE GAUCHE : Stats équipe -->
+    <div class="stats-layout-left">
+
   <!-- SECTION STATS ÉQUIPE -->
-  <div class="stats-section" id="stats-equipe">
+  <div class="stats-section" id="stats-equipe" style="display:block !important;">
     <h2>Statistiques équipe</h2>
     <div class="sheets-status" id="sheetsStatus">Chargement...</div>
     <div class="alert-card" id="alertesDuJourCard">
@@ -1018,6 +991,50 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <button type="button" class="btn-reset no-print" style="margin-top:6px;font-size:13px;" onclick="exportFicheIndivPDF()">Fiche individuelle PDF</button>
     </div>
   </div>
+
+    </div><!-- /stats-layout-left -->
+
+    <!-- COLONNE DROITE : Synthèse rapide -->
+    <div class="stats-layout-right">
+      <div class="stats-card" id="statsCardRight" style="display:block !important;">
+        <div class="stats-header-row">
+          <div class="stats-title">Synthèse rapide</div>
+          <button type="button" class="export-btn no-print" onclick="exportPDF()">PDF</button>
+        </div>
+
+        <!-- PIN PARTAGE -->
+        <div class="pin-share-box">
+          <div class="pin-share-label">Lien joueurs</div>
+          <div class="pin-code-display" id="coachPinDisplay">——</div>
+          <div class="pin-link-hidden" id="coachPinLink">—</div>
+          <div class="pin-actions">
+            <button type="button" class="pin-btn" onclick="copierLienJoueur()">📋 Copier le lien</button>
+            <button type="button" class="pin-btn" onclick="regenererPin()">🔄 Nouveau PIN</button>
+          </div>
+        </div>
+
+        <div class="seance-row" style="margin-top:12px;">
+          <label>Séance :</label>
+          <select id="statsSeanceSelect"></select>
+        </div>
+        <div class="stats-line" id="statsNbJoueurs">Joueurs : 0</div>
+        <div class="stats-line" id="statsMoyenneScore">Score moyen : -</div>
+        <div class="stats-line" id="statsZoneDom">Zone dominante : -</div>
+
+        <div class="stats-indice" id="statsIndiceBox"><div id="statsIndiceLabel">Indice bien-être : -</div></div>
+        <div class="stats-reco" id="statsRecoSeance">Recommandation : -</div>
+        <div class="stats-alertes"><strong style="color:var(--gris);">Alertes :</strong><br><span id="statsAlertesListe">-</span></div>
+        <div class="bar-container">
+          <div class="bar-row"><div class="bar-label" style="color:#55dd88;">Très bon</div><div class="bar-bg"><div id="barVFonce" class="bar-fill zone-vert-fonce" style="width:0%"></div></div><div class="bar-val" id="textVFonce">0</div></div>
+          <div class="bar-row"><div class="bar-label" style="color:#88dd55;">Bon état</div><div class="bar-bg"><div id="barVClair" class="bar-fill zone-vert-clair" style="width:0%"></div></div><div class="bar-val" id="textVClair">0</div></div>
+          <div class="bar-row"><div class="bar-label" style="color:#ffdd55;">Léger</div><div class="bar-bg"><div id="barJaune" class="bar-fill zone-jaune" style="width:0%"></div></div><div class="bar-val" id="textJaune">0</div></div>
+          <div class="bar-row"><div class="bar-label" style="color:#ffaa55;">Notable</div><div class="bar-bg"><div id="barOrange" class="bar-fill zone-orange" style="width:0%"></div></div><div class="bar-val" id="textOrange">0</div></div>
+          <div class="bar-row"><div class="bar-label" style="color:#ff6b6b;">Important</div><div class="bar-bg"><div id="barRouge" class="bar-fill zone-rouge" style="width:0%"></div></div><div class="bar-val" id="textRouge">0</div></div>
+        </div>
+      </div>
+    </div><!-- /stats-layout-right -->
+
+  </div><!-- /stats-layout -->
 
 </div>
 <script>
@@ -1545,39 +1562,25 @@ function switchTab(tab){
 
 function appliquerModeAffichage(){
   const ci = document.getElementById("coachInterface");
-  const sc = document.querySelector(".stats-card");
-  const ss = document.getElementById("stats-equipe");
+  const sl = document.getElementById("statsLayout");
   const fc = document.getElementById("formCard");
 
   if(playerMode){
     if(ci) ci.style.display="none";
-    if(sc) sc.style.display="none";
-    if(ss) ss.style.display="none";
+    if(sl) sl.style.display="none";
     if(fc) fc.style.display="flex";
     // Cacher onglets
     const te=document.getElementById("tabEquipe"),ts=document.getElementById("tabStats");
     if(te)te.style.display="none";if(ts)ts.style.display="none";
   } else if(currentTab==="stats"){
     if(ci) ci.style.display="none";
-    if(sc) sc.style.display="block";
-    if(ss) ss.style.display="block";
+    if(sl) sl.style.display="flex";
     if(fc) fc.style.display="none";
-    // Cacher champ ajouter et grille joueurs en stats
-    const addRow=document.getElementById("coachAddRow");
-    const grid=document.getElementById("joueursGrid");
-    if(addRow) addRow.style.display="none";
-    if(grid) grid.style.display="none";
   } else {
     // Onglet équipe
     if(ci){ci.style.display="flex";ci.style.flexDirection="column";}
-    if(sc) sc.style.display="none";
-    if(ss) ss.style.display="none";
+    if(sl) sl.style.display="none";
     if(fc) fc.style.display="none";
-    // Réafficher champ ajouter et grille
-    const addRow=document.getElementById("coachAddRow");
-    const grid=document.getElementById("joueursGrid");
-    if(addRow) addRow.style.display="flex";
-    if(grid) grid.style.display="flex";
   }
 }
 
