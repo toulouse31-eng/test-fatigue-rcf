@@ -600,7 +600,11 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 .btn-save-params{padding:11px 20px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;align-self:flex-start;}
 .btn-save-params:hover{background:#6aaa1e;}
 
-/* Logo upload dans paramètres */
+/* Admin screen responsive */
+#adminScreen{overflow-y:auto !important;}
+@media(max-width:600px){
+  #adminScreen .admin-grid{grid-template-columns:1fr !important;}
+}
 .logo-params-wrap{display:flex;align-items:center;gap:16px;padding:14px;background:#f8fbf4;border-radius:12px;border:1.5px dashed #c8ddb0;margin-bottom:14px;}
 .logo-params-preview{width:72px;height:72px;border-radius:12px;background:#fff;border:1.5px solid #c8ddb0;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:28px;}
 .logo-params-preview img{width:100%;height:100%;object-fit:contain;}
@@ -714,34 +718,57 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 <!-- ============================================================ -->
 <!-- ÉCRAN ADMIN (toulouse31@gmail.com uniquement)                -->
 <!-- ============================================================ -->
-<div id="adminScreen" class="screen" style="display:none;background:#0a0f0a;">
-  <div style="font-size:20px;font-weight:900;color:#8dc63f;margin-bottom:4px;">⚙️ Admin — Team RPE</div>
-  <div style="font-size:12px;color:#3a6a3a;margin-bottom:20px;">Gestion des clubs</div>
-  <div style="width:100%;max-width:860px;display:flex;justify-content:flex-start;margin-bottom:8px;">
-    <button onclick="showAdminChoix(adminUserProfile)" style="padding:7px 14px;font-size:12px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">← Retour</button>
-  </div>
-
-  <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;width:100%;max-width:420px;box-sizing:border-box;">
-    <div style="font-size:14px;font-weight:700;color:#8dc63f;margin-bottom:14px;">➕ Créer un nouveau club</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <input type="text" id="adminClubNom" placeholder="Nom du club (ex: Racing CFF)" style="padding:12px;font-size:14px;border-radius:8px;border:1.5px solid #2a4a2a;background:#0f1a0f;color:#fff;width:100%;box-sizing:border-box;"/>
-      <input type="text" id="adminClubVille" placeholder="Ville (optionnel)" style="padding:12px;font-size:14px;border-radius:8px;border:1.5px solid #2a4a2a;background:#0f1a0f;color:#fff;width:100%;box-sizing:border-box;"/>
-      <button onclick="adminCreerClub()" style="padding:12px;font-size:14px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;">Créer le club</button>
+<div id="adminScreen" class="screen" style="display:none;background:#0a0f0a;align-items:flex-start;justify-content:flex-start;padding:0;overflow-y:auto;">
+  <div style="width:100%;max-width:900px;margin:0 auto;padding:20px 16px;box-sizing:border-box;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#8dc63f;">⚙️ Admin — Team RPE</div>
+        <div style="font-size:11px;color:#3a6a3a;">Gestion des clubs</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="showAdminChoix(adminUserProfile)" style="padding:7px 14px;font-size:12px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">← Retour</button>
+        <button onclick="doLogout()" style="padding:7px 14px;font-size:12px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#f44336;cursor:pointer;">Déconnexion</button>
+      </div>
     </div>
-    <div id="adminResult" style="margin-top:14px;padding:12px;border-radius:8px;background:#0f1a0f;display:none;">
-      <div style="font-size:12px;color:#6a8a6a;margin-bottom:6px;">Code club généré :</div>
-      <div id="adminCodeClub" style="font-size:28px;font-weight:900;color:#8dc63f;letter-spacing:4px;text-align:center;padding:8px 0;"></div>
-      <div style="font-size:11px;color:#6a8a6a;text-align:center;margin-top:4px;">À envoyer au coach du club</div>
-      <button onclick="adminCopierCode()" style="width:100%;margin-top:10px;padding:9px;font-size:13px;border-radius:8px;border:1px solid #2a4a2a;background:#1a2a1a;color:#8dc63f;cursor:pointer;">📋 Copier le code</button>
+
+    <!-- 2 colonnes -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+      <!-- Colonne gauche : créer club -->
+      <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;">
+        <div style="font-size:14px;font-weight:700;color:#8dc63f;margin-bottom:14px;">➕ Créer un nouveau club</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input type="text" id="adminClubNom" placeholder="Nom du club (ex: Racing CFF)" style="padding:12px;font-size:14px;border-radius:8px;border:1.5px solid #2a4a2a;background:#0f1a0f;color:#fff;width:100%;box-sizing:border-box;"/>
+          <input type="text" id="adminClubVille" placeholder="Ville (optionnel)" style="padding:12px;font-size:14px;border-radius:8px;border:1.5px solid #2a4a2a;background:#0f1a0f;color:#fff;width:100%;box-sizing:border-box;"/>
+          <button onclick="adminCreerClub()" style="padding:12px;font-size:14px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;">Créer le club</button>
+        </div>
+        <div id="adminResult" style="margin-top:14px;padding:14px;border-radius:8px;background:#0f1a0f;display:none;text-align:center;">
+          <div style="font-size:11px;color:#6a8a6a;margin-bottom:6px;">Code club généré</div>
+          <div id="adminCodeClub" style="font-size:32px;font-weight:900;color:#8dc63f;letter-spacing:4px;padding:4px 0;"></div>
+          <div style="font-size:11px;color:#6a8a6a;margin-top:4px;">À envoyer au coach du club</div>
+          <button onclick="adminCopierCode()" style="width:100%;margin-top:10px;padding:9px;font-size:13px;border-radius:8px;border:1px solid #2a4a2a;background:#1a2a1a;color:#8dc63f;cursor:pointer;">📋 Copier le message</button>
+        </div>
+      </div>
+
+      <!-- Colonne droite : clubs existants -->
+      <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;">
+        <div style="font-size:14px;font-weight:700;color:#8dc63f;margin-bottom:14px;">📋 Clubs existants</div>
+        <div id="adminClubsList" style="font-size:13px;color:#6a8a6a;">Chargement...</div>
+      </div>
+
     </div>
-  </div>
 
-  <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;width:100%;max-width:420px;box-sizing:border-box;margin-top:16px;">
-    <div style="font-size:14px;font-weight:700;color:#8dc63f;margin-bottom:14px;">📋 Clubs existants</div>
-    <div id="adminClubsList" style="font-size:13px;color:#6a8a6a;">Chargement...</div>
-  </div>
+    <!-- Gestion utilisateurs (pleine largeur) -->
+    <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:14px;font-weight:700;color:#8dc63f;">👤 Utilisateurs</div>
+        <button onclick="adminChargerUtilisateurs()" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid #3a6a3a;background:transparent;color:#8dc63f;cursor:pointer;">🔄 Actualiser</button>
+      </div>
+      <div id="adminUsersList" style="font-size:13px;color:#6a8a6a;">Cliquez sur Actualiser pour charger.</div>
+    </div>
 
-  <button onclick="doLogout()" style="margin-top:20px;padding:10px 20px;font-size:13px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">Se déconnecter</button>
+  </div>
 </div>
 
 <!-- ============================================================ -->
@@ -1466,6 +1493,7 @@ function showAdminChoix(profile){
 async function basculerAdmin(){
   showScreen("adminScreen");
   await adminChargerClubs();
+  await adminChargerUtilisateurs();
 }
 
 async function basculerCoach(){
@@ -1587,12 +1615,150 @@ async function adminGenererCode(clubId){
     code=baseCode.slice(0,4)+String(suffix).padStart(2,"0");
     suffix++;if(suffix>99)break;
   }
-  await db.collection("clubs").doc(clubId).update({codeClub:code,codeClubNorm:code.toUpperCase()});
+  await db.collection("clubs").doc(clubId).update({
+    codeClub:code,
+    codeClubNorm:code.toUpperCase()
+  });
   await adminChargerClubs();
+  // Afficher le code généré
+  document.getElementById("adminCodeClub").textContent=code;
+  document.getElementById("adminResult").style.display="block";
+}
+
+async function adminChargerUtilisateurs(){
+  const el=document.getElementById("adminUsersList");
+  if(!el)return;
+  el.innerHTML='<div style="color:#6a8a6a;">Chargement...</div>';
+  try{
+    // Charger tous les utilisateurs + tous les clubs pour le select
+    const [usersSnap,clubsSnap]=await Promise.all([
+      db.collection("users").get(),
+      db.collection("clubs").orderBy("nom").get()
+    ]);
+
+    const clubs=clubsSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const clubOptions=clubs.map(c=>`<option value="${c.id}">${c.nom}</option>`).join("");
+
+    if(usersSnap.empty){
+      // Pas d'utilisateurs dans la collection users mais l'admin existe
+      el.innerHTML=`<div style="color:#6a8a6a;">Aucun utilisateur dans la collection users.</div>
+        <div style="margin-top:12px;padding:12px;background:#0f1a0f;border-radius:8px;border:1px solid #2a4a2a;">
+          <div style="font-size:12px;font-weight:700;color:#8dc63f;margin-bottom:8px;">🔧 M'associer à un club</div>
+          <div style="font-size:11px;color:#6a8a6a;margin-bottom:8px;">Associe ton compte admin à un club pour accéder au dashboard coach.</div>
+          <select id="adminSelfClubSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #2a4a2a;background:#0f1a0f;color:#fff;font-size:13px;margin-bottom:8px;">
+            <option value="">— Choisir un club —</option>
+            ${clubOptions}
+          </select>
+          <button onclick="adminAssocierSelf()" style="width:100%;padding:9px;font-size:13px;font-weight:700;border-radius:6px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;">M'associer à ce club</button>
+        </div>`;
+      return;
+    }
+
+    let html=`<div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:500px;">
+        <thead>
+          <tr style="border-bottom:1px solid #2a4a2a;">
+            <th style="text-align:left;padding:6px 8px;color:#6a8a6a;font-weight:600;">Nom</th>
+            <th style="text-align:left;padding:6px 8px;color:#6a8a6a;font-weight:600;">Email</th>
+            <th style="text-align:left;padding:6px 8px;color:#6a8a6a;font-weight:600;">Poste</th>
+            <th style="text-align:left;padding:6px 8px;color:#6a8a6a;font-weight:600;">Club associé</th>
+            <th style="padding:6px 8px;"></th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    usersSnap.docs.forEach(d=>{
+      const u=d.data();
+      const clubActuel=clubs.find(c=>c.id===u.clubId);
+      html+=`<tr style="border-bottom:1px solid #1a3a1a;">
+        <td style="padding:7px 8px;color:#fff;font-weight:600;">${u.prenom||""} ${u.nom||""}</td>
+        <td style="padding:7px 8px;color:#8aaa7a;">${u.email||d.id}</td>
+        <td style="padding:7px 8px;color:#6a8a6a;">${u.poste||"—"}</td>
+        <td style="padding:7px 8px;">
+          <select onchange="adminChangerClub('${d.id}',this.value)" style="padding:4px 6px;border-radius:5px;border:1px solid #2a4a2a;background:#0f1a0f;color:#fff;font-size:11px;max-width:150px;">
+            <option value="">— Aucun —</option>
+            ${clubs.map(c=>`<option value="${c.id}" ${c.id===u.clubId?"selected":""}>${c.nom}</option>`).join("")}
+          </select>
+        </td>
+        <td style="padding:7px 8px;text-align:center;">
+          <button onclick="adminSupprimerUser('${d.id}','${(u.prenom||"")+" "+(u.nom||"")}')" style="background:none;border:1px solid #4a1a1a;border-radius:5px;padding:3px 7px;color:#f44336;cursor:pointer;font-size:11px;">✕</button>
+        </td>
+      </tr>`;
+    });
+
+    html+=`</tbody></table></div>`;
+
+    // Bouton pour s'associer soi-même si pas dans la liste
+    const selfInList=usersSnap.docs.find(d=>d.id===currentUser?.uid);
+    if(!selfInList){
+      html+=`<div style="margin-top:12px;padding:12px;background:#0f1a0f;border-radius:8px;border:1px solid #2a4a2a;">
+        <div style="font-size:12px;font-weight:700;color:#8dc63f;margin-bottom:8px;">🔧 M'associer à un club</div>
+        <select id="adminSelfClubSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #2a4a2a;background:#0f1a0f;color:#fff;font-size:13px;margin-bottom:8px;">
+          <option value="">— Choisir un club —</option>
+          ${clubOptions}
+        </select>
+        <button onclick="adminAssocierSelf()" style="width:100%;padding:9px;font-size:13px;font-weight:700;border-radius:6px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;">M'associer à ce club</button>
+      </div>`;
+    }
+
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML=`<div style="color:#f44336;">Erreur : ${e.message}</div>`;
+  }
+}
+
+async function adminChangerClub(userId, clubId){
+  try{
+    await db.collection("users").doc(userId).update({clubId:clubId||null});
+    setSyncStatus?.("✅ Club mis à jour","ok");
+    // Si c'est l'admin lui-même, mettre à jour le profil en mémoire
+    if(userId===currentUser?.uid){
+      adminUserProfile=adminUserProfile||{};
+      adminUserProfile.clubId=clubId;
+      // Mettre à jour le bouton Mon Club
+      if(clubId){
+        const clubDoc=await db.collection("clubs").doc(clubId).get();
+        const nomEl=document.getElementById("adminChoixClubNom");
+        if(nomEl&&clubDoc.exists)nomEl.textContent=clubDoc.data().nom||"Mon club";
+      }
+    }
+  }catch(e){alert("Erreur : "+e.message);}
+}
+
+async function adminAssocierSelf(){
+  const clubId=document.getElementById("adminSelfClubSelect")?.value;
+  if(!clubId){alert("Sélectionne un club.");return;}
+  try{
+    await db.collection("users").doc(currentUser.uid).set({
+      prenom:"Admin",nom:"RPE",poste:"Admin",
+      email:currentUser.email,
+      clubId,
+      initiales:"AR",
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    adminUserProfile={prenom:"Admin",nom:"RPE",poste:"Admin",email:currentUser.email,clubId};
+    setSyncStatus?.("✅ Associé au club !","ok");
+    await adminChargerUtilisateurs();
+    await adminChargerClubs();
+    // Mettre à jour le bouton Mon Club
+    const clubDoc=await db.collection("clubs").doc(clubId).get();
+    const nomEl=document.getElementById("adminChoixClubNom");
+    const btn=document.getElementById("btnMonClub");
+    if(nomEl&&clubDoc.exists)nomEl.textContent=clubDoc.data().nom||"Mon club";
+    if(btn){btn.style.opacity="1";btn.style.cursor="pointer";btn.onclick=()=>basculerCoach();}
+  }catch(e){alert("Erreur : "+e.message);}
+}
+
+async function adminSupprimerUser(userId, nomUser){
+  if(!confirm(`Supprimer le compte de "${nomUser.trim()}" ?`))return;
+  try{
+    await db.collection("users").doc(userId).delete();
+    await adminChargerUtilisateurs();
+    setSyncStatus?.("✅ Utilisateur supprimé","ok");
+  }catch(e){alert("Erreur : "+e.message);}
 }
 
 async function adminSupprimerClub(clubId, nomClub){
-  if(!confirm(`⚠️ Supprimer "${nomClub}" et TOUTES ses données ?\n\nCette action est irréversible.`))return;
   try{
     // Supprimer la sous-collection staff
     const staffSnap=await db.collection("clubs").doc(clubId).collection("staff").get();
