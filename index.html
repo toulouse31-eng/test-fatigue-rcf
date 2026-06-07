@@ -30,7 +30,7 @@ body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:va
 /* ===== ÉCRANS ===== */
 .screen{display:none;min-height:100vh;}
 .screen.active{display:flex;}
-#loginScreen,#pinScreen,#playerPickScreen,#dejaReponduScreen,#teamScreen{flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:var(--noir);}
+#loginScreen,#pinScreen,#playerPickScreen,#dejaReponduScreen,#adminChoixScreen,#teamScreen{flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:var(--noir);}
 #appContent{display:none;flex-direction:column;}
 #appContent.active{display:flex;}
 
@@ -686,11 +686,40 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 </div>
 
 <!-- ============================================================ -->
+<!-- ÉCRAN CHOIX ADMIN/CLUB                                       -->
+<!-- ============================================================ -->
+<div id="adminChoixScreen" class="screen" style="display:none;background:#0a0f0a;">
+  <div style="font-size:48px;margin-bottom:8px;">⚽</div>
+  <div style="font-size:18px;font-weight:900;color:#8dc63f;margin-bottom:4px;">Team RPE</div>
+  <div style="font-size:12px;color:#3a6a3a;margin-bottom:28px;">Que veux-tu faire ?</div>
+  <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;">
+    <button onclick="basculerAdmin()" style="padding:16px;font-size:15px;font-weight:700;border-radius:12px;border:1.5px solid #3a6a3a;background:#1a2a1a;color:#8dc63f;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">⚙️</span>
+      <div style="text-align:left;">
+        <div>Gestion des clubs</div>
+        <div style="font-size:11px;color:#6a8a6a;font-weight:400;">Créer, gérer les accès</div>
+      </div>
+    </button>
+    <button id="btnMonClub" onclick="basculerCoach()" style="padding:16px;font-size:15px;font-weight:700;border-radius:12px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">🏟️</span>
+      <div style="text-align:left;">
+        <div id="adminChoixClubNom">Mon club</div>
+        <div style="font-size:11px;color:#1a3a0a;font-weight:400;">Accéder au dashboard</div>
+      </div>
+    </button>
+  </div>
+  <button onclick="doLogout()" style="margin-top:24px;padding:8px 16px;font-size:12px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#3a6a3a;cursor:pointer;">Se déconnecter</button>
+</div>
+
+<!-- ============================================================ -->
 <!-- ÉCRAN ADMIN (toulouse31@gmail.com uniquement)                -->
 <!-- ============================================================ -->
 <div id="adminScreen" class="screen" style="display:none;background:#0a0f0a;">
   <div style="font-size:20px;font-weight:900;color:#8dc63f;margin-bottom:4px;">⚙️ Admin — Team RPE</div>
   <div style="font-size:12px;color:#3a6a3a;margin-bottom:20px;">Gestion des clubs</div>
+  <div style="width:100%;max-width:860px;display:flex;justify-content:flex-start;margin-bottom:8px;">
+    <button onclick="showAdminChoix(adminUserProfile)" style="padding:7px 14px;font-size:12px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">← Retour</button>
+  </div>
 
   <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;width:100%;max-width:420px;box-sizing:border-box;">
     <div style="font-size:14px;font-weight:700;color:#8dc63f;margin-bottom:14px;">➕ Créer un nouveau club</div>
@@ -1373,12 +1402,19 @@ async function doRegister(){
   if(!prenom||!nom){err.textContent="Prénom et nom obligatoires.";err.style.display="block";return;}
   if(!poste){err.textContent="Sélectionne ton poste.";err.style.display="block";return;}
 
-  // Vérifier que le code club existe
+  // Vérifier que le code club existe (insensible à la casse)
   try{
-    const snap=await db.collection("clubs").where("codeClub","==",code).get();
-    if(snap.empty){err.textContent="Code club invalide. Vérifie le code reçu.";err.style.display="block";return;}
-
-    const clubDoc=snap.docs[0];
+    const codeNorm=code.toUpperCase();
+    const snap=await db.collection("clubs").where("codeClubNorm","==",codeNorm).get();
+    // Fallback : chercher aussi par codeClub direct pour anciens clubs
+    let clubDoc=null;
+    if(!snap.empty){
+      clubDoc=snap.docs[0];
+    } else {
+      const snap2=await db.collection("clubs").where("codeClub","==",codeNorm).get();
+      if(!snap2.empty) clubDoc=snap2.docs[0];
+    }
+    if(!clubDoc){err.textContent="Code club invalide. Vérifie le code reçu.";err.style.display="block";return;}
     const clubId=clubDoc.id;
     const clubData=clubDoc.data();
 
@@ -1404,18 +1440,72 @@ async function doRegister(){
 }
 
 // ===== ADMIN =====
-async function verifierAdmin(user){
-  if(user?.email===ADMIN_EMAIL){
-    showScreen("adminScreen");
-    await adminChargerClubs();
-    return true;
+let adminUserProfile=null;
+
+function showAdminChoix(profile){
+  adminUserProfile=profile;
+  const btn=document.getElementById("btnMonClub");
+  const nomEl=document.getElementById("adminChoixClubNom");
+  if(profile?.clubId){
+    // A un club associé
+    btn.style.opacity="1";btn.style.cursor="pointer";
+    btn.onclick=()=>basculerCoach();
+    // Charger le nom du club
+    db.collection("clubs").doc(profile.clubId).get().then(d=>{
+      if(nomEl&&d.exists)nomEl.textContent=d.data().nom||"Mon club";
+    });
+  } else {
+    // Pas encore de club associé
+    btn.style.opacity="0.4";btn.style.cursor="not-allowed";
+    btn.onclick=()=>alert("Associe d'abord ton profil à un club depuis la gestion des clubs.");
+    if(nomEl)nomEl.textContent="Pas de club associé";
   }
-  return false;
+  showScreen("adminChoixScreen");
 }
 
-function genCodeClub(){
-  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({length:6},()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+async function basculerAdmin(){
+  showScreen("adminScreen");
+  await adminChargerClubs();
+}
+
+async function basculerCoach(){
+  if(!adminUserProfile?.clubId)return;
+  currentUserProfile=adminUserProfile;
+  await chargerClub();
+  const savedTeam=sessionStorage.getItem("rpe_team");
+  const savedTab=sessionStorage.getItem("rpe_tab");
+  if(savedTab)currentTab=savedTab;
+  if(savedTeam&&(currentClub.teams||[]).includes(savedTeam)){
+    currentTeam={id:savedTeam,nom:savedTeam};
+    await chargerJoueursEquipe(savedTeam);
+    showScreen("appContent");
+    initApp();
+  } else {
+    showScreen("teamScreen");
+    renderTeamScreen();
+  }
+}
+
+function genCodeClub(nomClub){
+  const annee=String(new Date().getFullYear()).slice(-2);
+  const stopWords=new Set(["de","du","des","le","la","les","et","en","un","une","au","aux","sur","sous","par","pour","club","fc","as","us","sc","rc","sp","ca","co","sf","ao"]);
+  // Extraire les mots significatifs
+  const mots=nomClub.trim().split(/[\s\-_]+/)
+    .map(m=>m.replace(/[^a-zA-ZÀ-ÿ]/g,""))
+    .filter(m=>m.length>0&&!stopWords.has(m.toLowerCase()));
+  let lettres="";
+  // Prendre 2 lettres par mot jusqu'à avoir 4 lettres
+  for(const mot of mots){
+    if(lettres.length>=4)break;
+    const take=Math.min(2,4-lettres.length);
+    lettres+=mot.slice(0,take).toUpperCase();
+  }
+  // Compléter si moins de 4 lettres
+  if(lettres.length<4&&mots.length>0){
+    lettres=(lettres+mots[0].toUpperCase().slice(0,4)).slice(0,4);
+  }
+  lettres=lettres.padEnd(4,"X").slice(0,4);
+  return lettres+annee;
 }
 
 async function adminCreerClub(){
@@ -1423,23 +1513,28 @@ async function adminCreerClub(){
   const ville=(document.getElementById("adminClubVille")?.value||"").trim();
   if(!nom){alert("Entre le nom du club.");return;}
 
-  // Générer un code unique
-  let code,exists=true;
-  while(exists){
-    code=genCodeClub();
-    const snap=await db.collection("clubs").where("codeClub","==",code).get();
-    exists=!snap.empty;
+  // Générer le code depuis le nom, gérer les doublons
+  let baseCode=genCodeClub(nom);
+  let code=baseCode;
+  let suffix=2;
+  while(true){
+    const snap=await db.collection("clubs").where("codeClubNorm","==",code.toUpperCase()).get();
+    if(snap.empty)break;
+    // Conflit : remplacer les 2 derniers chiffres par suffix
+    code=baseCode.slice(0,4)+String(suffix).padStart(2,"0");
+    suffix++;
+    if(suffix>99){code=baseCode;break;}
   }
 
-  // Créer le club en Firestore
   await db.collection("clubs").add({
-    nom,ville,codeClub:code,
+    nom,ville,
+    codeClub:code,
+    codeClubNorm:code.toUpperCase(), // pour recherche insensible casse
     teams:[],players:{},pins:{},
     actif:true,
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  // Afficher le code
   document.getElementById("adminCodeClub").textContent=code;
   document.getElementById("adminResult").style.display="block";
   document.getElementById("adminClubNom").value="";
@@ -1481,13 +1576,18 @@ async function adminChargerClubs(){
 }
 
 async function adminGenererCode(clubId){
-  let code,exists=true;
-  while(exists){
-    code=genCodeClub();
-    const snap=await db.collection("clubs").where("codeClub","==",code).get();
-    exists=!snap.empty;
+  const clubDoc=await db.collection("clubs").doc(clubId).get();
+  const nomClub=clubDoc.data()?.nom||"CLUB";
+  let baseCode=genCodeClub(nomClub);
+  let code=baseCode,suffix=2;
+  while(true){
+    const snap=await db.collection("clubs").where("codeClubNorm","==",code.toUpperCase()).get();
+    const conflict=snap.docs.filter(d=>d.id!==clubId);
+    if(conflict.length===0)break;
+    code=baseCode.slice(0,4)+String(suffix).padStart(2,"0");
+    suffix++;if(suffix>99)break;
   }
-  await db.collection("clubs").doc(clubId).update({codeClub:code});
+  await db.collection("clubs").doc(clubId).update({codeClub:code,codeClubNorm:code.toUpperCase()});
   await adminChargerClubs();
 }
 
@@ -1530,10 +1630,12 @@ auth.onAuthStateChanged(async user=>{
   if(user){
     currentUser=user;
 
-    // Admin → écran admin
+    // Admin → écran de choix (admin ou son club)
     if(user.email===ADMIN_EMAIL){
-      showScreen("adminScreen");
-      await adminChargerClubs();
+      // Vérifier si l'admin a un club associé
+      const userDoc=await db.collection("users").doc(user.uid).get();
+      const hasClub=userDoc.exists&&userDoc.data()?.clubId;
+      showAdminChoix(hasClub?userDoc.data():null);
       const splashEl=document.getElementById("splashScreen");
       if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}
       return;
