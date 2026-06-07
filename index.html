@@ -2764,138 +2764,155 @@ function getRapportData(){
 function genererRapportCanvas(){
   const canvas = document.getElementById("rapportCanvas");
   if(!canvas)return;
-  const W=380, H=520;
-  canvas.width=W*2; canvas.height=H*2;
-  canvas.style.width=W+"px"; canvas.style.height=H+"px";
-  const ctx=canvas.getContext("2d");
+  const d = getRapportData();
+  const club = currentClub?.nom||"Club";
+  const team = currentTeam?.nom||currentTeam?.id||"Équipe";
+  const W = 380;
+
+  // Calculer hauteur dynamique
+  const nbAlertes = Math.min(d.alertes.length, 5);
+  const nbForme = Math.min(d.top3.length, 3);
+  const H = 70                          // header
+    + 80                                // indice bloc
+    + 16 + 14                           // label alertes
+    + (nbAlertes > 0 ? nbAlertes*22 : 20) // lignes alertes
+    + 16 + 14                           // label forme
+    + (nbForme > 0 ? nbForme*22 : 20)   // lignes forme
+    + 16 + 14                           // label reco
+    + 44                                // bloc reco
+    + 28;                               // footer
+
+  canvas.width = W*2; canvas.height = H*2;
+  canvas.style.width = W+"px"; canvas.style.height = H+"px";
+  const ctx = canvas.getContext("2d");
   ctx.scale(2,2);
 
-  const d=getRapportData();
-  const club=currentClub?.nom||"Club";
-  const team=currentTeam?.nom||currentTeam?.id||"Équipe";
+  const rnd = (x,y,w,h,r) => { ctx.beginPath(); ctx.roundRect(x,y,w,h,r); };
 
-  // Fond
-  ctx.fillStyle="#0f1a0f";
+  // ── Fond global
+  ctx.fillStyle = "#0f1a0f";
   ctx.fillRect(0,0,W,H);
 
-  // Header
-  ctx.fillStyle="#1a2a1a";
-  ctx.fillRect(0,0,W,56);
-  ctx.fillStyle="#8dc63f";
-  ctx.fillRect(0,54,W,3);
+  // ── HEADER
+  ctx.fillStyle = "#1a2a1a";
+  ctx.fillRect(0,0,W,58);
+  ctx.fillStyle = "#8dc63f";
+  ctx.fillRect(0,55,W,3);
+  // Logo
+  ctx.fillStyle = "#8dc63f";
+  ctx.beginPath(); ctx.arc(30,29,17,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#0f1a0f"; ctx.font = "bold 10px Arial"; ctx.textAlign = "center";
+  ctx.fillText("RC",30,33);
+  // Textes
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffffff"; ctx.font = "bold 13px Arial";
+  ctx.fillText(`${club} — ${team}`, 54, 23);
+  ctx.fillStyle = "#8aaa7a"; ctx.font = "11px Arial";
+  ctx.fillText("Séance du "+d.dateStr, 54, 40);
 
-  // Logo cercle
-  ctx.fillStyle="#8dc63f";
-  ctx.beginPath();ctx.arc(28,28,18,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#0f1a0f";
-  ctx.font="bold 11px Arial";ctx.textAlign="center";
-  ctx.fillText("RC",28,32);
-
-  // Titre
-  ctx.textAlign="left";
-  ctx.fillStyle="#fff";
-  ctx.font="bold 13px Arial";
-  ctx.fillText(`${club} — ${team}`,54,24);
-  ctx.fillStyle="#8aaa7a";
-  ctx.font="11px Arial";
-  ctx.fillText("Séance du "+d.dateStr,54,40);
-
-  // Indice
-  let y=72;
-  ctx.fillStyle="#2a1a0a";
-  ctx.beginPath();ctx.roundRect(12,y,W-24,60,8);ctx.fill();
-  ctx.fillStyle=d.zoneCouleur;
-  ctx.font="bold 10px Arial";ctx.fillText("INDICE BIEN-ÊTRE",20,y+14);
-  ctx.font="bold 28px Arial";ctx.fillText(d.pct+"%",20,y+42);
-  ctx.fillStyle="#fff";
-  ctx.font="bold 13px Arial";ctx.fillText(d.zoneLabel,64,y+32);
-  ctx.fillStyle="#8aaa7a";
-  ctx.font="11px Arial";ctx.fillText(`${d.nb}/${d.total} joueurs ont répondu`,64,y+46);
+  // ── BLOC INDICE
+  let y = 68;
+  ctx.fillStyle = "#1e1000";
+  rnd(12,y,W-24,72,8); ctx.fill();
+  // Label
+  ctx.fillStyle = d.zoneCouleur; ctx.font = "bold 9px Arial";
+  ctx.textAlign = "left";
+  ctx.fillText("INDICE BIEN-ÊTRE", 20, y+14);
+  // Pourcentage (gros, seul sur sa ligne)
+  ctx.fillStyle = d.zoneCouleur; ctx.font = "bold 30px Arial";
+  ctx.fillText(d.pct+"%", 20, y+44);
+  // Zone label à droite du %
+  const pctW = ctx.measureText(d.pct+"%").width;
+  ctx.fillStyle = "#ffffff"; ctx.font = "bold 13px Arial";
+  ctx.fillText(d.zoneLabel, 20+pctW+8, y+40);
+  // Participation
+  ctx.fillStyle = "#8aaa7a"; ctx.font = "11px Arial";
+  ctx.fillText(`${d.nb}/${d.total} joueurs ont répondu`, 20+pctW+8, y+54);
   // Barre
-  ctx.fillStyle="#1a2a1a";
-  ctx.beginPath();ctx.roundRect(20,y+52,W-44,6,3);ctx.fill();
-  ctx.fillStyle=d.zoneCouleur;
-  ctx.beginPath();ctx.roundRect(20,y+52,Math.round((W-44)*d.pct/100),6,3);ctx.fill();
+  ctx.fillStyle = "#0f1a0f";
+  rnd(20,y+60,W-44,7,3); ctx.fill();
+  ctx.fillStyle = d.zoneCouleur;
+  rnd(20,y+60,Math.max(4,Math.round((W-44)*d.pct/100)),7,3); ctx.fill();
 
-  // Alertes
-  y=148;
-  ctx.fillStyle="#f44336";
-  ctx.font="bold 10px Arial";ctx.fillText("ALERTES ("+d.alertes.length+")",12,y);
-  y+=12;
-  if(d.alertes.length===0){
-    ctx.fillStyle="#4caf50";ctx.font="12px Arial";
-    ctx.fillText("Aucune alerte",12,y+4);
-    y+=20;
+  y += 82;
+
+  // ── ALERTES
+  ctx.fillStyle = "#f44336"; ctx.font = "bold 9px Arial"; ctx.textAlign = "left";
+  ctx.fillText(`ALERTES (${d.alertes.length})`, 12, y+10);
+  y += 18;
+  if(d.alertes.length === 0){
+    ctx.fillStyle = "#4caf50"; ctx.font = "12px Arial";
+    ctx.fillText("Aucune alerte", 12, y+4); y += 20;
   } else {
-    d.alertes.slice(0,5).forEach(a=>{
-      const col=a.zoneClass==="zone-rouge"?"#f44336":"#ff9800";
-      ctx.fillStyle=col;
-      ctx.beginPath();ctx.arc(20,y+4,5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#fff";ctx.font="bold 12px Arial";
-      ctx.fillText(a.joueur,30,y+8);
-      const douleur=a.douleurZone?formatDouleur(a.douleurZone).split(",")[0]:"—";
-      ctx.fillStyle="#8aaa7a";ctx.font="11px Arial";
-      const txt=douleur.length>20?douleur.slice(0,18)+"…":douleur;
-      ctx.fillText(txt,30+ctx.measureText(a.joueur).width+6,y+8);
-      ctx.fillStyle=col;ctx.font="bold 12px Arial";ctx.textAlign="right";
-      ctx.fillText(a.pourcentage+"%",W-16,y+8);
-      ctx.textAlign="left";
-      y+=20;
+    d.alertes.slice(0,5).forEach(a => {
+      const col = a.zoneClass==="zone-rouge" ? "#f44336" : "#ff9800";
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(20,y+5,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 12px Arial"; ctx.textAlign = "left";
+      ctx.fillText(a.joueur, 32, y+9);
+      const nomW = ctx.measureText(a.joueur).width;
+      const douleur = a.douleurZone ? " — "+formatDouleur(a.douleurZone).split(",")[0] : "";
+      ctx.fillStyle = "#8aaa7a"; ctx.font = "11px Arial";
+      const d2 = douleur.length > 22 ? douleur.slice(0,20)+"…" : douleur;
+      ctx.fillText(d2, 32+nomW, y+9);
+      ctx.fillStyle = col; ctx.font = "bold 12px Arial"; ctx.textAlign = "right";
+      ctx.fillText(a.pourcentage+"%", W-14, y+9);
+      ctx.textAlign = "left"; y += 22;
     });
   }
 
   // Séparateur
-  ctx.strokeStyle="#2a4a2a";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(12,y+2);ctx.lineTo(W-12,y+2);ctx.stroke();
-  y+=12;
+  ctx.strokeStyle = "#2a4a2a"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(12,y+4); ctx.lineTo(W-12,y+4); ctx.stroke();
+  y += 14;
 
-  // En forme
-  ctx.fillStyle="#4caf50";ctx.font="bold 10px Arial";
-  ctx.fillText("EN FORME",12,y);
-  y+=12;
-  if(d.top3.length===0){
-    ctx.fillStyle="#6a8a6a";ctx.font="12px Arial";
-    ctx.fillText("Données insuffisantes",12,y+4);y+=20;
+  // ── EN FORME
+  ctx.fillStyle = "#4caf50"; ctx.font = "bold 9px Arial";
+  ctx.fillText("EN FORME", 12, y+10);
+  y += 18;
+  if(d.top3.length === 0){
+    ctx.fillStyle = "#6a8a6a"; ctx.font = "12px Arial";
+    ctx.fillText("Données insuffisantes", 12, y+4); y += 20;
   } else {
-    d.top3.forEach(a=>{
-      ctx.fillStyle="#4caf50";
-      ctx.beginPath();ctx.arc(20,y+4,5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#fff";ctx.font="bold 12px Arial";
-      ctx.fillText(a.joueur,30,y+8);
-      ctx.fillStyle="#4caf50";ctx.font="bold 12px Arial";ctx.textAlign="right";
-      ctx.fillText(a.pourcentage+"%",W-16,y+8);
-      ctx.textAlign="left";y+=20;
+    d.top3.forEach(a => {
+      ctx.fillStyle = "#4caf50";
+      ctx.beginPath(); ctx.arc(20,y+5,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 12px Arial"; ctx.textAlign = "left";
+      ctx.fillText(a.joueur, 32, y+9);
+      ctx.fillStyle = "#4caf50"; ctx.font = "bold 12px Arial"; ctx.textAlign = "right";
+      ctx.fillText(a.pourcentage+"%", W-14, y+9);
+      ctx.textAlign = "left"; y += 22;
     });
   }
 
   // Séparateur
-  ctx.strokeStyle="#2a4a2a";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(12,y+2);ctx.lineTo(W-12,y+2);ctx.stroke();
-  y+=12;
+  ctx.strokeStyle = "#2a4a2a"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(12,y+4); ctx.lineTo(W-12,y+4); ctx.stroke();
+  y += 14;
 
-  // Recommandation
-  ctx.fillStyle="#8aaa7a";ctx.font="bold 10px Arial";
-  ctx.fillText("RECOMMANDATION",12,y);
-  y+=12;
-  ctx.fillStyle="#ff9800";
-  ctx.beginPath();ctx.roundRect(12,y,6,28,2);ctx.fill();
-  ctx.fillStyle="#ffb74d";ctx.font="12px Arial";
-  // Wrap texte reco
-  const words=d.reco.split(" ");let line="";
-  words.forEach(w=>{
-    const test=line?line+" "+w:w;
-    if(ctx.measureText(test).width>W-50){
-      ctx.fillText(line,24,y+12);y+=16;line=w;
-    } else line=test;
+  // ── RECOMMANDATION
+  ctx.fillStyle = "#8aaa7a"; ctx.font = "bold 9px Arial";
+  ctx.fillText("RECOMMANDATION", 12, y+10);
+  y += 18;
+  ctx.fillStyle = "#ff9800";
+  rnd(12,y,4,32,2); ctx.fill();
+  ctx.fillStyle = "#ffb74d"; ctx.font = "12px Arial"; ctx.textAlign = "left";
+  // Wrap auto
+  const maxW = W-44; const words = d.reco.split(" "); let line = "";
+  let ly = y+13;
+  words.forEach(w => {
+    const test = line ? line+" "+w : w;
+    if(ctx.measureText(test).width > maxW){ ctx.fillText(line,20,ly); ly+=16; line=w; }
+    else line = test;
   });
-  if(line)ctx.fillText(line,24,y+12);
-  y+=26;
+  if(line) ctx.fillText(line,20,ly);
+  y += 42;
 
-  // Footer
-  ctx.fillStyle="#1a2a1a";
+  // ── FOOTER
+  ctx.fillStyle = "#1a2a1a";
   ctx.fillRect(0,H-24,W,24);
-  ctx.fillStyle="#3a6a3a";ctx.font="10px Arial";ctx.textAlign="center";
-  ctx.fillText("Généré par TEAM RPE",W/2,H-8);
+  ctx.fillStyle = "#3a6a3a"; ctx.font = "10px Arial"; ctx.textAlign = "center";
+  ctx.fillText("Généré par TEAM RPE", W/2, H-8);
 }
 
 function telechargerRapportImage(){
@@ -3222,9 +3239,6 @@ if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(
       <button onclick="envoyerRapportWhatsApp()" style="padding:12px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#25D366;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Envoyer sur WhatsApp
-      </button>
-      <button onclick="copierRapportTexte()" style="padding:10px;font-size:12px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">
-        📋 Copier le message texte
       </button>
     </div>
   </div>
