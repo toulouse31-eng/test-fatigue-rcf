@@ -3725,33 +3725,59 @@ function calcIndispoNum(b){
 
 // Rendu tableau
 function renderMedTable(){
-  const tbody=document.getElementById("medTableBody");
-  if(!tbody)return;
+  renderMedCards();
+}
+function renderMedCards(){
+  const wrap=document.getElementById("medTableBody");
+  if(!wrap)return;
   if(!blessures.length){
-    tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:32px;color:#6a8a6a;">Aucune blessure enregistrée.<br>Clique sur "+ Nouvelle blessure" pour commencer.</td></tr>`;
+    wrap.innerHTML='<div class="med-empty">Aucune blessure enregistrée.<br>Cliquez sur "+ Nouvelle blessure" pour commencer.</div>';
     return;
   }
   const statutLabel={actif:"🔴 Blessé",surveillance:"🟠 Surveillance",retour:"🟡 Reprise",gueri:"🟢 Guéri"};
-  tbody.innerHTML=blessures.map(b=>{
-    const gravDots=b.gravite?[1,2,3,4,5].map(i=>`<div class="med-gravite-dot${i<=parseInt(b.gravite)?" on":""}"></div>`).join(""):"—";
-    const dateFmt=(d)=>{if(!d)return"—";const dt=new Date(d);return`${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;};
-    return`<tr class="statut-${b.statut||"actif"}">
-      <td><strong style="color:#fff;">${b.joueur}</strong></td>
-      <td style="color:#8aaa7a;">${b.poste||"—"}</td>
-      <td style="white-space:nowrap;">${dateFmt(b.dateBlessure)}</td>
-      <td>${b.zone||"—"}</td>
-      <td>${b.type||"—"}</td>
-      <td><div class="med-gravite">${gravDots}</div></td>
-      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.diagnostic||""}">${b.diagnostic||"—"}</td>
-      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.protoKine||""}">${b.protoKine||"—"}</td>
-      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.protoPrepa||""}">${b.protoPrepa||"—"}</td>
-      <td style="white-space:nowrap;">${dateFmt(b.repriseEstimee)}</td>
-      <td style="white-space:nowrap;">${dateFmt(b.repriseEffective)}</td>
-      <td style="text-align:center;font-weight:700;color:#8dc63f;">${calcIndispo(b)}</td>
-      <td><span class="med-badge ${b.statut||"actif"}">${statutLabel[b.statut||"actif"]}</span></td>
-      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.commentaires||""}">${b.commentaires||"—"}</td>
-      <td><button onclick="ouvrirFormMedical('${b.id}')" style="background:none;border:1px solid #3a6a3a;border-radius:6px;padding:4px 8px;color:#8aaa7a;cursor:pointer;font-size:11px;">✏️</button></td>
-    </tr>`;
+  const dateFmt=(d)=>{if(!d)return"—";const dt=new Date(d);return`${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;};
+  const borderColor={actif:"#cc2222",surveillance:"#cc6600",retour:"#aa8800",gueri:"#2a7a2a"};
+  wrap.className="med-cards";
+  wrap.innerHTML=blessures.map(b=>{
+    const statut=b.statut||"actif";
+    const gravDots=[1,2,3,4,5].map(i=>`<div class="med-gravite-dot${i<=parseInt(b.gravite||0)?" on":""}"></div>`).join("");
+    return`<div class="med-card" onclick="ouvrirFormMedical('${b.id}')" style="border-left:4px solid ${borderColor[statut]||"#c8ddb0"};">
+      <div class="med-card-header">
+        <div class="med-card-nom">${afficherNomCourt(b.joueur)}</div>
+        ${b.poste?`<span class="med-card-poste">${b.poste}</span>`:""}
+        <div class="med-card-date">${dateFmt(b.dateBlessure)}</div>
+        <span class="med-badge ${statut}">${statutLabel[statut]}</span>
+      </div>
+      <div class="med-card-body">
+        <div class="med-card-field">
+          <div class="med-card-field-label">Zone</div>
+          <div class="med-card-field-val">${b.zone||"—"}</div>
+        </div>
+        <div class="med-card-field">
+          <div class="med-card-field-label">Type de blessure</div>
+          <div class="med-card-field-val">${b.type||"—"}</div>
+        </div>
+        <div class="med-card-field">
+          <div class="med-card-field-label">Gravité</div>
+          <div class="med-card-field-val"><div class="med-gravite">${gravDots}</div></div>
+        </div>
+        <div class="med-card-field">
+          <div class="med-card-field-label">Indispo</div>
+          <div class="med-card-field-val" style="font-weight:700;color:#cc6600;">${calcIndispo(b)}</div>
+        </div>
+        <div class="med-card-field">
+          <div class="med-card-field-label">Reprise estimée</div>
+          <div class="med-card-field-val">${dateFmt(b.repriseEstimee)}</div>
+        </div>
+        <div class="med-card-field">
+          <div class="med-card-field-label">Reprise effective</div>
+          <div class="med-card-field-val">${dateFmt(b.repriseEffective)}</div>
+        </div>
+        ${b.diagnostic?`<div class="med-card-field" style="grid-column:1/-1;"><div class="med-card-field-label">Diagnostic</div><div class="med-card-field-val long">${b.diagnostic}</div></div>`:""}
+        ${b.protoKine?`<div class="med-card-field" style="grid-column:1/-1;"><div class="med-card-field-label">Protocole kiné</div><div class="med-card-field-val long">${b.protoKine}</div></div>`:""}
+        ${b.commentaires?`<div class="med-card-field" style="grid-column:1/-1;"><div class="med-card-field-label">Notes</div><div class="med-card-field-val long">${b.commentaires}</div></div>`:""}
+      </div>
+    </div>`;
   }).join("");
 }
 
@@ -3885,79 +3911,92 @@ if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(
 <!-- ============================================================ -->
 <!-- MODULE MÉDICAL                                                -->
 <!-- ============================================================ -->
-<div id="medicalModal" style="display:none;position:fixed;inset:0;background:#0f1a0f;z-index:1000;overflow-y:auto;font-family:Arial,sans-serif;">
+<div id="medicalModal" style="display:none;position:fixed;inset:0;background:#f4f8f0;z-index:1000;overflow-y:auto;font-family:Arial,sans-serif;">
   <style>
-  /* ===== MÉDICAL CSS ===== */
-  .med-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#1a2a1a;border-bottom:2px solid #2a4a2a;position:sticky;top:0;z-index:10;gap:8px;flex-wrap:wrap;}
-  .med-topbar-title{font-size:16px;font-weight:900;color:#8dc63f;display:flex;align-items:center;gap:8px;}
-  .med-tabs{display:flex;gap:4px;}
-  .med-tab{padding:7px 14px;font-size:12px;font-weight:700;border:none;border-radius:7px;cursor:pointer;background:#2a4a2a;color:#8aaa7a;transition:all .2s;}
-  .med-tab.active{background:#8dc63f;color:#0f1a0f;}
-  .med-btn-close{padding:7px 14px;font-size:12px;border-radius:7px;border:1px solid #3a6a3a;background:transparent;color:#8aaa7a;cursor:pointer;}
-  .med-btn-close:hover{background:#2a4a2a;color:#fff;}
+  /* ===== MÉDICAL CSS — thème clair ===== */
+  .med-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#fff;border-bottom:2px solid #8dc63f;position:sticky;top:0;z-index:10;gap:8px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  .med-topbar-title{font-size:16px;font-weight:900;color:#2a4a1a;display:flex;align-items:center;gap:8px;}
+  .med-tabs{display:flex;gap:4px;background:#f0f8e8;border-radius:8px;padding:3px;}
+  .med-tab{padding:7px 14px;font-size:12px;font-weight:700;border:none;border-radius:6px;cursor:pointer;background:transparent;color:#8aaa7a;transition:all .2s;}
+  .med-tab.active{background:#fff;color:#3a6a1a;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+  .med-btn-close{padding:7px 14px;font-size:12px;border-radius:7px;border:1.5px solid #c8ddb0;background:#fff;color:#5a8a5a;cursor:pointer;}
+  .med-btn-close:hover{background:#f0f8e8;}
   .med-content{padding:16px 20px;max-width:1200px;margin:0 auto;}
 
   /* KPIs */
-  .med-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
-  .med-kpi{background:#1a2a1a;border:1px solid #2a4a2a;border-radius:12px;padding:14px;text-align:center;}
-  .med-kpi-num{font-size:26px;font-weight:900;color:#8dc63f;}
-  .med-kpi-num.rouge{color:#f44336;}
-  .med-kpi-num.orange{color:#ff9800;}
-  .med-kpi-label{font-size:11px;color:#6a8a6a;margin-top:4px;line-height:1.3;}
+  .med-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px;}
+  .med-kpi{background:#fff;border:1px solid #c8ddb0;border-radius:12px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+  .med-kpi-num{font-size:26px;font-weight:900;color:#3a6a1a;}
+  .med-kpi-num.rouge{color:#cc2222;}
+  .med-kpi-num.orange{color:#cc6600;}
+  .med-kpi-label{font-size:11px;color:#8aaa7a;margin-top:4px;line-height:1.3;}
 
-  /* Tableau blessures */
-  .med-table-wrap{overflow-x:auto;border-radius:12px;border:1px solid #2a4a2a;}
-  .med-table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px;}
-  .med-table th{background:#1a2a1a;color:#8dc63f;font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid #2a4a2a;white-space:nowrap;}
-  .med-table td{padding:9px 12px;border-bottom:1px solid #1a2a1a;color:#c8ddb0;vertical-align:top;}
-  .med-table tr:hover td{background:#1a2a1a;}
-  .med-table tr.statut-actif td:first-child{border-left:3px solid #f44336;}
-  .med-table tr.statut-surveillance td:first-child{border-left:3px solid #ff9800;}
-  .med-table tr.statut-retour td:first-child{border-left:3px solid #ffeb3b;}
-  .med-table tr.statut-gueri td:first-child{border-left:3px solid #4caf50;}
-  .med-badge{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap;}
-  .med-badge.actif{background:#4a1a1a;color:#f44336;}
-  .med-badge.surveillance{background:#4a2a1a;color:#ff9800;}
-  .med-badge.retour{background:#4a4a1a;color:#ffeb3b;}
-  .med-badge.gueri{background:#1a4a1a;color:#4caf50;}
-  .med-gravite{display:inline-flex;gap:2px;}
-  .med-gravite-dot{width:8px;height:8px;border-radius:50%;background:#2a4a2a;}
+  /* Cartes blessures (remplace le tableau) */
+  .med-cards{display:flex;flex-direction:column;gap:10px;}
+  .med-card{background:#fff;border-radius:12px;border:1px solid #c8ddb0;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);cursor:pointer;transition:all .2s;}
+  .med-card:hover{border-color:#8dc63f;box-shadow:0 2px 8px rgba(141,198,63,0.15);}
+  .med-card-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .med-card-nom{font-size:15px;font-weight:700;color:#1a2a1a;flex:1;min-width:100px;}
+  .med-card-poste{font-size:11px;color:#8aaa7a;background:#f0f8e8;padding:2px 8px;border-radius:999px;}
+  .med-card-date{font-size:11px;color:#aaa;white-space:nowrap;}
+  .med-card-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #eef4e8;}
+  .med-card-field{display:flex;flex-direction:column;gap:2px;}
+  .med-card-field-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+  .med-card-field-val{font-size:12px;color:#2a4a1a;font-weight:500;}
+  .med-card-field-val.long{font-size:11px;color:#5a7a5a;line-height:1.4;}
+  .med-badge{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;}
+  .med-badge.actif{background:#fde8e8;color:#cc2222;}
+  .med-badge.surveillance{background:#fff3e0;color:#cc6600;}
+  .med-badge.retour{background:#fffde7;color:#aa8800;}
+  .med-badge.gueri{background:#e8f5e9;color:#2a7a2a;}
+  .med-gravite{display:inline-flex;gap:3px;align-items:center;}
+  .med-gravite-dot{width:9px;height:9px;border-radius:50%;background:#e0e0e0;}
   .med-gravite-dot.on{background:#f44336;}
+  .med-card-statut-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-left:auto;}
 
   /* Formulaire */
-  .med-form-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;}
+  .med-form-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;}
   .med-form-overlay.open{display:flex;}
-  .med-form{background:#1a2a1a;border:1px solid #3a6a3a;border-radius:16px;padding:24px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;margin:16px;}
-  .med-form h3{color:#8dc63f;font-size:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+  .med-form{background:#fff;border:1px solid #c8ddb0;border-radius:16px;padding:24px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;margin:16px;box-shadow:0 8px 32px rgba(0,0,0,0.12);}
+  .med-form h3{color:#2a4a1a;font-size:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
   .med-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .med-form-grid.full{grid-template-columns:1fr;}
   .med-field{display:flex;flex-direction:column;gap:4px;}
-  .med-field label{font-size:11px;color:#8aaa7a;font-weight:700;text-transform:uppercase;}
-  .med-field input,.med-field select,.med-field textarea{background:#0f1a0f;border:1.5px solid #2a4a2a;border-radius:8px;padding:9px 12px;font-size:13px;color:#c8ddb0;font-family:Arial,sans-serif;width:100%;box-sizing:border-box;}
-  .med-field input:focus,.med-field select:focus,.med-field textarea:focus{outline:none;border-color:#8dc63f;}
+  .med-field label{font-size:11px;color:#5a8a5a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .med-field input,.med-field select,.med-field textarea{background:#f8fbf4;border:1.5px solid #c8ddb0;border-radius:8px;padding:9px 12px;font-size:13px;color:#1a2a1a;font-family:Arial,sans-serif;width:100%;box-sizing:border-box;}
+  .med-field input:focus,.med-field select:focus,.med-field textarea:focus{outline:none;border-color:#8dc63f;background:#fff;}
   .med-field textarea{resize:vertical;min-height:60px;}
-  .med-field select option{background:#1a2a1a;}
-  .med-form-section{color:#8dc63f;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #2a4a2a;}
+  .med-form-section{color:#3a6a1a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #8dc63f;}
   .med-form-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap;}
   .med-btn-primary{padding:10px 20px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;}
-  .med-btn-secondary{padding:10px 16px;font-size:13px;border-radius:8px;border:1px solid #3a6a3a;background:transparent;color:#8aaa7a;cursor:pointer;}
-  .med-btn-danger{padding:10px 16px;font-size:13px;border-radius:8px;border:none;background:#4a1a1a;color:#f44336;cursor:pointer;}
+  .med-btn-secondary{padding:10px 16px;font-size:13px;border-radius:8px;border:1.5px solid #c8ddb0;background:#fff;color:#5a8a5a;cursor:pointer;}
+  .med-btn-danger{padding:10px 16px;font-size:13px;border-radius:8px;border:none;background:#fde8e8;color:#cc2222;cursor:pointer;}
 
   /* Graphiques synthèse */
   .med-synth-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
-  .med-chart-box{background:#1a2a1a;border:1px solid #2a4a2a;border-radius:12px;padding:16px;}
-  .med-chart-box h4{color:#8dc63f;font-size:13px;margin-bottom:12px;}
+  .med-chart-box{background:#fff;border:1px solid #c8ddb0;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+  .med-chart-box h4{color:#3a6a1a;font-size:13px;font-weight:700;margin-bottom:12px;}
   .med-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-  .med-bar-label{font-size:11px;color:#8aaa7a;width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .med-bar-bg{flex:1;background:#0f1a0f;border-radius:999px;height:10px;overflow:hidden;}
+  .med-bar-label{font-size:11px;color:#5a7a5a;width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .med-bar-bg{flex:1;background:#f0f8e8;border-radius:999px;height:10px;overflow:hidden;}
   .med-bar-fill{height:10px;border-radius:999px;background:#8dc63f;}
-  .med-bar-val{font-size:11px;color:#8dc63f;font-weight:700;width:24px;text-align:right;flex-shrink:0;}
+  .med-bar-val{font-size:11px;color:#3a6a1a;font-weight:700;width:24px;text-align:right;flex-shrink:0;}
 
-  /* Bouton ajouter */
   .med-btn-add{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;margin-bottom:16px;}
+  .med-empty{text-align:center;padding:32px;color:#8aaa7a;font-size:13px;background:#fff;border-radius:12px;border:1px dashed #c8ddb0;}
 
   @media(max-width:600px){
     .med-form-grid{grid-template-columns:1fr;}
+    .med-synth-grid{grid-template-columns:1fr;}
+    .med-kpi-num{font-size:20px;}
+    .med-card-body{grid-template-columns:1fr 1fr;}
+    .med-topbar{padding:8px 12px;}
+    .med-content{padding:10px 12px;}
+  }
+  @media(max-width:400px){
+    .med-card-body{grid-template-columns:1fr;}
+  }
+  </style>
     .med-synth-grid{grid-template-columns:1fr;}
     .med-kpi-num{font-size:20px;}
     .med-tabs{flex-wrap:wrap;}
@@ -3986,30 +4025,7 @@ if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(
     <!-- ONGLET SUIVI -->
     <div id="medPanelSuivi">
       <button class="med-btn-add" onclick="ouvrirFormMedical(null)">+ Nouvelle blessure</button>
-      <div class="med-table-wrap">
-        <table class="med-table">
-          <thead>
-            <tr>
-              <th>Joueur</th>
-              <th>Poste</th>
-              <th>Date</th>
-              <th>Zone</th>
-              <th>Type de blessure</th>
-              <th>Gravité</th>
-              <th>Diagnostic</th>
-              <th>Protocole kiné</th>
-              <th>Protocole prépa</th>
-              <th>Reprise estimée</th>
-              <th>Reprise effective</th>
-              <th>Indispo (j)</th>
-              <th>Statut</th>
-              <th>Notes</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="medTableBody"></tbody>
-        </table>
-      </div>
+      <div id="medTableBody" class="med-cards"></div>
     </div>
 
     <!-- ONGLET SYNTHÈSE -->
