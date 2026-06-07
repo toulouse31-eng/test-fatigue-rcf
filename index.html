@@ -1215,7 +1215,10 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <div class="stats-card" id="statsCardRight" style="display:block !important;">
         <div class="stats-header-row">
           <div class="stats-title">Synthèse rapide</div>
-          <button type="button" class="export-btn no-print" onclick="exportPDF()">PDF</button>
+          <button type="button" class="export-btn no-print" onclick="ouvrirRapportStaff()" style="background:#25D366;color:#fff;border-color:#25D366;display:flex;align-items:center;gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Envoyer au staff
+          </button>
         </div>
 
         <!-- PIN PARTAGE -->
@@ -2712,6 +2715,236 @@ async function chargerKineFirestore(){
   }catch(e){chargerKine();}
 }
 
+// ===== RAPPORT SÉANCE STAFF =====
+function ouvrirRapportStaff(){
+  const modal = document.getElementById("rapportModal");
+  modal.style.display = "flex";
+  setTimeout(()=>genererRapportCanvas(), 100);
+}
+function fermerRapportModal(){
+  document.getElementById("rapportModal").style.display = "none";
+}
+
+function getRapportData(){
+  const seanceKey = document.getElementById("statsSeanceSelect")?.value;
+  const data = getVizData();
+  const seanceData = seanceKey ? data.filter(r=>getSKey(r)===seanceKey) : data;
+  const lastByP={};
+  seanceData.forEach(r=>{
+    const k=r.joueur,d=getDFromS(r.seance)||new Date(r.date);
+    if(!lastByP[k])lastByP[k]=r;
+    else{const d0=getDFromS(lastByP[k].seance)||new Date(lastByP[k].date);if(d>d0)lastByP[k]=r;}
+  });
+  const recs=Object.values(lastByP);
+  const nb=recs.length;
+  const total=recs.reduce((s,r)=>s+(r.total||0),0);
+  const pct=nb?Math.round(total/nb/25*100):0;
+  const alertes=recs.filter(r=>r.zoneClass==="zone-rouge"||r.zoneClass==="zone-orange")
+    .sort((a,b)=>a.pourcentage-b.pourcentage);
+  const top3=recs.filter(r=>r.zoneClass==="zone-vert-fonce"||r.zoneClass==="zone-vert-clair")
+    .sort((a,b)=>b.pourcentage-a.pourcentage).slice(0,3);
+  const joueursTotaux=(currentClub?.players&&currentTeam?.id&&currentClub.players[currentTeam.id])||[];
+  const dateStr=seanceKey?fmtKey(seanceKey):(()=>{const d=new Date();return`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;})();
+
+  let zoneLabel="", zoneCouleur="#8dc63f";
+  if(pct<52){zoneLabel="Fatigue importante";zoneCouleur="#f44336";}
+  else if(pct<64){zoneLabel="Fatigue notable";zoneCouleur="#ff9800";}
+  else if(pct<76){zoneLabel="Fatigue légère";zoneCouleur="#ffc107";}
+  else if(pct<88){zoneLabel="Bon état";zoneCouleur="#8dc63f";}
+  else{zoneLabel="Très bon état";zoneCouleur="#4caf50";}
+
+  let reco="Charge normale.";
+  if(alertes.length>=3)reco="Plusieurs fatigués → Réduire l'intensité";
+  else if(alertes.length>=1)reco="Quelques alertes → Surveillance renforcée";
+  else if(pct>=80)reco="Équipe en forme → Charge normale ou augmentée";
+
+  return{pct,zoneLabel,zoneCouleur,alertes,top3,nb,total:joueursTotaux.length,dateStr,reco};
+}
+
+function genererRapportCanvas(){
+  const canvas = document.getElementById("rapportCanvas");
+  if(!canvas)return;
+  const W=380, H=520;
+  canvas.width=W*2; canvas.height=H*2;
+  canvas.style.width=W+"px"; canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");
+  ctx.scale(2,2);
+
+  const d=getRapportData();
+  const club=currentClub?.nom||"Club";
+  const team=currentTeam?.nom||currentTeam?.id||"Équipe";
+
+  // Fond
+  ctx.fillStyle="#0f1a0f";
+  ctx.fillRect(0,0,W,H);
+
+  // Header
+  ctx.fillStyle="#1a2a1a";
+  ctx.fillRect(0,0,W,56);
+  ctx.fillStyle="#8dc63f";
+  ctx.fillRect(0,54,W,3);
+
+  // Logo cercle
+  ctx.fillStyle="#8dc63f";
+  ctx.beginPath();ctx.arc(28,28,18,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#0f1a0f";
+  ctx.font="bold 11px Arial";ctx.textAlign="center";
+  ctx.fillText("RC",28,32);
+
+  // Titre
+  ctx.textAlign="left";
+  ctx.fillStyle="#fff";
+  ctx.font="bold 13px Arial";
+  ctx.fillText(`${club} — ${team}`,54,24);
+  ctx.fillStyle="#8aaa7a";
+  ctx.font="11px Arial";
+  ctx.fillText("Séance du "+d.dateStr,54,40);
+
+  // Indice
+  let y=72;
+  ctx.fillStyle="#2a1a0a";
+  ctx.beginPath();ctx.roundRect(12,y,W-24,60,8);ctx.fill();
+  ctx.fillStyle=d.zoneCouleur;
+  ctx.font="bold 10px Arial";ctx.fillText("INDICE BIEN-ÊTRE",20,y+14);
+  ctx.font="bold 28px Arial";ctx.fillText(d.pct+"%",20,y+42);
+  ctx.fillStyle="#fff";
+  ctx.font="bold 13px Arial";ctx.fillText(d.zoneLabel,64,y+32);
+  ctx.fillStyle="#8aaa7a";
+  ctx.font="11px Arial";ctx.fillText(`${d.nb}/${d.total} joueurs ont répondu`,64,y+46);
+  // Barre
+  ctx.fillStyle="#1a2a1a";
+  ctx.beginPath();ctx.roundRect(20,y+52,W-44,6,3);ctx.fill();
+  ctx.fillStyle=d.zoneCouleur;
+  ctx.beginPath();ctx.roundRect(20,y+52,Math.round((W-44)*d.pct/100),6,3);ctx.fill();
+
+  // Alertes
+  y=148;
+  ctx.fillStyle="#f44336";
+  ctx.font="bold 10px Arial";ctx.fillText("ALERTES ("+d.alertes.length+")",12,y);
+  y+=12;
+  if(d.alertes.length===0){
+    ctx.fillStyle="#4caf50";ctx.font="12px Arial";
+    ctx.fillText("Aucune alerte",12,y+4);
+    y+=20;
+  } else {
+    d.alertes.slice(0,5).forEach(a=>{
+      const col=a.zoneClass==="zone-rouge"?"#f44336":"#ff9800";
+      ctx.fillStyle=col;
+      ctx.beginPath();ctx.arc(20,y+4,5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fff";ctx.font="bold 12px Arial";
+      ctx.fillText(a.joueur,30,y+8);
+      const douleur=a.douleurZone?formatDouleur(a.douleurZone).split(",")[0]:"—";
+      ctx.fillStyle="#8aaa7a";ctx.font="11px Arial";
+      const txt=douleur.length>20?douleur.slice(0,18)+"…":douleur;
+      ctx.fillText(txt,30+ctx.measureText(a.joueur).width+6,y+8);
+      ctx.fillStyle=col;ctx.font="bold 12px Arial";ctx.textAlign="right";
+      ctx.fillText(a.pourcentage+"%",W-16,y+8);
+      ctx.textAlign="left";
+      y+=20;
+    });
+  }
+
+  // Séparateur
+  ctx.strokeStyle="#2a4a2a";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(12,y+2);ctx.lineTo(W-12,y+2);ctx.stroke();
+  y+=12;
+
+  // En forme
+  ctx.fillStyle="#4caf50";ctx.font="bold 10px Arial";
+  ctx.fillText("EN FORME",12,y);
+  y+=12;
+  if(d.top3.length===0){
+    ctx.fillStyle="#6a8a6a";ctx.font="12px Arial";
+    ctx.fillText("Données insuffisantes",12,y+4);y+=20;
+  } else {
+    d.top3.forEach(a=>{
+      ctx.fillStyle="#4caf50";
+      ctx.beginPath();ctx.arc(20,y+4,5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fff";ctx.font="bold 12px Arial";
+      ctx.fillText(a.joueur,30,y+8);
+      ctx.fillStyle="#4caf50";ctx.font="bold 12px Arial";ctx.textAlign="right";
+      ctx.fillText(a.pourcentage+"%",W-16,y+8);
+      ctx.textAlign="left";y+=20;
+    });
+  }
+
+  // Séparateur
+  ctx.strokeStyle="#2a4a2a";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(12,y+2);ctx.lineTo(W-12,y+2);ctx.stroke();
+  y+=12;
+
+  // Recommandation
+  ctx.fillStyle="#8aaa7a";ctx.font="bold 10px Arial";
+  ctx.fillText("RECOMMANDATION",12,y);
+  y+=12;
+  ctx.fillStyle="#ff9800";
+  ctx.beginPath();ctx.roundRect(12,y,6,28,2);ctx.fill();
+  ctx.fillStyle="#ffb74d";ctx.font="12px Arial";
+  // Wrap texte reco
+  const words=d.reco.split(" ");let line="";
+  words.forEach(w=>{
+    const test=line?line+" "+w:w;
+    if(ctx.measureText(test).width>W-50){
+      ctx.fillText(line,24,y+12);y+=16;line=w;
+    } else line=test;
+  });
+  if(line)ctx.fillText(line,24,y+12);
+  y+=26;
+
+  // Footer
+  ctx.fillStyle="#1a2a1a";
+  ctx.fillRect(0,H-24,W,24);
+  ctx.fillStyle="#3a6a3a";ctx.font="10px Arial";ctx.textAlign="center";
+  ctx.fillText("Généré par TEAM RPE",W/2,H-8);
+}
+
+function telechargerRapportImage(){
+  const canvas=document.getElementById("rapportCanvas");
+  if(!canvas)return;
+  const d=getRapportData();
+  const a=document.createElement("a");
+  a.href=canvas.toDataURL("image/png");
+  a.download=`rapport_rpe_${(currentTeam?.id||"equipe").replace(/\s/g,"_")}_${new Date().toISOString().slice(0,10)}.png`;
+  a.click();
+}
+
+function envoyerRapportWhatsApp(){
+  const msg=genererRapportTexte();
+  window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+}
+
+function copierRapportTexte(){
+  const msg=genererRapportTexte();
+  navigator.clipboard.writeText(msg).then(()=>setSyncStatus("📋 Message copié !","ok"));
+}
+
+function genererRapportTexte(){
+  const d=getRapportData();
+  const club=currentClub?.nom||"Club";
+  const team=currentTeam?.nom||currentTeam?.id||"Équipe";
+  let msg=`🏟️ *${club} — ${team}*\n📅 Séance du ${d.dateStr}\n\n`;
+  msg+=`📊 *ÉTAT DE L'ÉQUIPE*\n`;
+  msg+=`Indice : ${d.pct}% — ${d.pct<52?"🚨":"⚠️"} ${d.zoneLabel}\n`;
+  msg+=`👥 ${d.nb}/${d.total} joueurs ont répondu\n\n`;
+  if(d.alertes.length){
+    msg+=`🚨 *ALERTES (${d.alertes.length})*\n`;
+    d.alertes.forEach(a=>{
+      const em=a.zoneClass==="zone-rouge"?"🔴":"🟠";
+      const douleur=a.douleurZone?` | ${formatDouleur(a.douleurZone).split(",")[0]}`:"";
+      msg+=`${em} ${a.joueur} — ${a.pourcentage}%${douleur}\n`;
+    });
+    msg+="\n";
+  }
+  if(d.top3.length){
+    msg+=`💪 *EN FORME*\n`;
+    d.top3.forEach(a=>msg+=`🟢 ${a.joueur} — ${a.pourcentage}%\n`);
+    msg+="\n";
+  }
+  msg+=`📋 *RECOMMANDATION*\n${d.reco}\n\n`;
+  msg+=`_Généré par TEAM RPE_`;
+  return msg;
+}
+
 // ===== MODULE MÉDICAL =====
 let blessures = [];
 let medEditId = null;
@@ -2965,6 +3198,37 @@ function exportMedicalCSV(){
 
 // Désactiver le Service Worker pour éviter les problèmes de cache
 if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>{r.unregister();console.log("SW désactivé");});});}</script>
+
+<!-- ============================================================ -->
+<!-- RAPPORT STAFF MODAL                                          -->
+<!-- ============================================================ -->
+<div id="rapportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:900;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#1a2a1a;border-radius:16px;border:1px solid #3a6a3a;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;">
+    <!-- Header -->
+    <div style="padding:16px 20px;border-bottom:1px solid #2a4a2a;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:15px;font-weight:700;color:#8dc63f;">📤 Rapport séance — Staff</div>
+      <button onclick="fermerRapportModal()" style="background:none;border:none;color:#6a8a6a;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <!-- Canvas rapport image -->
+    <div style="padding:16px 20px;">
+      <div style="font-size:11px;color:#6a8a6a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:700;">Aperçu de l'image</div>
+      <canvas id="rapportCanvas" style="width:100%;border-radius:10px;border:1px solid #2a4a2a;display:block;"></canvas>
+    </div>
+    <!-- Actions -->
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px;">
+      <button onclick="telechargerRapportImage()" style="padding:12px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid #3a6a3a;background:#2a4a2a;color:#8dc63f;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        💾 Télécharger l'image
+      </button>
+      <button onclick="envoyerRapportWhatsApp()" style="padding:12px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#25D366;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Envoyer sur WhatsApp
+      </button>
+      <button onclick="copierRapportTexte()" style="padding:10px;font-size:12px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">
+        📋 Copier le message texte
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ============================================================ -->
 <!-- MODULE MÉDICAL                                                -->
