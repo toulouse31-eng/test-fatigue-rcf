@@ -30,7 +30,7 @@ body{font-family:Arial,sans-serif;font-size:16px;background:var(--noir);color:va
 /* ===== ÉCRANS ===== */
 .screen{display:none;min-height:100vh;}
 .screen.active{display:flex;}
-#loginScreen,#pinScreen,#playerPickScreen,#teamScreen{flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:var(--noir);}
+#loginScreen,#pinScreen,#playerPickScreen,#dejaReponduScreen,#teamScreen{flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:var(--noir);}
 #appContent{display:none;flex-direction:column;}
 #appContent.active{display:flex;}
 
@@ -709,6 +709,27 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 </div>
 
 <!-- ============================================================ -->
+<!-- ÉCRAN DÉJÀ RÉPONDU AUJOURD'HUI                               -->
+<!-- ============================================================ -->
+<div id="dejaReponduScreen" class="screen" style="display:none;">
+  <div style="font-size:48px;margin-bottom:8px;">✅</div>
+  <div style="font-size:22px;font-weight:900;color:#8dc63f;">C'est bon !</div>
+  <div id="drJoueurNom" style="font-size:16px;color:#fff;font-weight:700;margin-top:4px;"></div>
+  <div style="font-size:13px;color:#6a8a6a;margin-top:4px;">Tu as déjà rempli le questionnaire aujourd'hui.</div>
+  <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:24px 32px;margin-top:20px;text-align:center;min-width:200px;">
+    <div style="font-size:13px;color:#6a8a6a;margin-bottom:6px;">Ton score du jour</div>
+    <div id="drScore" style="font-size:40px;font-weight:900;color:#8dc63f;"></div>
+    <div id="drLabel" style="font-size:15px;font-weight:700;margin-top:4px;color:#8dc63f;"></div>
+  </div>
+  <div style="margin-top:24px;font-size:12px;color:#3a6a3a;text-align:center;">
+    Reviens demain après la prochaine séance 💪
+  </div>
+  <button type="button" onclick="quitterModeJoueur()" style="margin-top:20px;padding:10px 20px;font-size:13px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">
+    Ce n'est pas moi → Changer de joueur
+  </button>
+</div>
+
+<!-- ============================================================ -->
 <!-- ÉCRAN SÉLECTION ÉQUIPE (coach)                                 -->
 <!-- ============================================================ -->
 <div id="teamScreen" class="screen">
@@ -828,7 +849,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
 
       <!-- Ajouter joueur -->
       <div class="coach-add-row" id="coachAddRow">
-        <input type="text" id="coachNewPlayer" placeholder="Prénom du joueur à ajouter..." maxlength="40"/>
+        <input type="text" id="coachNewPlayer" placeholder="Prénom NOM du joueur (ex: Pierre DUPONT)" maxlength="50"/>
         <button type="button" onclick="coachAddPlayer()">+ Ajouter</button>
       </div>
       <!-- Liste joueurs -->
@@ -1286,7 +1307,10 @@ function showRegister(){document.getElementById("loginCard").style.display="none
 async function doLogin(){
   const e=document.getElementById("loginEmail").value.trim(),p=document.getElementById("loginPassword").value,err=document.getElementById("loginError");
   err.style.display="none";
-  try{await auth.signInWithEmailAndPassword(e,p);}catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
+  try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    await auth.signInWithEmailAndPassword(e,p);
+  }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
 async function doRegister(){
   const club=document.getElementById("regClub").value.trim(),e=document.getElementById("regEmail").value.trim(),p=document.getElementById("regPassword").value,err=document.getElementById("registerError");
@@ -1420,12 +1444,53 @@ async function verifierPin(){
   if(pin!==attendu){err.textContent="Code incorrect. Réessaie.";err.style.display="block";return;}
   await chargerJoueursEquipe(currentTeam.id);showPlayerPick();
 }
+// ===== ACCÈS JOUEUR — MÉMOIRE NOM =====
+const PLAYER_MEM_KEY = "rpe_player_mem";
+
+function getPlayerMem(){
+  try{
+    const d=localStorage.getItem(PLAYER_MEM_KEY);
+    return d?JSON.parse(d):null;
+  }catch(e){return null;}
+}
+function setPlayerMem(clubId,teamId,nom){
+  localStorage.setItem(PLAYER_MEM_KEY,JSON.stringify({clubId,teamId,nom,savedAt:Date.now()}));
+}
+function clearPlayerMem(){
+  localStorage.removeItem(PLAYER_MEM_KEY);
+}
+
+// Vérifie si le joueur a déjà répondu aujourd'hui
+function aDejaReponduAujourdHui(nom){
+  const today=new Date();
+  const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+  const local=chargerLocal();
+  return local.some(r=>{
+    if(r.joueur!==nom)return false;
+    const d=getDFromS(r.seance)||new Date(r.date);
+    const dStr=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    return dStr===todayStr;
+  });
+}
+
 function showPlayerPick(){
   document.getElementById("playerPickSubtitle").textContent=(currentClub.nom||"")+" — "+(currentTeam.nom||"");
+  const joueurs=(currentClub.players&&currentClub.players[currentTeam.id])||[];
+
+  // Vérifier si le joueur est mémorisé sur cet appareil
+  const mem=getPlayerMem();
+  if(mem&&mem.clubId===currentUser?.uid&&mem.teamId===currentTeam.id&&joueurs.includes(mem.nom)){
+    // Joueur reconnu → lancer directement sans passer par le choix
+    currentPlayer=mem.nom;
+    playerMode=true;
+    verifierEtLancerJoueur();
+    return;
+  }
+
+  // Sinon afficher l'écran de choix normal
   const sel=document.getElementById("playerPickSelect");
   if(!sel){showScreen("playerPickScreen");return;}
   sel.innerHTML='<option value="">— Sélectionne ton nom —</option>';
-  const joueurs=(currentClub.players&&currentClub.players[currentTeam.id])||[];
   if(!joueurs.length){
     const opt=document.createElement("option");opt.disabled=true;opt.textContent="Aucun joueur — Contacte ton coach";sel.appendChild(opt);
     showScreen("playerPickScreen");return;
@@ -1434,11 +1499,60 @@ function showPlayerPick(){
   sorted.forEach(nom=>{const o=document.createElement("option");o.value=nom;o.textContent=nom;sel.appendChild(o);});
   showScreen("playerPickScreen");
 }
+
 function confirmerJoueur(){
   const sel=document.getElementById("playerPickSelect"),e=document.getElementById("playerPickError");
   if(!sel||!sel.value){e.style.display="block";return;}
   e.style.display="none";
-  currentPlayer=sel.value;playerMode=true;lancerModeJoueur();
+  currentPlayer=sel.value;
+  playerMode=true;
+  // Mémoriser le nom sur cet appareil
+  setPlayerMem(currentUser?.uid||currentClub?.id,currentTeam.id,currentPlayer);
+  verifierEtLancerJoueur();
+}
+
+function verifierEtLancerJoueur(){
+  // Vérifier si déjà répondu aujourd'hui
+  if(aDejaReponduAujourdHui(currentPlayer)){
+    afficherDejaRepondu();
+    return;
+  }
+  lancerModeJoueur();
+}
+
+function afficherDejaRepondu(){
+  document.body.classList.add("player-mode");
+  document.body.classList.remove("coach-mode");
+  // Récupérer la dernière réponse du joueur
+  const local=chargerLocal();
+  const last=local.filter(r=>r.joueur===currentPlayer).sort((a,b)=>{
+    const da=getDFromS(a.seance)||new Date(a.date);
+    const db2=getDFromS(b.seance)||new Date(b.date);
+    return db2-da;
+  })[0];
+  const pct=last?last.pourcentage:null;
+  let couleur="#8dc63f",label="Bon état";
+  if(pct!==null){
+    if(pct<52){couleur="#f44336";label="Fatigue importante";}
+    else if(pct<64){couleur="#ff9800";label="Fatigue notable";}
+    else if(pct<76){couleur="#ffc107";label="Fatigue légère";}
+    else if(pct<88){couleur="#8dc63f";label="Bon état";}
+    else{couleur="#4caf50";label="Très bon état";}
+  }
+
+  // Afficher écran "déjà répondu"
+  const screen=document.getElementById("dejaReponduScreen");
+  if(screen){
+    document.getElementById("drJoueurNom").textContent=afficherNomCourt(currentPlayer);
+    document.getElementById("drScore").textContent=pct!==null?pct+"%":"—";
+    document.getElementById("drLabel").textContent=label;
+    document.getElementById("drLabel").style.color=couleur;
+    document.getElementById("drScore").style.color=couleur;
+    showScreen("dejaReponduScreen");
+  }
+  if(currentClub?.logoBase64) majLogoPartout(currentClub.logoBase64);
+  document.getElementById("playerBannerName").textContent=currentPlayer;
+  document.getElementById("playerBannerTeam").textContent=currentTeam?.nom||"";
 }
 function lancerModeJoueur(){
   document.body.classList.add("player-mode");document.body.classList.remove("coach-mode");
@@ -1446,8 +1560,8 @@ function lancerModeJoueur(){
   document.getElementById("rowAutre").style.display="none";
   document.getElementById("rowJoueurDisplay").style.display="flex";
   document.getElementById("rowAddPlayer").style.display="none";
-  document.getElementById("joueurDisplayName").textContent=currentPlayer;
-  document.getElementById("playerBannerName").textContent=currentPlayer;
+  document.getElementById("joueurDisplayName").textContent=afficherNomCourt(currentPlayer);
+  document.getElementById("playerBannerName").textContent=afficherNomCourt(currentPlayer);
   document.getElementById("playerBannerTeam").textContent=currentTeam.nom;
   const badge=document.getElementById("teamBadge");if(badge){badge.style.cursor="default";badge.onclick=null;}
   showScreen("appContent");
@@ -1457,7 +1571,14 @@ function lancerModeJoueur(){
   enregistrementsLocal=chargerLocal();initDateSeance();
   appliquerModeAffichage();
 }
-function quitterModeJoueur(){playerMode=false;currentPlayer=null;document.body.classList.remove("player-mode");document.getElementById("rowJoueurSelect").style.display="flex";document.getElementById("rowJoueurDisplay").style.display="none";showPlayerPick();}
+function quitterModeJoueur(){
+  playerMode=false;currentPlayer=null;
+  clearPlayerMem();
+  document.body.classList.remove("player-mode");
+  document.getElementById("rowJoueurSelect").style.display="flex";
+  document.getElementById("rowJoueurDisplay").style.display="none";
+  showPlayerPick();
+}
 
 // ===== JOUEURS =====
 async function chargerJoueursEquipe(tn){
@@ -1506,10 +1627,17 @@ async function initApp(){
   }
 }
 function majAvatar(){
-  const nom=currentClub?.nom||"";const initiales=nom.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
-  const ie=document.getElementById("avatarInitials");if(ie)ie.textContent=initiales;
+  const nom=currentClub?.nom||"";
+  // Initiales depuis l'email : "yannick.leroy@..." → "YL"
+  const email=currentUser?.email||"";
+  const emailBase=email.split("@")[0];
+  const parts=emailBase.split(/[._\-]/);
+  const initiales=parts.length>=2
+    ?(parts[0][0]+(parts[1][0]||"")).toUpperCase()
+    :emailBase.slice(0,2).toUpperCase();
+  const ie=document.getElementById("avatarInitials");if(ie)ie.textContent=initiales||"??";
   const me=document.getElementById("menuClubNom");if(me)me.textContent=nom;
-  const ee=document.getElementById("menuCoachEmail");if(ee)ee.textContent=currentUser?.email||"";
+  const ee=document.getElementById("menuCoachEmail");if(ee)ee.textContent=email;
 }
 function toggleAvatarMenu(){const m=document.getElementById("avatarMenu");if(m)m.style.display=m.style.display==="none"?"block":"none";}
 document.addEventListener("click",e=>{const w=document.getElementById("avatarWrapper");if(w&&!w.contains(e.target)){const m=document.getElementById("avatarMenu");if(m)m.style.display="none";}});
@@ -2067,6 +2195,7 @@ async function buildCoachInterface(){
     row.dataset.nom = nom;
     const naText = rec && rec.naMatch ? '<span class="na-text">n\'a pas joué le dernier match</span>' : '';
     const noRespText = pasRepondu ? '<span class="noresp-text">⏳ pas répondu</span>' : '';
+    const nomCourt = afficherNomCourt(nom);
     const SCORE_COLOR = {
       "zone-vert-fonce":"#2a8a4a","zone-vert-clair":"#4aaa6a",
       "zone-jaune":"#aa8800","zone-orange":"#cc6600","zone-rouge":"#cc0000"
@@ -2079,7 +2208,7 @@ async function buildCoachInterface(){
       <div class="joueur-checkbox"><span class="joueur-checkbox-tick">✓</span></div>
       <div class="joueur-row-line1">
         <div class="joueur-dot ${dotClass}"></div>
-        <div class="joueur-nom">${nom}${naText}${noRespText}</div>
+        <div class="joueur-nom" title="${nom}">${nomCourt}${naText}${noRespText}</div>
         <div class="joueur-date" data-tooltip="${dateText||'—'}">${dateText||'—'}</div>
       </div>
       <div class="joueur-row-line2">
@@ -2177,6 +2306,16 @@ async function coachAddPlayer(){
 }
 
 
+
+// ===== AFFICHAGE NOM COURT : "Pierre DUPONT" → "Pierre D." =====
+function afficherNomCourt(nom){
+  if(!nom)return"—";
+  const parts=nom.trim().split(/\s+/);
+  if(parts.length<=1)return nom; // nom unique → tel quel
+  const prenom=parts[0];
+  const initiales=parts.slice(1).map(p=>p[0].toUpperCase()+".").join(" ");
+  return prenom+" "+initiales;
+}
 
 // ===== LOGIQUE DOULEURS PAR ZONE =====
 let zonesSelectionnees = {}; // {zoneName: intensite}
@@ -2849,7 +2988,7 @@ function genererRapportCanvas(){
       ctx.fillStyle = col;
       ctx.beginPath(); ctx.arc(20,y+5,5,0,Math.PI*2); ctx.fill();
       ctx.fillStyle = "#ffffff"; ctx.font = "bold 12px Arial"; ctx.textAlign = "left";
-      ctx.fillText(a.joueur, 32, y+9);
+      ctx.fillText(afficherNomCourt(a.joueur), 32, y+9);
       const nomW = ctx.measureText(a.joueur).width;
       const douleur = a.douleurZone ? " — "+formatDouleur(a.douleurZone).split(",")[0] : "";
       ctx.fillStyle = "#8aaa7a"; ctx.font = "11px Arial";
@@ -2878,7 +3017,7 @@ function genererRapportCanvas(){
       ctx.fillStyle = "#4caf50";
       ctx.beginPath(); ctx.arc(20,y+5,5,0,Math.PI*2); ctx.fill();
       ctx.fillStyle = "#ffffff"; ctx.font = "bold 12px Arial"; ctx.textAlign = "left";
-      ctx.fillText(a.joueur, 32, y+9);
+      ctx.fillText(afficherNomCourt(a.joueur), 32, y+9);
       ctx.fillStyle = "#4caf50"; ctx.font = "bold 12px Arial"; ctx.textAlign = "right";
       ctx.fillText(a.pourcentage+"%", W-14, y+9);
       ctx.textAlign = "left"; y += 22;
@@ -2948,7 +3087,7 @@ function genererRapportTexte(){
     d.alertes.forEach(a=>{
       const em=a.zoneClass==="zone-rouge"?"🔴":"🟠";
       const douleur=a.douleurZone?` | ${formatDouleur(a.douleurZone).split(",")[0]}`:"";
-      msg+=`${em} ${a.joueur} — ${a.pourcentage}%${douleur}\n`;
+      msg+=`${em} ${afficherNomCourt(a.joueur)} — ${a.pourcentage}%${douleur}\n`;
     });
     msg+="\n";
   }
