@@ -1462,15 +1462,56 @@ async function adminChargerClubs(){
     if(snap.empty){el.innerHTML='<div style="color:#6a8a6a;">Aucun club créé.</div>';return;}
     el.innerHTML=snap.docs.map(d=>{
       const c=d.data();
-      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a4a2a;">
-        <div>
+      const code=c.codeClub||"—";
+      const codeHtml=c.codeClub
+        ?`<span style="font-size:15px;font-weight:900;color:#8dc63f;letter-spacing:2px;">${c.codeClub}</span>`
+        :`<button onclick="adminGenererCode('${d.id}')" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid #3a6a3a;background:#1a3a1a;color:#8dc63f;cursor:pointer;">Générer code</button>`;
+      return`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #2a4a2a;">
+        <div style="flex:1;min-width:0;">
           <div style="color:#fff;font-weight:700;">${c.nom||"—"}</div>
           <div style="font-size:11px;color:#6a8a6a;">${c.ville||""} ${c.createdAt?.toDate?.().toLocaleDateString("fr-FR")||""}</div>
         </div>
-        <div style="font-size:16px;font-weight:900;color:#8dc63f;letter-spacing:2px;">${c.codeClub||"—"}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          ${codeHtml}
+          <button onclick="adminSupprimerClub('${d.id}','${(c.nom||"").replace(/'/g,"\\'")}')" style="background:none;border:1px solid #4a1a1a;border-radius:6px;padding:4px 8px;color:#f44336;cursor:pointer;font-size:12px;" title="Supprimer ce club">🗑️</button>
+        </div>
       </div>`;
     }).join("");
   }catch(e){el.innerHTML='<div style="color:#f44336;">Erreur de chargement.</div>';}
+}
+
+async function adminGenererCode(clubId){
+  let code,exists=true;
+  while(exists){
+    code=genCodeClub();
+    const snap=await db.collection("clubs").where("codeClub","==",code).get();
+    exists=!snap.empty;
+  }
+  await db.collection("clubs").doc(clubId).update({codeClub:code});
+  await adminChargerClubs();
+}
+
+async function adminSupprimerClub(clubId, nomClub){
+  if(!confirm(`⚠️ Supprimer "${nomClub}" et TOUTES ses données ?\n\nCette action est irréversible.`))return;
+  try{
+    // Supprimer la sous-collection staff
+    const staffSnap=await db.collection("clubs").doc(clubId).collection("staff").get();
+    const batch=db.batch();
+    staffSnap.docs.forEach(d=>batch.delete(d.ref));
+    // Supprimer les données Firestore des réponses RPE liées
+    const rpeSnap=await db.collection("rpe").where("clubId","==",clubId).get();
+    rpeSnap.docs.forEach(d=>batch.delete(d.ref));
+    // Supprimer les profils users liés à ce club
+    const usersSnap=await db.collection("users").where("clubId","==",clubId).get();
+    usersSnap.docs.forEach(d=>batch.delete(d.ref));
+    // Supprimer le club lui-même
+    batch.delete(db.collection("clubs").doc(clubId));
+    await batch.commit();
+    await adminChargerClubs();
+    setSyncStatus?.(`✅ Club "${nomClub}" supprimé.`,"ok");
+  }catch(e){
+    alert("Erreur lors de la suppression : "+e.message);
+  }
 }
 function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
 function tErr(c){return{"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court.","auth/invalid-credential":"Email ou mot de passe incorrect."}[c]||"Erreur : "+c;}
