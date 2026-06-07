@@ -756,6 +756,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <button type="button" class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span class="tbadge-team-text" id="currentTeamLabel">—</span></button>
       <button type="button" class="tbadge active" id="tabEquipe" onclick="switchTab('equipe')"><span class="tbadge-icon">👥</span><span class="tbadge-label"> Équipe</span></button>
       <button type="button" class="tbadge" id="tabStats" onclick="switchTab('stats')"><span class="tbadge-icon">📊</span><span class="tbadge-label"> Stats</span></button>
+      <button type="button" class="tbadge tbadge-medical coach-only" id="tabMedical" onclick="ouvrirMedical()"><span class="tbadge-icon">🏥</span><span class="tbadge-label"> Médical</span></button>
       <!-- Avatar menu -->
       <div style="position:relative;" id="avatarWrapper">
         <button type="button" class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
@@ -2707,7 +2708,556 @@ async function chargerKineFirestore(){
   }catch(e){chargerKine();}
 }
 
+// ===== MODULE MÉDICAL =====
+let blessures = [];
+let medEditId = null;
+let medCurrentTab = "suivi";
+
+// Ouvrir/fermer
+function ouvrirMedical(){
+  document.getElementById("medicalModal").style.display="block";
+  document.body.style.overflow="hidden";
+  if(currentTeam) document.getElementById("medTeamLabel").textContent = currentTeam.nom||currentTeam.id||"—";
+  chargerBlessuresFirestore();
+}
+function fermerMedical(){
+  document.getElementById("medicalModal").style.display="none";
+  document.body.style.overflow="";
+}
+
+// Onglets
+function switchMedTab(tab){
+  medCurrentTab=tab;
+  document.getElementById("medPanelSuivi").style.display=tab==="suivi"?"block":"none";
+  document.getElementById("medPanelSynth").style.display=tab==="synth"?"block":"none";
+  document.getElementById("medTabSuivi").classList.toggle("active",tab==="suivi");
+  document.getElementById("medTabSynth").classList.toggle("active",tab==="synth");
+  if(tab==="synth") renderMedSynth();
+}
+
+// Firestore
+async function chargerBlessuresFirestore(){
+  if(!currentUser||!currentClub?.id)return;
+  try{
+    const doc=await db.collection("clubs").doc(currentClub.id).get();
+    blessures=(doc.exists&&doc.data().blessures)||[];
+  }catch(e){blessures=[];}
+  renderMedTable();
+  renderMedKpis();
+}
+async function sauvegarderBlessuresFirestore(){
+  if(!currentUser||!currentClub?.id)return;
+  await db.collection("clubs").doc(currentClub.id).update({blessures});
+}
+
+// Formulaire
+function ouvrirFormMedical(id){
+  medEditId=id;
+  const b=id?blessures.find(x=>x.id===id):null;
+  document.getElementById("medFormTitle").textContent=b?"Modifier la blessure":"Nouvelle blessure";
+  document.getElementById("medBtnSuppr").style.display=b?"block":"none";
+
+  // Peupler joueurs
+  const sel=document.getElementById("medJoueur");
+  const joueurs=(currentClub?.players&&currentTeam?.id&&currentClub.players[currentTeam.id])||[];
+  sel.innerHTML='<option value="">— Joueur —</option>';
+  joueurs.forEach(j=>{const o=document.createElement("option");o.value=o.textContent=j;sel.appendChild(o);});
+
+  // Remplir champs
+  const f=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||"";};
+  f("medJoueur",b?.joueur); f("medPoste",b?.poste); f("medDateBlessure",b?.dateBlessure);
+  f("medZone",b?.zone); f("medType",b?.type); f("medGravite",b?.gravite);
+  f("medMecanisme",b?.mecanisme); f("medStatut",b?.statut||"actif");
+  f("medDiagnostic",b?.diagnostic); f("medProtoKine",b?.protoKine);
+  f("medProtoPrepa",b?.protoPrepa); f("medRepriseEstimee",b?.repriseEstimee);
+  f("medRepriseEffective",b?.repriseEffective); f("medCommentaires",b?.commentaires);
+
+  document.getElementById("medFormOverlay").classList.add("open");
+}
+function fermerFormMedical(){
+  document.getElementById("medFormOverlay").classList.remove("open");
+  medEditId=null;
+}
+
+function sauvegarderBlessure(){
+  const g=(id)=>document.getElementById(id)?.value||"";
+  const joueur=g("medJoueur");
+  if(!joueur){alert("Sélectionne un joueur.");return;}
+  if(!g("medDateBlessure")){alert("Indique la date de blessure.");return;}
+  if(!g("medZone")){alert("Indique la zone anatomique.");return;}
+  if(!g("medType")){alert("Indique le type de blessure.");return;}
+
+  const b={
+    id:medEditId||("med_"+Date.now()),
+    joueur,poste:g("medPoste"),dateBlessure:g("medDateBlessure"),
+    zone:g("medZone"),type:g("medType"),gravite:g("medGravite"),
+    mecanisme:g("medMecanisme"),statut:g("medStatut"),
+    diagnostic:g("medDiagnostic"),protoKine:g("medProtoKine"),
+    protoPrepa:g("medProtoPrepa"),repriseEstimee:g("medRepriseEstimee"),
+    repriseEffective:g("medRepriseEffective"),commentaires:g("medCommentaires"),
+    createdAt:medEditId?(blessures.find(x=>x.id===medEditId)?.createdAt||Date.now()):Date.now()
+  };
+
+  if(medEditId){const idx=blessures.findIndex(x=>x.id===medEditId);if(idx>=0)blessures[idx]=b;}
+  else blessures.unshift(b);
+
+  sauvegarderBlessuresFirestore();
+  fermerFormMedical();
+  renderMedTable();
+  renderMedKpis();
+}
+
+function supprimerBlessure(){
+  if(!medEditId||!confirm("Supprimer cette blessure ?"))return;
+  blessures=blessures.filter(x=>x.id!==medEditId);
+  sauvegarderBlessuresFirestore();
+  fermerFormMedical();
+  renderMedTable();
+  renderMedKpis();
+}
+
+// Calcul durée indispo
+function calcIndispo(b){
+  if(!b.dateBlessure)return"—";
+  const start=new Date(b.dateBlessure);
+  const end=b.repriseEffective?new Date(b.repriseEffective):new Date();
+  const jours=Math.max(0,Math.round((end-start)/(1000*60*60*24)));
+  return b.repriseEffective?jours:(jours+" (en cours)");
+}
+function calcIndispoNum(b){
+  if(!b.dateBlessure)return 0;
+  const start=new Date(b.dateBlessure);
+  const end=b.repriseEffective?new Date(b.repriseEffective):new Date();
+  return Math.max(0,Math.round((end-start)/(1000*60*60*24)));
+}
+
+// Rendu tableau
+function renderMedTable(){
+  const tbody=document.getElementById("medTableBody");
+  if(!tbody)return;
+  if(!blessures.length){
+    tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:32px;color:#6a8a6a;">Aucune blessure enregistrée.<br>Clique sur "+ Nouvelle blessure" pour commencer.</td></tr>`;
+    return;
+  }
+  const statutLabel={actif:"🔴 Blessé",surveillance:"🟠 Surveillance",retour:"🟡 Reprise",gueri:"🟢 Guéri"};
+  tbody.innerHTML=blessures.map(b=>{
+    const gravDots=b.gravite?[1,2,3,4,5].map(i=>`<div class="med-gravite-dot${i<=parseInt(b.gravite)?" on":""}"></div>`).join(""):"—";
+    const dateFmt=(d)=>{if(!d)return"—";const dt=new Date(d);return`${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;};
+    return`<tr class="statut-${b.statut||"actif"}">
+      <td><strong style="color:#fff;">${b.joueur}</strong></td>
+      <td style="color:#8aaa7a;">${b.poste||"—"}</td>
+      <td style="white-space:nowrap;">${dateFmt(b.dateBlessure)}</td>
+      <td>${b.zone||"—"}</td>
+      <td>${b.type||"—"}</td>
+      <td><div class="med-gravite">${gravDots}</div></td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.diagnostic||""}">${b.diagnostic||"—"}</td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.protoKine||""}">${b.protoKine||"—"}</td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.protoPrepa||""}">${b.protoPrepa||"—"}</td>
+      <td style="white-space:nowrap;">${dateFmt(b.repriseEstimee)}</td>
+      <td style="white-space:nowrap;">${dateFmt(b.repriseEffective)}</td>
+      <td style="text-align:center;font-weight:700;color:#8dc63f;">${calcIndispo(b)}</td>
+      <td><span class="med-badge ${b.statut||"actif"}">${statutLabel[b.statut||"actif"]}</span></td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.commentaires||""}">${b.commentaires||"—"}</td>
+      <td><button onclick="ouvrirFormMedical('${b.id}')" style="background:none;border:1px solid #3a6a3a;border-radius:6px;padding:4px 8px;color:#8aaa7a;cursor:pointer;font-size:11px;">✏️</button></td>
+    </tr>`;
+  }).join("");
+}
+
+// KPIs
+function renderMedKpis(){
+  const el=document.getElementById("medKpis");
+  if(!el)return;
+  const total=blessures.length;
+  const actifs=blessures.filter(b=>b.statut==="actif"||b.statut==="surveillance"||b.statut==="retour").length;
+  const gueris=blessures.filter(b=>b.statut==="gueri").length;
+  const termines=blessures.filter(b=>b.repriseEffective);
+  const dureesMoy=termines.length?Math.round(termines.reduce((s,b)=>s+calcIndispoNum(b),0)/termines.length):0;
+  const gravites=blessures.filter(b=>b.gravite).map(b=>parseFloat(b.gravite));
+  const gravMoy=gravites.length?(gravites.reduce((s,v)=>s+v,0)/gravites.length).toFixed(1):"—";
+  const joursTotal=blessures.filter(b=>b.repriseEffective).reduce((s,b)=>s+calcIndispoNum(b),0);
+
+  el.innerHTML=`
+    <div class="med-kpi"><div class="med-kpi-num">${total}</div><div class="med-kpi-label">Total blessures</div></div>
+    <div class="med-kpi"><div class="med-kpi-num rouge">${actifs}</div><div class="med-kpi-label">En cours</div></div>
+    <div class="med-kpi"><div class="med-kpi-num" style="color:#4caf50;">${gueris}</div><div class="med-kpi-label">Guéris</div></div>
+    <div class="med-kpi"><div class="med-kpi-num orange">${dureesMoy}j</div><div class="med-kpi-label">Durée moy. indispo</div></div>
+    <div class="med-kpi"><div class="med-kpi-num">${gravMoy}</div><div class="med-kpi-label">Gravité moyenne</div></div>
+    <div class="med-kpi"><div class="med-kpi-num">${joursTotal}j</div><div class="med-kpi-label">Jours indispo cumulés</div></div>
+  `;
+}
+
+// Synthèse graphiques
+function renderMedSynth(){
+  renderMedChart("medChartType", compterPar(b=>b.type));
+  renderMedChart("medChartZone", compterPar(b=>b.zone));
+  renderMedChartJoueur();
+  renderMedChartGravite();
+}
+function compterPar(fn){
+  const counts={};
+  blessures.forEach(b=>{const k=fn(b)||"Non renseigné";counts[k]=(counts[k]||0)+1;});
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+}
+function renderMedChart(id, data){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(!data.length){el.innerHTML='<div style="color:#6a8a6a;font-size:12px;">Aucune donnée.</div>';return;}
+  const max=data[0][1];
+  el.innerHTML=data.slice(0,8).map(([label,val])=>`
+    <div class="med-bar-row">
+      <div class="med-bar-label" title="${label}">${label}</div>
+      <div class="med-bar-bg"><div class="med-bar-fill" style="width:${Math.round(val/max*100)}%;"></div></div>
+      <div class="med-bar-val">${val}</div>
+    </div>`).join("");
+}
+function renderMedChartJoueur(){
+  const counts={};
+  blessures.forEach(b=>{const k=b.joueur||"?";counts[k]=(counts[k]||0)+calcIndispoNum(b);});
+  const data=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const el=document.getElementById("medChartJoueur");
+  if(!el)return;
+  if(!data.length){el.innerHTML='<div style="color:#6a8a6a;font-size:12px;">Aucune donnée.</div>';return;}
+  const max=data[0][1]||1;
+  el.innerHTML=data.slice(0,8).map(([label,val])=>`
+    <div class="med-bar-row">
+      <div class="med-bar-label">${label}</div>
+      <div class="med-bar-bg"><div class="med-bar-fill" style="width:${Math.round(val/max*100)}%;background:#ff9800;"></div></div>
+      <div class="med-bar-val">${val}j</div>
+    </div>`).join("");
+}
+function renderMedChartGravite(){
+  const counts={1:0,2:0,3:0,4:0,5:0};
+  blessures.forEach(b=>{if(b.gravite)counts[parseInt(b.gravite)]++;});
+  const labels=["1 Légère","2 Modérée","3 Moyenne","4 Sévère","5 Très grave"];
+  const colors=["#4caf50","#8dc63f","#ff9800","#f44336","#7b0000"];
+  const max=Math.max(...Object.values(counts))||1;
+  const el=document.getElementById("medChartGravite");
+  if(!el)return;
+  el.innerHTML=[1,2,3,4,5].map(i=>`
+    <div class="med-bar-row">
+      <div class="med-bar-label">${labels[i-1]}</div>
+      <div class="med-bar-bg"><div class="med-bar-fill" style="width:${Math.round(counts[i]/max*100)}%;background:${colors[i-1]};"></div></div>
+      <div class="med-bar-val">${counts[i]}</div>
+    </div>`).join("");
+}
+
+// Export CSV
+function exportMedicalCSV(){
+  if(!blessures.length){alert("Aucune blessure à exporter.");return;}
+  const headers=["Joueur","Poste","Date blessure","Zone","Type","Gravité","Mécanisme","Statut","Diagnostic","Protocole kiné","Protocole prépa","Reprise estimée","Reprise effective","Indispo (j)","Commentaires"];
+  const dateFmt=(d)=>{if(!d)return"";const dt=new Date(d);return`${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;};
+  const rows=blessures.map(b=>[
+    b.joueur,b.poste,dateFmt(b.dateBlessure),b.zone,b.type,b.gravite,b.mecanisme,b.statut,
+    b.diagnostic,b.protoKine,b.protoPrepa,dateFmt(b.repriseEstimee),dateFmt(b.repriseEffective),
+    calcIndispoNum(b),b.commentaires
+  ].map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(","));
+  const csv=[headers.join(","),...rows].join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=`medical_${currentTeam?.id||"equipe"}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();URL.revokeObjectURL(url);
+}
+
 // Désactiver le Service Worker pour éviter les problèmes de cache
 if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>{r.unregister();console.log("SW désactivé");});});}</script>
+
+<!-- ============================================================ -->
+<!-- MODULE MÉDICAL                                                -->
+<!-- ============================================================ -->
+<div id="medicalModal" style="display:none;position:fixed;inset:0;background:#0f1a0f;z-index:1000;overflow-y:auto;font-family:Arial,sans-serif;">
+  <style>
+  /* ===== MÉDICAL CSS ===== */
+  .med-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#1a2a1a;border-bottom:2px solid #2a4a2a;position:sticky;top:0;z-index:10;gap:8px;flex-wrap:wrap;}
+  .med-topbar-title{font-size:16px;font-weight:900;color:#8dc63f;display:flex;align-items:center;gap:8px;}
+  .med-tabs{display:flex;gap:4px;}
+  .med-tab{padding:7px 14px;font-size:12px;font-weight:700;border:none;border-radius:7px;cursor:pointer;background:#2a4a2a;color:#8aaa7a;transition:all .2s;}
+  .med-tab.active{background:#8dc63f;color:#0f1a0f;}
+  .med-btn-close{padding:7px 14px;font-size:12px;border-radius:7px;border:1px solid #3a6a3a;background:transparent;color:#8aaa7a;cursor:pointer;}
+  .med-btn-close:hover{background:#2a4a2a;color:#fff;}
+  .med-content{padding:16px 20px;max-width:1200px;margin:0 auto;}
+
+  /* KPIs */
+  .med-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+  .med-kpi{background:#1a2a1a;border:1px solid #2a4a2a;border-radius:12px;padding:14px;text-align:center;}
+  .med-kpi-num{font-size:26px;font-weight:900;color:#8dc63f;}
+  .med-kpi-num.rouge{color:#f44336;}
+  .med-kpi-num.orange{color:#ff9800;}
+  .med-kpi-label{font-size:11px;color:#6a8a6a;margin-top:4px;line-height:1.3;}
+
+  /* Tableau blessures */
+  .med-table-wrap{overflow-x:auto;border-radius:12px;border:1px solid #2a4a2a;}
+  .med-table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px;}
+  .med-table th{background:#1a2a1a;color:#8dc63f;font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid #2a4a2a;white-space:nowrap;}
+  .med-table td{padding:9px 12px;border-bottom:1px solid #1a2a1a;color:#c8ddb0;vertical-align:top;}
+  .med-table tr:hover td{background:#1a2a1a;}
+  .med-table tr.statut-actif td:first-child{border-left:3px solid #f44336;}
+  .med-table tr.statut-surveillance td:first-child{border-left:3px solid #ff9800;}
+  .med-table tr.statut-retour td:first-child{border-left:3px solid #ffeb3b;}
+  .med-table tr.statut-gueri td:first-child{border-left:3px solid #4caf50;}
+  .med-badge{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap;}
+  .med-badge.actif{background:#4a1a1a;color:#f44336;}
+  .med-badge.surveillance{background:#4a2a1a;color:#ff9800;}
+  .med-badge.retour{background:#4a4a1a;color:#ffeb3b;}
+  .med-badge.gueri{background:#1a4a1a;color:#4caf50;}
+  .med-gravite{display:inline-flex;gap:2px;}
+  .med-gravite-dot{width:8px;height:8px;border-radius:50%;background:#2a4a2a;}
+  .med-gravite-dot.on{background:#f44336;}
+
+  /* Formulaire */
+  .med-form-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;}
+  .med-form-overlay.open{display:flex;}
+  .med-form{background:#1a2a1a;border:1px solid #3a6a3a;border-radius:16px;padding:24px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;margin:16px;}
+  .med-form h3{color:#8dc63f;font-size:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+  .med-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .med-form-grid.full{grid-template-columns:1fr;}
+  .med-field{display:flex;flex-direction:column;gap:4px;}
+  .med-field label{font-size:11px;color:#8aaa7a;font-weight:700;text-transform:uppercase;}
+  .med-field input,.med-field select,.med-field textarea{background:#0f1a0f;border:1.5px solid #2a4a2a;border-radius:8px;padding:9px 12px;font-size:13px;color:#c8ddb0;font-family:Arial,sans-serif;width:100%;box-sizing:border-box;}
+  .med-field input:focus,.med-field select:focus,.med-field textarea:focus{outline:none;border-color:#8dc63f;}
+  .med-field textarea{resize:vertical;min-height:60px;}
+  .med-field select option{background:#1a2a1a;}
+  .med-form-section{color:#8dc63f;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #2a4a2a;}
+  .med-form-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap;}
+  .med-btn-primary{padding:10px 20px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;}
+  .med-btn-secondary{padding:10px 16px;font-size:13px;border-radius:8px;border:1px solid #3a6a3a;background:transparent;color:#8aaa7a;cursor:pointer;}
+  .med-btn-danger{padding:10px 16px;font-size:13px;border-radius:8px;border:none;background:#4a1a1a;color:#f44336;cursor:pointer;}
+
+  /* Graphiques synthèse */
+  .med-synth-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+  .med-chart-box{background:#1a2a1a;border:1px solid #2a4a2a;border-radius:12px;padding:16px;}
+  .med-chart-box h4{color:#8dc63f;font-size:13px;margin-bottom:12px;}
+  .med-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .med-bar-label{font-size:11px;color:#8aaa7a;width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .med-bar-bg{flex:1;background:#0f1a0f;border-radius:999px;height:10px;overflow:hidden;}
+  .med-bar-fill{height:10px;border-radius:999px;background:#8dc63f;}
+  .med-bar-val{font-size:11px;color:#8dc63f;font-weight:700;width:24px;text-align:right;flex-shrink:0;}
+
+  /* Bouton ajouter */
+  .med-btn-add{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;margin-bottom:16px;}
+
+  @media(max-width:600px){
+    .med-form-grid{grid-template-columns:1fr;}
+    .med-synth-grid{grid-template-columns:1fr;}
+    .med-kpi-num{font-size:20px;}
+    .med-tabs{flex-wrap:wrap;}
+  }
+  </style>
+
+  <!-- Topbar médical -->
+  <div class="med-topbar">
+    <div class="med-topbar-title">🏥 Module Médical — <span id="medTeamLabel">Seniors N1</span></div>
+    <div class="med-tabs">
+      <button class="med-tab active" id="medTabSuivi" onclick="switchMedTab('suivi')">📋 Suivi blessures</button>
+      <button class="med-tab" id="medTabSynth" onclick="switchMedTab('synth')">📊 Synthèse saison</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="med-btn-close" onclick="exportMedicalCSV()">📥 Export CSV</button>
+      <button class="med-btn-close" onclick="fermerMedical()">✕ Fermer</button>
+    </div>
+  </div>
+
+  <!-- Contenu -->
+  <div class="med-content">
+
+    <!-- KPIs -->
+    <div class="med-kpis" id="medKpis"></div>
+
+    <!-- ONGLET SUIVI -->
+    <div id="medPanelSuivi">
+      <button class="med-btn-add" onclick="ouvrirFormMedical(null)">+ Nouvelle blessure</button>
+      <div class="med-table-wrap">
+        <table class="med-table">
+          <thead>
+            <tr>
+              <th>Joueur</th>
+              <th>Poste</th>
+              <th>Date</th>
+              <th>Zone</th>
+              <th>Type de blessure</th>
+              <th>Gravité</th>
+              <th>Diagnostic</th>
+              <th>Protocole kiné</th>
+              <th>Protocole prépa</th>
+              <th>Reprise estimée</th>
+              <th>Reprise effective</th>
+              <th>Indispo (j)</th>
+              <th>Statut</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="medTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ONGLET SYNTHÈSE -->
+    <div id="medPanelSynth" style="display:none;">
+      <div class="med-synth-grid">
+        <div class="med-chart-box">
+          <h4>Répartition par type de blessure</h4>
+          <div id="medChartType"></div>
+        </div>
+        <div class="med-chart-box">
+          <h4>Zones anatomiques les + touchées</h4>
+          <div id="medChartZone"></div>
+        </div>
+        <div class="med-chart-box">
+          <h4>Indisponibilité par joueur (jours)</h4>
+          <div id="medChartJoueur"></div>
+        </div>
+        <div class="med-chart-box">
+          <h4>Répartition par gravité</h4>
+          <div id="medChartGravite"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Formulaire blessure (overlay) -->
+  <div class="med-form-overlay" id="medFormOverlay">
+    <div class="med-form">
+      <h3>
+        <span id="medFormTitle">Nouvelle blessure</span>
+        <button type="button" class="med-btn-secondary" onclick="fermerFormMedical()" style="padding:4px 10px;font-size:12px;">✕</button>
+      </h3>
+
+      <div class="med-form-section">Informations joueur</div>
+      <div class="med-form-grid">
+        <div class="med-field">
+          <label>Joueur *</label>
+          <select id="medJoueur"></select>
+        </div>
+        <div class="med-field">
+          <label>Poste</label>
+          <select id="medPoste">
+            <option value="">—</option>
+            <option>Gardien</option><option>Défenseur</option><option>Latéral</option>
+            <option>Milieu</option><option>Milieu défensif</option><option>Milieu offensif</option>
+            <option>Attaquant</option><option>Ailier</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="med-form-section">Blessure</div>
+      <div class="med-form-grid">
+        <div class="med-field">
+          <label>Date de blessure *</label>
+          <input type="date" id="medDateBlessure"/>
+        </div>
+        <div class="med-field">
+          <label>Zone anatomique *</label>
+          <select id="medZone">
+            <option value="">— Sélectionner —</option>
+            <optgroup label="Tête / Cou">
+              <option>Tête</option><option>Cou / Nuque</option>
+            </optgroup>
+            <optgroup label="Épaule / Bras">
+              <option>Épaule droite</option><option>Épaule gauche</option>
+              <option>Bras droite</option><option>Bras gauche</option>
+              <option>Avant-bras droite</option><option>Avant-bras gauche</option>
+            </optgroup>
+            <optgroup label="Tronc">
+              <option>Torse / Pectoraux</option><option>Abdominaux</option>
+              <option>Haut du dos</option><option>Lombaires</option>
+              <option>Hanche / bassin</option>
+            </optgroup>
+            <optgroup label="Cuisse">
+              <option>Cuisse droite</option><option>Cuisse gauche</option>
+              <option>Ischios droite</option><option>Ischios gauche</option>
+              <option>Fessier droite</option><option>Fessier gauche</option>
+            </optgroup>
+            <optgroup label="Genou">
+              <option>Genou droite</option><option>Genou gauche</option>
+            </optgroup>
+            <optgroup label="Jambe / Cheville / Pied">
+              <option>Tibia droite</option><option>Tibia gauche</option>
+              <option>Mollet droite</option><option>Mollet gauche</option>
+              <option>Cheville droite</option><option>Cheville gauche</option>
+              <option>Tendon Achille droite</option><option>Tendon Achille gauche</option>
+              <option>Pied droite</option><option>Pied gauche</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="med-field">
+          <label>Type de blessure *</label>
+          <input type="text" id="medType" placeholder="ex: LMA Ischio, Entorse genou..."/>
+        </div>
+        <div class="med-field">
+          <label>Gravité (1 = légère → 5 = grave)</label>
+          <select id="medGravite">
+            <option value="">—</option>
+            <option value="1">1 — Légère</option>
+            <option value="2">2 — Modérée</option>
+            <option value="3">3 — Moyenne</option>
+            <option value="4">4 — Sévère</option>
+            <option value="5">5 — Très grave</option>
+          </select>
+        </div>
+        <div class="med-field">
+          <label>Mécanisme</label>
+          <select id="medMecanisme">
+            <option value="">—</option>
+            <option>Contact</option><option>Non-contact</option><option>Surcharge</option><option>Récidive</option>
+          </select>
+        </div>
+        <div class="med-field">
+          <label>Statut actuel</label>
+          <select id="medStatut">
+            <option value="actif">🔴 Blessé</option>
+            <option value="surveillance">🟠 Surveillance</option>
+            <option value="retour">🟡 Reprise partielle</option>
+            <option value="gueri">🟢 Guéri / Retour jeu</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="med-form-section">Médical & Rééducation</div>
+      <div class="med-form-grid full">
+        <div class="med-field">
+          <label>Diagnostic médical</label>
+          <textarea id="medDiagnostic" placeholder="Détails du diagnostic..."></textarea>
+        </div>
+        <div class="med-field">
+          <label>Protocole kiné</label>
+          <textarea id="medProtoKine" placeholder="Séances, exercices, objectifs..."></textarea>
+        </div>
+        <div class="med-field">
+          <label>Protocole préparation athlétique</label>
+          <textarea id="medProtoPrepa" placeholder="Travail de réathlétisation..."></textarea>
+        </div>
+      </div>
+
+      <div class="med-form-section">Reprise</div>
+      <div class="med-form-grid">
+        <div class="med-field">
+          <label>Date reprise estimée</label>
+          <input type="date" id="medRepriseEstimee"/>
+        </div>
+        <div class="med-field">
+          <label>Date reprise effective</label>
+          <input type="date" id="medRepriseEffective"/>
+        </div>
+      </div>
+
+      <div class="med-form-section">Commentaires</div>
+      <div class="med-form-grid full">
+        <div class="med-field">
+          <label>Observations / notes</label>
+          <textarea id="medCommentaires" placeholder="Observations complémentaires..."></textarea>
+        </div>
+      </div>
+
+      <div class="med-form-actions">
+        <button type="button" class="med-btn-danger" id="medBtnSuppr" onclick="supprimerBlessure()" style="display:none;margin-right:auto;">🗑️ Supprimer</button>
+        <button type="button" class="med-btn-secondary" onclick="fermerFormMedical()">Annuler</button>
+        <button type="button" class="med-btn-primary" onclick="sauvegarderBlessure()">💾 Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
