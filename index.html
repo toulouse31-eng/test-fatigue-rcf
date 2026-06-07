@@ -650,24 +650,69 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
   </div>
 
   <div class="auth-card" id="loginCard">
-    <div class="card-title">Connexion coach</div>
+    <div class="card-title">Connexion staff</div>
     <input type="email" id="loginEmail" placeholder="Email" autocomplete="email"/>
     <input type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password"/>
     <div class="err-msg" id="loginError"></div>
     <button type="button" class="btn-primary-dark" onclick="doLogin()">Se connecter</button>
-    <div class="link-dark" onclick="showRegister()">Pas encore de compte ? <span>Créer un compte</span></div>
+    <div class="link-dark" onclick="showRegister()">Première connexion ? <span>Créer mon profil</span></div>
     <div class="player-access-link" onclick="goToPlayerEntry()">👟 Je suis un joueur → <span>Accès joueur</span></div>
   </div>
 
   <div class="auth-card" id="registerCard" style="display:none;">
-    <div class="card-title">Créer un compte coach</div>
-    <input type="text" id="regClub" placeholder="Nom du club"/>
+    <div class="card-title">Créer mon profil</div>
+    <input type="text" id="regCode" placeholder="Code club (reçu par email)" autocomplete="off" style="letter-spacing:3px;text-transform:uppercase;font-weight:700;"/>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="regPrenom" placeholder="Prénom" autocomplete="given-name" style="flex:1;"/>
+      <input type="text" id="regNom" placeholder="NOM" autocomplete="family-name" style="flex:1;"/>
+    </div>
+    <select id="regPoste" style="padding:12px 14px;font-size:14px;border-radius:10px;border:2px solid #2a3f2a;background:var(--noir2);color:var(--blanc);width:100%;">
+      <option value="">— Poste —</option>
+      <option value="Coach">Coach</option>
+      <option value="Coach adjoint">Coach adjoint</option>
+      <option value="Kiné">Kiné</option>
+      <option value="Préparateur physique">Préparateur physique</option>
+      <option value="Analyste vidéo">Analyste vidéo</option>
+      <option value="Coach gardiens">Coach gardiens</option>
+      <option value="Dirigeant">Dirigeant</option>
+      <option value="Autre">Autre</option>
+    </select>
     <input type="email" id="regEmail" placeholder="Email" autocomplete="email"/>
     <input type="password" id="regPassword" placeholder="Mot de passe (6 car. min)" autocomplete="new-password"/>
     <div class="err-msg" id="registerError"></div>
-    <button type="button" class="btn-primary-dark" onclick="doRegister()">Créer mon compte</button>
+    <button type="button" class="btn-primary-dark" onclick="doRegister()">Créer mon profil</button>
     <div class="link-dark" onclick="showLogin()">Déjà un compte ? <span>Se connecter</span></div>
   </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ÉCRAN ADMIN (toulouse31@gmail.com uniquement)                -->
+<!-- ============================================================ -->
+<div id="adminScreen" class="screen" style="display:none;background:#0a0f0a;">
+  <div style="font-size:20px;font-weight:900;color:#8dc63f;margin-bottom:4px;">⚙️ Admin — Team RPE</div>
+  <div style="font-size:12px;color:#3a6a3a;margin-bottom:20px;">Gestion des clubs</div>
+
+  <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;width:100%;max-width:420px;box-sizing:border-box;">
+    <div style="font-size:14px;font-weight:700;color:#8dc63f;margin-bottom:14px;">➕ Créer un nouveau club</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input type="text" id="adminClubNom" placeholder="Nom du club (ex: Racing CFF)" style="padding:12px;font-size:14px;border-radius:8px;border:1.5px solid #2a4a2a;background:#0f1a0f;color:#fff;width:100%;box-sizing:border-box;"/>
+      <input type="text" id="adminClubVille" placeholder="Ville (optionnel)" style="padding:12px;font-size:14px;border-radius:8px;border:1.5px solid #2a4a2a;background:#0f1a0f;color:#fff;width:100%;box-sizing:border-box;"/>
+      <button onclick="adminCreerClub()" style="padding:12px;font-size:14px;font-weight:700;border-radius:8px;border:none;background:#8dc63f;color:#0f1a0f;cursor:pointer;">Créer le club</button>
+    </div>
+    <div id="adminResult" style="margin-top:14px;padding:12px;border-radius:8px;background:#0f1a0f;display:none;">
+      <div style="font-size:12px;color:#6a8a6a;margin-bottom:6px;">Code club généré :</div>
+      <div id="adminCodeClub" style="font-size:28px;font-weight:900;color:#8dc63f;letter-spacing:4px;text-align:center;padding:8px 0;"></div>
+      <div style="font-size:11px;color:#6a8a6a;text-align:center;margin-top:4px;">À envoyer au coach du club</div>
+      <button onclick="adminCopierCode()" style="width:100%;margin-top:10px;padding:9px;font-size:13px;border-radius:8px;border:1px solid #2a4a2a;background:#1a2a1a;color:#8dc63f;cursor:pointer;">📋 Copier le code</button>
+    </div>
+  </div>
+
+  <div style="background:#1a2a1a;border-radius:16px;border:1px solid #2a4a2a;padding:20px;width:100%;max-width:420px;box-sizing:border-box;margin-top:16px;">
+    <div style="font-size:14px;font-weight:700;color:#8dc63f;margin-bottom:14px;">📋 Clubs existants</div>
+    <div id="adminClubsList" style="font-size:13px;color:#6a8a6a;">Chargement...</div>
+  </div>
+
+  <button onclick="doLogout()" style="margin-top:20px;padding:10px 20px;font-size:13px;border-radius:8px;border:1px solid #2a4a2a;background:transparent;color:#6a8a6a;cursor:pointer;">Se déconnecter</button>
 </div>
 
 <!-- ============================================================ -->
@@ -1282,7 +1327,7 @@ const firebaseConfig={apiKey:"AIzaSyCFxhn3X3mHnwBGJR5K1ulRvHQ_i9eKGo0",authDomai
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore();
 
-let currentUser=null,currentClub=null,currentTeam=null,playerMode=false,currentPlayer=null;
+let currentUser=null,currentClub=null,currentTeam=null,playerMode=false,currentPlayer=null,currentUserProfile=null;
 let enregistrementsLocal=[],enregistrementsSheets=[];
 const STORAGE_LOCAL="team_rpe_v12_local",STORAGE_SHEETS="team_rpe_v12_sheets";
 const GS_URL="https://script.google.com/macros/s/AKfycbzB8PLjezhWnNdBEC2jV001a26FiALWfGL_mk6lqI4URwwE2qrAk-wlqVLAkmbMvHy-/exec";
@@ -1312,37 +1357,147 @@ async function doLogin(){
     await auth.signInWithEmailAndPassword(e,p);
   }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
 }
+const ADMIN_EMAIL = "toulouse31@gmail.com";
+
 async function doRegister(){
-  const club=document.getElementById("regClub").value.trim(),e=document.getElementById("regEmail").value.trim(),p=document.getElementById("regPassword").value,err=document.getElementById("registerError");
+  const code=(document.getElementById("regCode")?.value||"").trim().toUpperCase();
+  const prenom=(document.getElementById("regPrenom")?.value||"").trim();
+  const nom=(document.getElementById("regNom")?.value||"").trim();
+  const poste=document.getElementById("regPoste")?.value||"";
+  const e=document.getElementById("regEmail").value.trim();
+  const p=document.getElementById("regPassword").value;
+  const err=document.getElementById("registerError");
   err.style.display="none";
-  if(!club){err.textContent="Saisis le nom de ton club.";err.style.display="block";return;}
+
+  if(!code){err.textContent="Entre le code club reçu par email.";err.style.display="block";return;}
+  if(!prenom||!nom){err.textContent="Prénom et nom obligatoires.";err.style.display="block";return;}
+  if(!poste){err.textContent="Sélectionne ton poste.";err.style.display="block";return;}
+
+  // Vérifier que le code club existe
   try{
+    const snap=await db.collection("clubs").where("codeClub","==",code).get();
+    if(snap.empty){err.textContent="Code club invalide. Vérifie le code reçu.";err.style.display="block";return;}
+
+    const clubDoc=snap.docs[0];
+    const clubId=clubDoc.id;
+    const clubData=clubDoc.data();
+
+    // Créer le compte Firebase Auth
     const c=await auth.createUserWithEmailAndPassword(e,p);
-    await db.collection("clubs").doc(c.user.uid).set({nom:club,coachEmail:e,teams:[],players:{},pins:{},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const uid=c.user.uid;
+
+    // Créer le profil staff dans Firestore (sous-collection du club)
+    await db.collection("clubs").doc(clubId).collection("staff").doc(uid).set({
+      prenom,nom,poste,email:e,
+      initiales:(prenom[0]+(nom[0]||"")).toUpperCase(),
+      clubId,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Stocker le clubId dans le profil utilisateur
+    await db.collection("users").doc(uid).set({
+      prenom,nom,poste,email:e,clubId,
+      initiales:(prenom[0]+(nom[0]||"")).toUpperCase(),
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
   }catch(ex){err.textContent=tErr(ex.code);err.style.display="block";}
+}
+
+// ===== ADMIN =====
+async function verifierAdmin(user){
+  if(user?.email===ADMIN_EMAIL){
+    showScreen("adminScreen");
+    await adminChargerClubs();
+    return true;
+  }
+  return false;
+}
+
+function genCodeClub(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from({length:6},()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+}
+
+async function adminCreerClub(){
+  const nom=(document.getElementById("adminClubNom")?.value||"").trim();
+  const ville=(document.getElementById("adminClubVille")?.value||"").trim();
+  if(!nom){alert("Entre le nom du club.");return;}
+
+  // Générer un code unique
+  let code,exists=true;
+  while(exists){
+    code=genCodeClub();
+    const snap=await db.collection("clubs").where("codeClub","==",code).get();
+    exists=!snap.empty;
+  }
+
+  // Créer le club en Firestore
+  await db.collection("clubs").add({
+    nom,ville,codeClub:code,
+    teams:[],players:{},pins:{},
+    actif:true,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  // Afficher le code
+  document.getElementById("adminCodeClub").textContent=code;
+  document.getElementById("adminResult").style.display="block";
+  document.getElementById("adminClubNom").value="";
+  document.getElementById("adminClubVille").value="";
+  await adminChargerClubs();
+}
+
+function adminCopierCode(){
+  const code=document.getElementById("adminCodeClub").textContent;
+  const msg=`Bonjour,\n\nVoici ton code club pour accéder à Team RPE :\n\n🔑 ${code}\n\nRendez-vous sur https://toulouse31-eng.github.io/test-fatigue-rcf/\nCliquez sur "Créer mon profil" et entrez ce code.\n\nBonne utilisation !`;
+  navigator.clipboard.writeText(msg);
+  setSyncStatus?.("📋 Message copié !","ok");
+}
+
+async function adminChargerClubs(){
+  const el=document.getElementById("adminClubsList");
+  if(!el)return;
+  try{
+    const snap=await db.collection("clubs").orderBy("createdAt","desc").get();
+    if(snap.empty){el.innerHTML='<div style="color:#6a8a6a;">Aucun club créé.</div>';return;}
+    el.innerHTML=snap.docs.map(d=>{
+      const c=d.data();
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a4a2a;">
+        <div>
+          <div style="color:#fff;font-weight:700;">${c.nom||"—"}</div>
+          <div style="font-size:11px;color:#6a8a6a;">${c.ville||""} ${c.createdAt?.toDate?.().toLocaleDateString("fr-FR")||""}</div>
+        </div>
+        <div style="font-size:16px;font-weight:900;color:#8dc63f;letter-spacing:2px;">${c.codeClub||"—"}</div>
+      </div>`;
+    }).join("");
+  }catch(e){el.innerHTML='<div style="color:#f44336;">Erreur de chargement.</div>';}
 }
 function doLogout(){auth.signOut();currentUser=null;currentClub=null;currentTeam=null;playerMode=false;currentPlayer=null;sessionStorage.removeItem("rpe_team");document.body.classList.remove("coach-mode","player-mode");showScreen("loginScreen");}
 function tErr(c){return{"auth/user-not-found":"Compte introuvable.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-email":"Email invalide.","auth/email-already-in-use":"Email déjà utilisé.","auth/weak-password":"Mot de passe trop court.","auth/invalid-credential":"Email ou mot de passe incorrect."}[c]||"Erreur : "+c;}
 
 auth.onAuthStateChanged(async user=>{
-  // Vérifier d'abord si c'est un accès joueur via URL
   const params=new URLSearchParams(location.search);
   const urlClub=params.get("club");
   const urlTeam=params.get("team");
 
   console.log("onAuthStateChanged user:", user?.email||"null", "urlClub:", urlClub, "urlTeam:", urlTeam, "playerMode:", playerMode);
   if(urlClub&&urlTeam&&!playerMode){
-    console.log("→ Mode joueur URL détecté, chargement club...");
-    if(!currentClub){
-      await chargerClubJoueur(urlClub,urlTeam);
-    } else {
-      console.log("currentClub déjà chargé:", currentClub.nom);
-    }
+    if(!currentClub) await chargerClubJoueur(urlClub,urlTeam);
     return;
   }
 
   if(user){
     currentUser=user;
+
+    // Admin → écran admin
+    if(user.email===ADMIN_EMAIL){
+      showScreen("adminScreen");
+      await adminChargerClubs();
+      const splashEl=document.getElementById("splashScreen");
+      if(splashEl){splashEl.classList.add("hidden");setTimeout(()=>splashEl.style.display="none",350);}
+      return;
+    }
+
     await chargerClub();
     const savedTeam=sessionStorage.getItem("rpe_team");
     const savedTab=sessionStorage.getItem("rpe_tab");
@@ -1352,7 +1507,6 @@ auth.onAuthStateChanged(async user=>{
       await chargerJoueursEquipe(savedTeam);
       showScreen("appContent");
       initApp();
-
     } else {
       showScreen("teamScreen");
       renderTeamScreen();
@@ -1367,8 +1521,35 @@ auth.onAuthStateChanged(async user=>{
 
 // ===== CLUB =====
 async function chargerClub(){
-  try{const d=await db.collection("clubs").doc(currentUser.uid).get();if(d.exists){currentClub={id:currentUser.uid,...d.data()};if(!currentClub.players)currentClub.players={};if(!currentClub.pins)currentClub.pins={};}else{currentClub={id:currentUser.uid,nom:"Mon club",teams:[],players:{},pins:{}};}}
-  catch(e){currentClub={id:currentUser.uid,nom:"Mon club",teams:[],players:{},pins:{}};}
+  try{
+    // Nouveau système : chercher le club via le profil utilisateur
+    const userDoc=await db.collection("users").doc(currentUser.uid).get();
+    if(userDoc.exists){
+      const userData=userDoc.data();
+      currentUserProfile=userData;
+      const clubId=userData.clubId;
+      if(clubId){
+        const clubDoc=await db.collection("clubs").doc(clubId).get();
+        if(clubDoc.exists){
+          currentClub={id:clubId,...clubDoc.data()};
+          if(!currentClub.players)currentClub.players={};
+          if(!currentClub.pins)currentClub.pins={};
+          return;
+        }
+      }
+    }
+    // Fallback ancien système (clubs créés avec l'UID comme ID)
+    const d=await db.collection("clubs").doc(currentUser.uid).get();
+    if(d.exists){
+      currentClub={id:currentUser.uid,...d.data()};
+      if(!currentClub.players)currentClub.players={};
+      if(!currentClub.pins)currentClub.pins={};
+    }else{
+      currentClub={id:currentUser.uid,nom:"Mon club",teams:[],players:{},pins:{}};
+    }
+  }catch(e){
+    currentClub={id:currentUser.uid,nom:"Mon club",teams:[],players:{},pins:{}};
+  }
 }
 
 // ===== ÉQUIPES =====
@@ -1628,16 +1809,25 @@ async function initApp(){
 }
 function majAvatar(){
   const nom=currentClub?.nom||"";
-  // Initiales depuis l'email : "yannick.leroy@..." → "YL"
-  const email=currentUser?.email||"";
-  const emailBase=email.split("@")[0];
-  const parts=emailBase.split(/[._\-]/);
-  const initiales=parts.length>=2
-    ?(parts[0][0]+(parts[1][0]||"")).toUpperCase()
-    :emailBase.slice(0,2).toUpperCase();
-  const ie=document.getElementById("avatarInitials");if(ie)ie.textContent=initiales||"??";
+  // Initiales depuis le profil (prénom + nom) ou depuis l'email
+  let initiales="??";
+  if(currentUserProfile?.prenom&&currentUserProfile?.nom){
+    initiales=(currentUserProfile.prenom[0]+currentUserProfile.nom[0]).toUpperCase();
+  } else {
+    const email=currentUser?.email||"";
+    const emailBase=email.split("@")[0];
+    const parts=emailBase.split(/[._\-]/);
+    initiales=parts.length>=2
+      ?(parts[0][0]+(parts[1][0]||"")).toUpperCase()
+      :emailBase.slice(0,2).toUpperCase();
+  }
+  const ie=document.getElementById("avatarInitials");if(ie)ie.textContent=initiales;
   const me=document.getElementById("menuClubNom");if(me)me.textContent=nom;
-  const ee=document.getElementById("menuCoachEmail");if(ee)ee.textContent=email;
+  const ee=document.getElementById("menuCoachEmail");
+  if(ee){
+    const label=currentUserProfile?.prenom?`${currentUserProfile.prenom} ${currentUserProfile.nom} — ${currentUserProfile.poste||""}`:currentUser?.email||"";
+    ee.textContent=label;
+  }
 }
 function toggleAvatarMenu(){const m=document.getElementById("avatarMenu");if(m)m.style.display=m.style.display==="none"?"block":"none";}
 document.addEventListener("click",e=>{const w=document.getElementById("avatarWrapper");if(w&&!w.contains(e.target)){const m=document.getElementById("avatarMenu");if(m)m.style.display="none";}});
