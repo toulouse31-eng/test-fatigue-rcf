@@ -756,7 +756,7 @@ body.coach-mode #appContent{background:#1e2e1e !important;}
       <button type="button" class="tbadge active" id="teamBadge" onclick="backToTeamSelect()">⚽ <span class="tbadge-team-text" id="currentTeamLabel">—</span></button>
       <button type="button" class="tbadge active" id="tabEquipe" onclick="switchTab('equipe')"><span class="tbadge-icon">👥</span><span class="tbadge-label"> Équipe</span></button>
       <button type="button" class="tbadge" id="tabStats" onclick="switchTab('stats')"><span class="tbadge-icon">📊</span><span class="tbadge-label"> Stats</span></button>
-      <button type="button" class="tbadge tbadge-medical coach-only" id="tabMedical" onclick="ouvrirMedical()"><span class="tbadge-icon">🏥</span><span class="tbadge-label"> Médical</span></button>
+      <button type="button" class="tbadge tbadge-medical" id="tabMedical" onclick="ouvrirMedical()" style="display:none;"><span class="tbadge-icon">🏥</span><span class="tbadge-label"> Médical</span></button>
       <!-- Avatar menu -->
       <div style="position:relative;" id="avatarWrapper">
         <button type="button" class="tbadge" id="avatarBtn" onclick="toggleAvatarMenu()"><span id="avatarInitials">?</span></button>
@@ -1781,6 +1781,10 @@ function appliquerModeAffichage(){
   const ci = document.getElementById("coachInterface");
   const sl = document.getElementById("statsLayout");
   const fc = document.getElementById("formCard");
+  const btnMed = document.getElementById("tabMedical");
+
+  // Bouton médical visible si coach connecté (pas joueur)
+  if(btnMed) btnMed.style.display = (!playerMode && currentUser) ? "inline-flex" : "none";
 
   if(playerMode){
     if(ci) ci.style.display="none";
